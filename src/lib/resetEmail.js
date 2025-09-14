@@ -1,7 +1,6 @@
 import nodemailer from 'nodemailer';
 
 export const sendPasswordResetEmail = async (email, resetToken) => {
-  console.log('Preparing to send password reset email...');
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -9,9 +8,7 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
       pass: process.env.EMAIL_PASS, // your email password
     },
   });
-  console.log('Email:', email);
   const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password/${resetToken}`;
-  console.log('Reset URL:', resetUrl);
 
   const mailOptions = {
     from: 'kopotitore@gmail.com',
