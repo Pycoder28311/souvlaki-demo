@@ -4,43 +4,66 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import "./navbar.css";
+import { FiShoppingCart } from "react-icons/fi";
 
 export default function Navbar({scrolled = false}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState(); 
 
   const linkClass = isScrolled
     ? "text-gray-700 hover:text-yellow-600 transition-colors"
     : "text-white hover:text-yellow-300 transition-colors";
 
   useEffect(() => {
-  if (typeof window === "undefined") return;
+    if (typeof window === "undefined") return;
 
-  const handleScroll = () => {
-    if (window.innerWidth < 768) {
-      // always true on mobile
-      setIsScrolled(true);
-    } else {
-      // on desktop respect the scrolled prop if passed
-      if (scrolled) {
+    const handleScroll = () => {
+      if (window.innerWidth < 768) {
+        // always true on mobile
         setIsScrolled(true);
       } else {
-        setIsScrolled(window.scrollY > 50);
+        // on desktop respect the scrolled prop if passed
+        if (scrolled) {
+          setIsScrolled(true);
+        } else {
+          setIsScrolled(window.scrollY > 50);
+        }
       }
-    }
-  };
+    };
 
-  // run once on mount
-  handleScroll();
+    // run once on mount
+    handleScroll();
 
-  window.addEventListener("scroll", handleScroll);
-  window.addEventListener("resize", handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("resize", handleScroll);
 
-  return () => {
-    window.removeEventListener("scroll", handleScroll);
-    window.removeEventListener("resize", handleScroll);
-  };
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
   }, [scrolled]);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session"); // Call your API endpoint
+        if (!response.ok) {
+          throw new Error("Failed to fetch session data");
+        }
+        const session = await response.json();
+
+        // Log the userId if it exists
+        if (session?.user) {
+          setUser(session.user)
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      } 
+    };
+    
+    fetchSession(); 
+  }, []);
 
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : 'navbar-default'}`}>
@@ -53,7 +76,7 @@ export default function Navbar({scrolled = false}) {
             </span>
           </Link>
 
-          <div className="flex-1 flex justify-center hidden md:flex space-x-8">
+          <div className="flex-1 flex justify-center hidden md:flex space-x-8 ml-40">
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>
@@ -62,20 +85,59 @@ export default function Navbar({scrolled = false}) {
 
           {/* Desktop links */}
           <div className="hidden md:flex items-center space-x-8">
-            <button
-              className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
-                isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
-              }`}
-            >
-              Παράγγειλε Τώρα
-            </button>
+            {user ? (
+              <div className="flex space-x-4">
+                <Link
+                  href="/api/auth/signout"
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                    isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+                  }`}
+                >
+                  Αποσύνδεση
+                </Link>
+                <button
+                  className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                    isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+                  }`}
+                >
+                  <div className="flex items-center font-bold">
+                    <FiShoppingCart className="mr-2" size={20} />
+                  </div>
+                  Παράγγειλε
+                </button>
+              </div>
+            ) : (
+              <div className="flex space-x-4">
+                <Link
+                  href="/auth/signin"
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                    isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+                  }`}
+                >
+                  Σύνδεση
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                    isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+                  }`}
+                >
+                  Εγγραφή
+                </Link>
+              </div>
+            )}
           </div>
 
-          {/* Mobile hamburger */}
-          <div className="md:hidden flex items-center">
+          <div className="md:hidden flex items-center px-4 py-2 bg-white z-30 space-x-4">
+            {/* Button outside the mobile menu */}
+            <button className="flex items-center bg-gray-200 hover:bg-gray-400 text-gray-900 px-2 py-2 rounded-md font-bold">
+              <FiShoppingCart className="mr-2" size={20} />
+            </button>
+
+            {/* Mobile hamburger */}
             <button
               onClick={() => setMobileOpen((v) => !v)}
-              className="relative w-8 h-8 flex items-center justify-center focus:outline-none z-30"
+              className="relative w-8 h-8 flex items-center justify-center focus:outline-none"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
               {/* Top bar */}
@@ -83,13 +145,11 @@ export default function Navbar({scrolled = false}) {
                 className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
                   ${mobileOpen ? 'rotate-45 -translate-x-1/2 -translate-y-0' : '-translate-x-1/2 -translate-y-2.5'}`}
               />
-
               {/* Middle bar */}
               <span
                 className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
                   ${mobileOpen ? 'opacity-0 -translate-x-1/2' : '-translate-x-1/2 translate-y-0'}`}
               />
-
               {/* Bottom bar */}
               <span
                 className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
@@ -135,9 +195,6 @@ export default function Navbar({scrolled = false}) {
           >
             Επικοινωνία
           </Link>
-          <button className="w-full mt-4 bg-yellow-500 hover:bg-yellow-400 text-gray-900 px-4 py-2 rounded font-bold">
-            Παρήγγειλε
-          </button>
         </div>
       </div>
     </nav>
