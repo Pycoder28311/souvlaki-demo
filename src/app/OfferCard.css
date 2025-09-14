@@ -1,0 +1,102 @@
+.offer-card {
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    /* gray-200 */
+    padding: 1.5rem;
+    /* p-6 */
+    transition: all 0.3s;
+    max-width: 36rem;
+    /* max-w-lg */
+    width: 75%;
+    /* w-9/12 */
+    margin-left: 2rem;
+    /* ml-8 */
+}
+
+.offer-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    /* shadow-lg */
+}
+
+.offer-card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    /* mb-4 */
+}
+
+.offer-badge {
+    min-height: 3rem;
+    /* h-12 */
+    width: auto;
+    background-color: #facc15;
+    /* yellow-500 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    /* mr-4 */
+    border-radius: 0.375rem;
+    /* rounded */
+    padding: 0.5rem 1rem;
+    /* px-4 py-2 */
+    font-weight: bold;
+    color: white;
+}
+
+.offer-title {
+    font-weight: bold;
+    color: #9ca3af;
+    /* text-gray-400 */
+    font-size: 2rem;
+    /* text-lg */
+}
+
+.offer-description {
+    color: #4b5563;
+    /* text-gray-600 */
+    margin-bottom: 1rem;
+}
+
+.offer-button {
+    color: #ca8a04;
+    /* yellow-600 */
+    font-weight: bold;
+    padding: 0.375rem 0.75rem;
+    /* px-3 py-1.5 */
+    transition: color 0.3s;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.offer-button:hover {
+    color: #b45309;
+    /* yellow-700 */
+}
+
+/* Responsive font size for mobile */
+@media (max-width: 640px) {
+
+    .offer-badge,
+    .offer-title,
+    .offer-description,
+    .offer-button {
+        font-size: 1rem;
+        /* smaller letters on mobile */
+    }
+
+    .offer-card {
+        width: 90%;
+        /* ml-4 */
+        padding: 1rem;
+        /* p-4 */
+    }
+
+    .offer-badge {
+        padding: 0.25rem 0.5rem;
+        height: 2.5rem;
+        min-height: auto;
+        /* h-10 */
+    }
+}
