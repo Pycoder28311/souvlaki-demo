@@ -9,6 +9,7 @@ export default function ResetPassword() {
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    console.log('Requesting password reset for:', email);
 
     try {
       const res = await fetch('/api/auth/send-reset-email', {
@@ -16,6 +17,7 @@ export default function ResetPassword() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
+      console.log(res)
 
       if (res.ok) {
         setMessage('Password reset email sent. Check your inbox.');
