@@ -9,6 +9,14 @@ import homepage from "../../public/homepage.jpg";
 import { useEffect, useRef, useState } from "react";
 import RedSquareCarousel from './carousel';
 
+export type User = {
+  id: number;
+  email: string;
+  password: string;
+  name: string;
+  business: boolean;
+};
+
 export default function Home() {
 
   const offers = [
@@ -28,6 +36,7 @@ export default function Home() {
 
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState<boolean[]>([false, false, false]);
+  const [user, setUser] = useState<User>(); 
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -70,6 +79,27 @@ export default function Home() {
       description: "210 123 4567\n694 123 4567",
     },
   ];
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session"); // Call your API endpoint
+        if (!response.ok) {
+          throw new Error("Failed to fetch session data");
+        }
+        const session = await response.json();
+
+        // Log the userId if it exists
+        if (session?.user) {
+          setUser(session.user)
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      } 
+    };
+    
+    fetchSession(); 
+  }, []);
 
   type MenuItem = {
     name: string;
@@ -169,7 +199,7 @@ export default function Home() {
         </div>
         
         <div className="relative z-10 text-center text-white px-4">
-          <h1 className="text-4xl md:text-6xl font-bold mb-6">Αυθεντικά Ελληνικά Σουβλάκια</h1>
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">Αυθεντικά Ελληνικά Σουβλάκια {user?.name}</h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Γεύση που θυμίζει Ελλάδα. Φτιαγμένα με φρέσκα υλικά και παράδοση.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link  href="/menu" className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300 transform hover:scale-105">

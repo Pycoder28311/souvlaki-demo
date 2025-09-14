@@ -14,13 +14,15 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement()) // Default: auto-incremented ID
+  id           Int      @id @default(autoincrement())
   email        String   @unique
   password     String
   name         String
+  business     Boolean  @default(false)  // <-- new field
 
-  passwordResets       PasswordReset[]
+  passwordResets PasswordReset[]
 }
+
 
 model PasswordReset {
   id        Int      @id @default(autoincrement())
