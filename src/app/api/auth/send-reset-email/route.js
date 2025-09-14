@@ -1,6 +1,6 @@
 // src/app/api/auth/reset-password/route.js
 
-import prisma from '../../../../lib/prisma';  // Adjust according to your setup
+import { prisma } from '../../../../lib/prisma';  // Adjust according to your setup
 import { sendPasswordResetEmail } from '../../../../lib/resetEmail'; // Adjust with your email utility
 
 // Handle POST requests (for sending reset email)

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '../../../../lib/prisma'; // Adjust based on your database setup
+import { prisma } from '../../../../lib/prisma'; // Adjust based on your database setup
 import bcrypt from "bcryptjs";
 
 export const POST = async (req) => {
