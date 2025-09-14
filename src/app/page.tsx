@@ -14,7 +14,7 @@ export default function Home() {
   const offers = [
     {
       id: 1,
-      badge: "-20%",
+      badge: "-10%",
       title: "Προσφορά Σαββάτου",
       description: "Κάθε Σάββατο απόγευμα, από 18:00 - 22:00, έκπτωση 20% σε όλα τα σουβλάκια.",
     },
