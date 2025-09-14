@@ -1,13 +1,13 @@
-import prisma from '../../lib/prisma';
-import { getServerSession } from "next-auth"; // Import getServerSession
+import { prisma } from '../../lib/prisma';
+import { getServerSession } from "next-auth";
 import { authOptions } from "../../app/api/auth/authOptions";
 
 const getUser = async (session) => {
   const user = await prisma.user.findUnique({
-    where: { email: session.user.email }, // Find user by email
+    where: { email: session.user.email },
   });
   if (!user) throw new Error("User not found");
-  return user; // Return the entire user object
+  return user;
 };
 
 export default async function handler(req, res) {
@@ -23,17 +23,10 @@ export default async function handler(req, res) {
         return res.status(200).json({});
       }
 
-      const images = await prisma.image.findMany({
-        where: {
-          entity: "user",    // The model (e.g., "post", "user", etc.)
-          entityId: user.id 
-        },
-      });
-      
+      // Merge session with user data (without images)
       session.user = { 
         ...session.user, 
-        ...user, 
-        images: images.map((image) => image.base64), // Add the first image (or null if no images exist)
+        ...user,
       };
 
       return res.status(200).json(session);
