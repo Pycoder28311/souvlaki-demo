@@ -13,16 +13,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id           Int      @id @default(autoincrement())
-  email        String   @unique
-  password     String
-  name         String
-  business     Boolean  @default(false)  // <-- new field
+model Review {
+  id         Int      @id @default(autoincrement())
+  reviewerId Int      // ποιος κάνει την κριτική
+  reviewedId Int      // ποιος δέχεται την κριτική
+  rating     Int      // 1-5 αστεράκια
+  comment    String?  // προαιρετικό κείμενο
+  createdAt  DateTime @default(now())
 
-  passwordResets PasswordReset[]
+  reviewer   User     @relation("UserReviewsGiven", fields: [reviewerId], references: [id])
+  reviewed   User     @relation("UserReviewsReceived", fields: [reviewedId], references: [id])
 }
 
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String
+  name         String
+  business     Boolean   @default(false)
+  orders       Order[]
+  passwordResets PasswordReset[]
+  favorites Favorite[]
+
+  // reviews
+  reviewsGiven     Review[] @relation("UserReviewsGiven")
+  reviewsReceived  Review[] @relation("UserReviewsReceived")
+}
 
 model PasswordReset {
   id        Int      @id @default(autoincrement())
@@ -43,4 +59,96 @@ model Transaction {
   amount     Float
   status     String   @default("pending") // pending, completed
   createdAt  DateTime @default(now())
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  products Product[]
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  categoryId  Int
+  name        String
+  offer       Boolean       @default(false)
+  price       Decimal       @db.Decimal(10,2)
+  image       String?
+  category    Category      @relation(fields: [categoryId], references: [id])
+  ingCategories IngCategory[]
+  orderItems  OrderItem[]
+  favorites Favorite[]
+}
+
+model IngCategory {
+  id        Int          @id @default(autoincrement())
+  productId Int
+  name      String
+  product   Product      @relation(fields: [productId], references: [id])
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id            Int       @id @default(autoincrement())
+  ingCategoryId Int
+  name          String
+  price         Decimal   @db.Decimal(10,2)
+  image         String?
+  ingCategory   IngCategory @relation(fields: [ingCategoryId], references: [id])
+  orderItems    OrderItemIngredient[]
+  favoriteIngredients FavoriteIngredient[]
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  status    String      @default("pending") // pending, preparing, delivered, cancelled
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  total     Decimal     @db.Decimal(10,2)
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id          Int        @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  quantity    Int        @default(1)
+  price       Decimal    @db.Decimal(10,2) // snapshot of product price
+  comment     String?    // <-- user comment about this product in the order
+  order       Order      @relation(fields: [orderId], references: [id])
+  product     Product    @relation(fields: [productId], references: [id])
+  ingredients OrderItemIngredient[]
+  favorites Favorite[]
+}
+
+model OrderItemIngredient {
+  id           Int        @id @default(autoincrement())
+  orderItemId  Int
+  ingredientId Int
+  price        Decimal    @db.Decimal(10,2) // snapshot of ingredient price
+  orderItem    OrderItem  @relation(fields: [orderItemId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+}
+
+model Favorite {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  orderItemId Int? // optional link to original order item snapshot
+  createdAt  DateTime   @default(now())
+
+  user       User       @relation(fields: [userId], references: [id])
+  product    Product    @relation(fields: [productId], references: [id])
+  orderItem  OrderItem? @relation(fields: [orderItemId], references: [id])
+  ingredients FavoriteIngredient[]
+}
+
+model FavoriteIngredient {
+  id          Int        @id @default(autoincrement())
+  favoriteId  Int
+  ingredientId Int
+  favorite    Favorite   @relation(fields: [favoriteId], references: [id])
+  ingredient  Ingredient @relation(fields: [ingredientId], references: [id])
 }

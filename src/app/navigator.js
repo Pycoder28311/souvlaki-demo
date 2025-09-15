@@ -103,7 +103,7 @@ export default function Navbar({scrolled = false}) {
                   <div className="flex items-center font-bold">
                     <FiShoppingCart className="mr-2" size={20} />
                   </div>
-                  Παράγγειλε
+                  Καλάθι
                 </button>
               </div>
             ) : (
@@ -128,13 +128,8 @@ export default function Navbar({scrolled = false}) {
             )}
           </div>
 
-          <div className="md:hidden flex items-center px-4 py-2 bg-white z-30 space-x-4">
-            {/* Button outside the mobile menu */}
-            <button className="flex items-center bg-gray-200 hover:bg-gray-400 text-gray-900 px-2 py-2 rounded-md font-bold">
-              <FiShoppingCart className="mr-2" size={20} />
-            </button>
-
-            {/* Mobile hamburger */}
+          {/* Mobile hamburger */}
+          <div className={'md:hidden'}>
             <button
               onClick={() => setMobileOpen((v) => !v)}
               className="relative w-8 h-8 flex items-center justify-center focus:outline-none"
@@ -195,6 +190,16 @@ export default function Navbar({scrolled = false}) {
           >
             Επικοινωνία
           </Link>
+        </div>
+        <div className="px-4 pb-4 space-y-2">
+          <button
+            className={`w-full flex items-center justify-center px-6 py-3 font-bold text-xl transition-all duration-300 transform hover:scale-105 ${
+              isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+            }`}
+          >
+            <FiShoppingCart className="mr-2" size={24} />
+            Καλάθι
+          </button>
         </div>
       </div>
     </nav>

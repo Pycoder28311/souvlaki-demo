@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import Image from 'next/image';
-import Navbar from './navigator';
 import Footer from './footer';
 import Link from "next/link";
 import homepage from "../../public/homepage.jpg";
@@ -157,9 +156,6 @@ export default function Home() {
         <meta name="description" content="Αυθεντικά ελληνικά σουβλάκια με παραδοσιακές γεύσεις" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      {/* Navigation */}
-      <Navbar />
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center">

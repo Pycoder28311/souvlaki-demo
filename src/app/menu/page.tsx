@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Head from 'next/head';
-import Navbar from '../navigator';
 import Footer from '../footer';
 import Link from "next/link";
 
@@ -90,8 +89,14 @@ export default function Menu() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Navigation */}
-      <Navbar scrolled={true}/>
+      <section className="bg-gray-900 py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl font-bold text-gray-100 mb-4">Menu</h1>
+          <p className="text-xl text-gray-100 max-w-3xl mx-auto">
+            Από το 1985, δημιουργούμε αυθεντικά ελληνικά σουβλάκια με πάθος και αγάπη για την παραδοσιακή γεύση
+          </p>
+        </div>
+      </section>
 
       {/* Menu Categories */}
       <section

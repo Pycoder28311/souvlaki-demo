@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Head from 'next/head';
-import Navbar from '../navigator';
 import Footer from '../footer';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,9 +16,6 @@ export default function About() {
         <meta name="description" content="Η ιστορία και η φιλοσοφία του σουβλατζίδικου μας" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      {/* Navigation */}
-      <Navbar />
 
       {/* About Header */}
       <section className="bg-gray-900 py-24">

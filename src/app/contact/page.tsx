@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import { useState } from 'react';
-import Navigator from '../navigator';
 import Footer from '../footer';
 
 export default function Contact() {
@@ -56,9 +55,6 @@ export default function Contact() {
         <meta name="description" content="Επικοινωνήστε με το Souvlaki Palace" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      {/* Navigation */}
-      <Navigator />
 
       {/* Hero Section */}
       <section className="relative bg-gray-700 text-white py-24">
