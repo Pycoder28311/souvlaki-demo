@@ -22,17 +22,34 @@ type Product = {
   ingCategories?: IngCategory[]; // lazy-loaded
 };
 
-type ModalProps = {
-  product: Product | null;
-  onClose: () => void;
-  addToCart: (product: Product, selectedIngredients: Ingredient[]) => void;
+type OrderItem = {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
 };
 
-export default function ProductModal({ product, onClose, addToCart }: ModalProps) {
+// types.ts or inside EditModal.tsx
+interface EditModalProps {
+  orderItem: OrderItem;
+  product: Product; 
+  defaultSelectedIngredients?: Ingredient[];
+  onClose: () => void;
+  editItem: (
+    orderItemToEdit: OrderItem,
+    selectedIngredients: Ingredient[],
+  ) => void;
+  changeQuantity: (newQuantity: number) => void;
+  quantity?: number;
+}
+
+export default function EditModal({ orderItem, product, defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
   const [loading, setLoading] = useState(false);
+  const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(
+    defaultSelectedIngredients
+  );
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
-  const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
-  const [quantity, setQuantity] = useState(1);
 
   const toggleIngredient = (ingredient: Ingredient) => {
     setSelectedIngredients((prev) =>
@@ -41,6 +58,8 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
         : [...prev, ingredient] // add if not selected
     );
   };
+
+  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
 
   useEffect(() => {
     if (!product) return;
@@ -64,8 +83,6 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
 
   if (!product) return null;
 
-  const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
@@ -86,31 +103,27 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
         {/* Loading state */}
         {loading && <p className="text-center py-6">Loading...</p>}
 
-        {!loading && fullProduct && (
+        {!loading && orderItem && (
           <>
-            {fullProduct.image && (
-              <img
-                src={fullProduct.image}
-                alt={fullProduct.name}
-                className="w-full h-64 object-cover rounded mb-4"
-              />
-            )}
 
-            <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
-            {fullProduct.offer && <p className="text-red-500 font-semibold mb-2">On Offer!</p>}
+            <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
 
             <div className="flex flex-col gap-4">
             {/* Quantity controls */}
             <div className="flex items-center gap-4">
                 <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                onClick={() =>
+                    changeQuantity(-1)
+                }
                 className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                 >
-                –
+                -
                 </button>
                 <span className="font-semibold text-lg">{quantity}</span>
                 <button
-                onClick={() => setQuantity((q) => q + 1)}
+                onClick={() =>
+                    changeQuantity(1)
+                }
                 className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                 +
@@ -120,23 +133,19 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
             {/* Add to cart button */}
             <button
                 onClick={() => {
-                if (product) {
-                    // Add product with chosen quantity
-                    for (let i = 0; i < quantity; i++) {
-                    addToCart(product, selectedIngredients);
-                    }
-                    setSelectedIngredients([]); // reset for next product
-                    setQuantity(1); // reset quantity
+                if (orderItem) {
+                    editItem(orderItem, selectedIngredients);
+                    setSelectedIngredients([]);
                     onClose(); // close modal
                 }
                 }}
                 className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
             >
-                Προσθήκη στο Καλάθι
+                Ενημέρωση
             </button>
             </div>
 
-            {fullProduct.ingCategories?.map((ingCat) => (
+            {fullProduct && fullProduct.ingCategories?.map((ingCat) => (
                 <div key={ingCat.id} className="mb-4">
                     <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
                     <div className="space-y-2">

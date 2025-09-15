@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import Footer from '../footer';
-import Link from "next/link";
+import EditModal from "./editModal";
 import ProductModal from "./productModal";
 
 type Ingredient = {
@@ -40,49 +40,81 @@ type OrderItem = {
   price: number;
   quantity: number;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
+  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
 export default function Menu({ categories }: { categories: Category[] }) {
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
+  const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, selectedIngredients: Ingredient[]) => {
     setOrderItems((prev) => {
-        // Check if product already exists in cart
-        const existing = prev.find((item) => item.productId === product.id);
-        if (existing) {
-        // Increase quantity if exists
+      // Check if product with same ingredients already exists
+      const existing = prev.find((item) => {
+        if (item.productId !== product.id) return false;
+
+        const itemIngredients = item.selectedIngredients || [];
+        if (itemIngredients.length !== selectedIngredients.length) return false;
+
+        // Check if both arrays have the same ingredient ids
+        return itemIngredients.every((ing) =>
+          selectedIngredients.some((sel) => sel.id === ing.id)
+        );
+      });
+
+      if (existing) {
+        // Increase quantity if exact product+ingredients exists
         return prev.map((item) =>
-            item.productId === product.id
+          item === existing
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
-        }
-        // Otherwise add new item
-        return [...prev, { productId: product.id, name: product.name, price: product.price, quantity: 1 }];
+      }
+
+      // Otherwise add new item
+      return [
+        ...prev,
+        {
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          selectedIngredients,
+        },
+      ];
     });
+
     setSelectedProduct(null); // close modal after adding
- };
+  };
 
-  // In your Menu component
-    const addIngredientToOrderItem = (productId: number, ingredient: Ingredient) => {
+  const editItem = (
+    orderItemToEdit: OrderItem,
+    newIngredients: Ingredient[],
+  ) => {
     setOrderItems((prev) =>
-        prev.map((item) => {
-        if (item.productId !== productId) return item;
-
-        const existingIngredients = item.selectedIngredients || [];
-        const updatedIngredients = existingIngredients.some((i) => i.id === ingredient.id)
-            ? existingIngredients.filter((i) => i.id !== ingredient.id) // remove
-            : [...existingIngredients, ingredient]; // add
-
-        return { ...item, selectedIngredients: updatedIngredients };
-        })
+      prev.map((item) =>
+        item === orderItemToEdit
+          ? {
+              ...item,
+              quantity: quantity,
+              selectedIngredients: newIngredients,
+            }
+          : item
+      )
     );
-    };
+
+    setSelectedProduct(null); // close modal after updating
+  };
+
+  const changeQuantity = (delta: number) => {
+    setQuantity((prev) => Math.max(1, prev + delta)); // min 1
+  };
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -220,30 +252,41 @@ export default function Menu({ categories }: { categories: Category[] }) {
             {orderItems.length === 0 ? (
                 <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
             ) : (
-            orderItems.map((item) => (
-                <div key={item.productId} className="border p-2 rounded flex flex-col gap-2">
-                <div className="flex justify-between items-center">
-                    <div>
-                    <h4 className="font-semibold">{item.name}</h4>
-                    <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
-                    </div>
-                </div>
+            orderItems.map((item) => {
+                // Build a unique key using productId + ingredient IDs
+                const ingredientKey = (item.selectedIngredients || [])
+                .map((ing) => ing.id)
+                .sort((a, b) => a - b)
+                .join('-');
 
-                {/* Render selected ingredients */}
-                {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                    <div className="ml-4 text-sm text-gray-700">
-                    <p>Ingredients:</p>
-                    <ul className="list-disc list-inside">
-                        {item.selectedIngredients.map((ing) => (
-                        <li key={ing.id}>
-                            {ing.name} 
-                        </li>
-                        ))}
-                    </ul>
+                const key = `${item.productId}-${ingredientKey || 'no-ingredients'}`;
+
+                return (
+                <div
+                  key={key}
+                  onClick={() => {
+                    setEditableOrderItem(item);
+                    setQuantity(item.quantity);
+                  }}// 👈 this will open the modal
+                  className="border p-2 rounded flex flex-col gap-2 cursor-pointer hover:bg-gray-100 transition"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-semibold">{item.name}</h4>
+                      <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
+
+                      {item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                        <ul className="text-xs text-gray-500 list-disc list-inside">
+                          {item.selectedIngredients.map((ing) => (
+                            <li key={ing.id}>{ing.name}</li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
-                )}
+                  </div>
                 </div>
-            ))
+                );
+            })
             )}
         </div>
 
@@ -275,9 +318,24 @@ export default function Menu({ categories }: { categories: Category[] }) {
             product={selectedProduct}
             onClose={() => setSelectedProduct(null)}
             addToCart={addToCart}
-            addIngredientToOrderItem={addIngredientToOrderItem}
         />
-        )}
+      )}
+
+      {editableOrderItem && (
+        <EditModal
+          orderItem={editableOrderItem}
+          product={
+            categories
+              .flatMap((cat) => cat.products) // flatten products from all categories
+              .find((p) => p.id === editableOrderItem.productId)!
+          }
+          defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
+          onClose={() => setEditableOrderItem(null)}
+          editItem={editItem}
+          changeQuantity={changeQuantity}
+          quantity={quantity}
+        />
+      )}
 
       {/* Footer */}
       <Footer />
