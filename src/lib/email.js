@@ -1,31 +1,39 @@
 import nodemailer from 'nodemailer';
 
 export const sendContactEmail = async ({ name, email, phone, subject, message }) => {
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER, // sender email
-      pass: process.env.EMAIL_PASS, // app password
-    },
-  });
-  console.log('Email transporter created',email,process.env.EMAIL_USER, process.env.EMAIL_PASS);
+  try {
+    // Use a proper SMTP transport (more reliable in production)
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,       // e.g., smtp.gmail.com, smtp.sendgrid.net
+      port: process.env.SMTP_PORT || 465, // 465 for SSL, 587 for TLS
+      secure: process.env.SMTP_SECURE === 'true', // true for 465, false for 587
+      auth: {
+        user: process.env.EMAIL_USER,   // sender email
+        pass: process.env.EMAIL_PASS,   // SMTP password or app password
+      },
+    });
 
-  const mailOptions = {
-    from: process.env.EMAIL_USER, // your email account (the sender)
-    to: email, // where you want to receive messages
-    subject: subject || '📩 New Contact Form Message',
-    text: `
-      You have received a new message from your website contact form:
+    const mailOptions = {
+      from: `"${name}" <${process.env.EMAIL_USER}>`,
+      to: "kopotitore@gmail.com", // your destination email
+      subject: subject || '📩 New Contact Form Message',
+      text: `
+        You have received a new message from your website contact form:
 
-      👤 Name: ${name}
-      📧 Email: ${email}
-      📞 Phone: ${phone || 'N/A'}
+        👤 Name: ${name}
+        📧 Email: ${email}
+        📞 Phone: ${phone || 'N/A'}
 
-      📝 Message:
-      ${message}
-    `,
-    replyTo: email, // so you can reply directly to the sender
-  };
+        📝 Message:
+        ${message}
+              `,
+      replyTo: email,
+    };
 
-  await transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to kopotitore@gmail.com`);
+  } catch (error) {
+    console.error('Error sending contact email:', error);
+    throw new Error('Email sending failed');
+  }
 };
