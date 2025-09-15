@@ -8,6 +8,7 @@ export const sendContactEmail = async ({ name, email, phone, subject, message })
       pass: process.env.EMAIL_PASS, // app password
     },
   });
+  console.log('Email transporter created',email,process.env.EMAIL_USER, process.env.EMAIL_PASS);
 
   const mailOptions = {
     from: process.env.EMAIL_USER, // your email account (the sender)
