@@ -4,6 +4,20 @@ import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import Footer from '../footer';
 import Link from "next/link";
+import ProductModal from "./productModal";
+
+type Ingredient = {
+  id: number;
+  name: string;
+  price: number;
+  image?: string;
+};
+
+type IngCategory = {
+  id: number;
+  name: string;
+  ingredients: Ingredient[];
+};
 
 type Product = {
   id: number;
@@ -11,6 +25,7 @@ type Product = {
   price: number;
   offer: boolean;
   image?: string;
+  ingCategories?: IngCategory[]; // lazy-loaded
 };
 
 type Category = {
@@ -19,11 +34,39 @@ type Category = {
   products: Product[];
 };
 
+type OrderItem = {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+};
+
+
 export default function Menu({ categories }: { categories: Category[] }) {
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
+
+  const addToCart = (product: Product) => {
+    setOrderItems((prev) => {
+        // Check if product already exists in cart
+        const existing = prev.find((item) => item.productId === product.id);
+        if (existing) {
+        // Increase quantity if exists
+        return prev.map((item) =>
+            item.productId === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+        }
+        // Otherwise add new item
+        return [...prev, { productId: product.id, name: product.name, price: product.price, quantity: 1 }];
+    });
+    setSelectedProduct(null); // close modal after adding
+ };
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -38,8 +81,7 @@ export default function Menu({ categories }: { categories: Category[] }) {
         behavior: "smooth",
         });
     }
-};
-
+  };
 
   // Scroll detection
   useEffect(() => {
@@ -72,131 +114,138 @@ export default function Menu({ categories }: { categories: Category[] }) {
         </div>
       </section>
 
-      {/* Menu Categories */}
-      <section
-        className={`sticky z-30 py-4 border-b transition-all duration-300 ${
-          isScrolled ? "bg-gray-50 shadow-md" : "bg-white"
-        } top-[45px] md:top-[55px]`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategoryClick(cat.id)}
-                className={`inline-block px-6 py-3 font-bold transition-all flex-shrink-0 ${
-                  activeCategory === cat.id
-                    ? "bg-gray-900 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto p-6 space-y-12">
-        {categories.map((category) => (
-            <section key={category.id} 
-            ref={(el) => {
-                categoryRefs.current[category.id] = el; // just assign, do NOT return anything
-            }}>
-            <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {category.products.map((product) => (
-                <div
-                    key={product.id}
-                    className="border p-4 rounded shadow hover:shadow-md transition"
-                >
-                    {product.image && (
-                    <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-40 object-cover rounded mb-2"
-                    />
-                    )}
-                    <h3 className="font-bold text-lg">{product.name}</h3>
-                    {product.offer && <p className="text-red-500 font-semibold">On Offer!</p>}
-                    <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>
+      <div className="flex gap-4">
+        {/* Main Content */}
+        <div
+            className={`transition-all duration-300 ${
+            isSidebarOpen ? "flex-1" : "flex-1"
+            }`}
+            style={{
+            // shrink main content if sidebar is open
+            marginRight: isSidebarOpen ? "16rem" : "0", // sidebar width = 64 = 16rem
+            }}
+        >
+            {/* Categories Buttons */}
+            <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
+                <div className="flex gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center">
+                    {categories.map((cat) => (
+                    <button
+                        key={cat.id}
+                        onClick={() => handleCategoryClick(cat.id)}
+                        className={`inline-block px-6 py-3 font-bold transition-all flex-shrink-0 ${
+                        activeCategory === cat.id
+                            ? "bg-gray-900 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                    >
+                        {cat.name}
+                    </button>
+                    ))}
                 </div>
-                ))}
-            </div>
             </section>
-        ))}
-        </div>
 
-      {/* Menu Items
-      <section 
-        className="py-24 bg-white"
-        style={{
-          backgroundImage: "url('/covertrue.jpg')",
-          backgroundAttachment: "fixed",
-        }} 
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {menuData[activeCategory as keyof typeof menuData].map((item) => (
-              <div
-                key={item.id}
-                className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg w-full max-w-sm mx-auto"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-gray-900">{item.name}</h3>
-                    <p className="text-gray-600 mt-1">{item.description}</p>
-                  </div>
-                  <span className="text-lg font-bold text-gray-900">{item.price}</span>
+            {/* Categories & Products */}
+            <div className="space-y-12 mt-6 p-6">
+            {categories.map((category) => (
+                <section
+                key={category.id}
+                ref={(el) => {
+                    categoryRefs.current[category.id] = el;
+                }}
+                >
+                <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {category.products.map((product) => (
+                        <div
+                            key={product.id}
+                            className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer"
+                            onClick={() => setSelectedProduct(product)} // open modal on click
+                        >
+                            {product.image && (
+                            <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-40 object-cover rounded mb-2"
+                            />
+                            )}
+                            <h3 className="font-bold text-lg">{product.name}</h3>
+                            {product.offer && (
+                            <p className="text-red-500 font-semibold">On Offer!</p>
+                            )}
+                            <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>
+                        </div>
+                    ))}
                 </div>
-                <div className="flex justify-center mt-4">
-                  <Link
-                    href="https://www.e-food.gr/"
-                    target="_blank" // ανοίγει σε νέα καρτέλα
-                    className="bg-gray-900 hover:bg-yellow-500 text-white hover:text-gray-900 px-4 py-2 font-bold transition-colors inline-block text-center"
-                  >
-                    Προσθήκη στο καλάθι
-                  </Link>
-                </div>
-              </div>
+                </section>
             ))}
-          </div>
+            </div>
         </div>
-      </section> */}
 
-      {/* Special Offers */}
-      <section id="special-offers" className="py-16 bg-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Ειδικές Προσφορές</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white border border-gray-200 p-8 transition-all duration-300 hover:shadow-lg">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 bg-yellow-500 flex items-center justify-center mr-4">
-                  <span className="text-white font-bold">-20%</span>
-                </div>
-                <h3 className="text-xl font-bold">Προσφορά Σαββάτου</h3>
-              </div>
-              <p className="text-gray-600 mb-4">
-                Κάθε Σάββατο απόγευμα, από 18:00 - 22:00, έκπτωση 20% σε όλα τα σουβλάκια.
-              </p>
-            </div>
-            
-            <div className="bg-white border border-gray-200 p-8 transition-all duration-300 hover:shadow-lg">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 bg-yellow-500 flex items-center justify-center mr-4">
-                  <span className="text-white font-bold">2+1</span>
-                </div>
-                <h3 className="text-xl font-bold">Δώρο για Ομάδες</h3>
-              </div>
-              <p className="text-gray-600 mb-4">
-                Για παραγγελίες άνω των 10 σουβλακιών, το 11ο δώρο!
-              </p>
-            </div>
-          </div>
+        <div
+        className={`w-64 bg-gray-100 p-4 border-l transition-all duration-300 ${
+            isSidebarOpen ? "translate-x-0" : "translate-x-full"
+        } fixed right-0 top-[55px] z-50`}
+        style={{ height: `calc(100vh - 55px)` }} // dynamic height
+        >
+        {/* Button aligned to the right */}
+        <div className="flex justify-end mb-4">
+            <button
+            className="px-4 py-2 bg-gray-900 text-white rounded"
+            onClick={() => setIsSidebarOpen(false)}
+            >
+            Close Sidebar
+            </button>
         </div>
-      </section>
+
+        <h3 className="font-bold text-lg mb-4">Καλάθι Παραγγελιών</h3>
+
+        {/* Order Items */}
+        <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
+            {orderItems.length === 0 ? (
+            <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
+            ) : (
+            orderItems.map((item) => (
+                <div key={item.productId} className="border p-2 rounded flex justify-between items-center">
+                <div>
+                    <h4 className="font-semibold">{item.name}</h4>
+                    <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
+                </div>
+                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                </div>
+            ))
+            )}
+        </div>
+
+        {/* Total and Checkout */}
+        {orderItems.length > 0 && (
+            <div className="mt-4 border-t pt-4">
+            <p className="font-bold mb-2">
+                Σύνολο: ${orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
+            </p>
+            <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+                Πλήρωμή
+            </button>
+            </div>
+        )}
+        </div>
+
+        {/* Open Sidebar Button */}
+        {!isSidebarOpen && (
+            <button
+            className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
+            onClick={() => setIsSidebarOpen(true)}
+            >
+            Open Sidebar
+            </button>
+        )}
+      </div>
+      {selectedProduct && (
+        <ProductModal
+            product={selectedProduct}
+            onClose={() => setSelectedProduct(null)}
+            addToCart={addToCart}
+        />
+        )}
 
       {/* Footer */}
       <Footer />
