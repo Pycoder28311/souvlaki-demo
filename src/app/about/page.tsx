@@ -1,10 +1,33 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Footer from '../footer';
 import Image from 'next/image';
 import Link from 'next/link';
+import OrderSidebar from "../cart";
+
+type Ingredient = {
+  id: number;
+  name: string;
+  price: number;
+  image?: string;
+};
+
+type IngCategory = {
+  id: number;
+  name: string;
+  ingredients: Ingredient[];
+};
+
+type OrderItem = {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
+  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+};
 
 export default function About() {
   const [activeTab, setActiveTab] = useState('history');

@@ -25,7 +25,7 @@ type Product = {
 type ModalProps = {
   product: Product | null;
   onClose: () => void;
-  addToCart: (product: Product, selectedIngredients: Ingredient[]) => void;
+  addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[]) => void;
 };
 
 export default function ProductModal({ product, onClose, addToCart }: ModalProps) {
@@ -42,18 +42,23 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
     );
   };
 
+  const [ingCategories, setIngCategories] = useState<IngCategory[]>([]);
+
   useEffect(() => {
     if (!product) return;
 
-    // Fetch product details including IngCategories and Ingredients
     const fetchProductDetails = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/products/${product.id}`); // create this API route
-        const data = await res.json();
+        const res = await fetch(`/api/products/${product.id}`);
+        const data: Product = await res.json();
+
         setFullProduct(data);
+
+        // ✅ directly store ingCategories in its own state
+        setIngCategories(data.ingCategories ?? []);
       } catch (err) {
-        console.error(err);
+        console.error("Failed to fetch product details:", err);
       } finally {
         setLoading(false);
       }
@@ -68,7 +73,7 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-60 flex items-center justify-center bg-black/50"
       onClick={onClose}
     >
       <div
@@ -123,7 +128,11 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
                 if (product) {
                     // Add product with chosen quantity
                     for (let i = 0; i < quantity; i++) {
-                    addToCart(product, selectedIngredients);
+                    addToCart(
+                      product,
+                      selectedIngredients,
+                      ingCategories ?? [] // ✅ fallback to empty array
+                    );
                     }
                     setSelectedIngredients([]); // reset for next product
                     setQuantity(1); // reset quantity

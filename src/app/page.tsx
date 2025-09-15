@@ -7,6 +7,8 @@ import Link from "next/link";
 import homepage from "../../public/homepage.jpg";
 import { useEffect, useRef, useState } from "react";
 import RedSquareCarousel from './carousel';
+import OrderSidebar from "./cart";
+import EditModal from './menu/editModal';
 
 export type User = {
   id: number;
@@ -14,6 +16,28 @@ export type User = {
   password: string;
   name: string;
   business: boolean;
+};
+
+type Ingredient = {
+  id: number;
+  name: string;
+  price: number;
+  image?: string;
+};
+
+type IngCategory = {
+  id: number;
+  name: string;
+  ingredients: Ingredient[];
+};
+
+type OrderItem = {
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
+  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
 export default function Home() {
@@ -35,6 +59,7 @@ export default function Home() {
 
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState<boolean[]>([false, false, false]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -59,6 +84,27 @@ export default function Home() {
       cardsRef.current.forEach((card) => card && observer.unobserve(card));
     };
   }, []);
+
+  const editItem = (
+    orderItemToEdit: OrderItem,
+    newIngredients: Ingredient[],
+  ) => {
+    setOrderItems((prev) =>
+      prev.map((item) =>
+        item === orderItemToEdit
+          ? {
+              ...item,
+              quantity: quantity,
+              selectedIngredients: newIngredients,
+            }
+          : item
+      )
+    );
+  };
+
+  const changeQuantity = (delta: number) => {
+    setQuantity((prev) => Math.max(1, prev + delta)); // min 1
+  };
 
   const cards = [
     {
@@ -115,6 +161,24 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
+    try {
+      const stored = localStorage.getItem("orderItems");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse orderItems from localStorage:", err);
+      return [];
+    }
+  });
+
+  // Save to localStorage whenever orderItems change
+  useEffect(() => {
+    localStorage.setItem("orderItems", JSON.stringify(orderItems));
+    
+  }, [orderItems]);
+  const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
+
   const handlePayment = async () => {
     setLoading(true);
     setError(null);
@@ -147,6 +211,17 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const removeItem = (item: OrderItem) => {
+    setOrderItems((prev) => {
+      const updated = prev.filter((itm) => itm !== item);
+
+      // Optional: immediately update localStorage (redundant if you already have the useEffect)
+      localStorage.setItem("orderItems", JSON.stringify(updated));
+
+      return updated;
+    });
   };
 
   return (
@@ -371,6 +446,36 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <OrderSidebar
+        orderItems={orderItems}
+        setEditableOrderItem={setEditableOrderItem}
+        setQuantity={setQuantity}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        removeItem={removeItem}
+      />
+
+      {/* Open Sidebar Button */}
+      {!isSidebarOpen && (
+          <button
+          className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
+          onClick={() => setIsSidebarOpen(true)}
+          >
+          Open Sidebar
+          </button>
+      )}
+
+      {editableOrderItem && (
+        <EditModal
+          orderItem={editableOrderItem}
+          defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
+          onClose={() => setEditableOrderItem(null)}
+          editItem={editItem}
+          changeQuantity={changeQuantity}
+          quantity={quantity}
+        />
+      )}
 
       {/* Footer */}
       <Footer />

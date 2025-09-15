@@ -5,6 +5,7 @@ import Head from 'next/head';
 import Footer from '../footer';
 import EditModal from "./editModal";
 import ProductModal from "./productModal";
+import OrderSidebar from "../cart";
 
 type Ingredient = {
   id: number;
@@ -49,11 +50,29 @@ export default function Menu({ categories }: { categories: Category[] }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
-  const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
+    try {
+      const stored = localStorage.getItem("orderItems");
+      return stored ? JSON.parse(stored) : [];
+    } catch (err) {
+      console.error("Failed to parse orderItems from localStorage:", err);
+      return [];
+    }
+  });
+
+  // Save to localStorage whenever orderItems change
+  useEffect(() => {
+    localStorage.setItem("orderItems", JSON.stringify(orderItems));
+    
+  }, [orderItems]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
 
-  const addToCart = (product: Product, selectedIngredients: Ingredient[]) => {
+  const addToCart = (
+    product: Product,
+    selectedIngredients: Ingredient[],
+    selectedIngCategories: IngCategory[] // 👈 add categories too
+  ) => {
     setOrderItems((prev) => {
       // Check if product with same ingredients already exists
       const existing = prev.find((item) => {
@@ -62,14 +81,12 @@ export default function Menu({ categories }: { categories: Category[] }) {
         const itemIngredients = item.selectedIngredients || [];
         if (itemIngredients.length !== selectedIngredients.length) return false;
 
-        // Check if both arrays have the same ingredient ids
         return itemIngredients.every((ing) =>
           selectedIngredients.some((sel) => sel.id === ing.id)
         );
       });
 
       if (existing) {
-        // Increase quantity if exact product+ingredients exists
         return prev.map((item) =>
           item === existing
             ? { ...item, quantity: item.quantity + 1 }
@@ -77,7 +94,7 @@ export default function Menu({ categories }: { categories: Category[] }) {
         );
       }
 
-      // Otherwise add new item
+      // Otherwise add new item with categories too
       return [
         ...prev,
         {
@@ -86,11 +103,12 @@ export default function Menu({ categories }: { categories: Category[] }) {
           price: product.price,
           quantity: 1,
           selectedIngredients,
+          selectedIngCategories, // 👈 store them here
         },
       ];
     });
 
-    setSelectedProduct(null); // close modal after adding
+    setSelectedProduct(null);
   };
 
   const editItem = (
@@ -144,6 +162,17 @@ export default function Menu({ categories }: { categories: Category[] }) {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const removeItem = (item: OrderItem) => {
+    setOrderItems((prev) => {
+      const updated = prev.filter((itm) => itm !== item);
+
+      // Optional: immediately update localStorage (redundant if you already have the useEffect)
+      localStorage.setItem("orderItems", JSON.stringify(updated));
+
+      return updated;
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -228,90 +257,6 @@ export default function Menu({ categories }: { categories: Category[] }) {
             ))}
             </div>
         </div>
-
-        <div
-        className={`w-64 bg-gray-100 p-4 border-l transition-all duration-300 ${
-            isSidebarOpen ? "translate-x-0" : "translate-x-full"
-        } fixed right-0 top-[55px] z-50`}
-        style={{ height: `calc(100vh - 55px)` }} // dynamic height
-        >
-        {/* Button aligned to the right */}
-        <div className="flex justify-end mb-4">
-            <button
-            className="px-4 py-2 bg-gray-900 text-white rounded"
-            onClick={() => setIsSidebarOpen(false)}
-            >
-            Close Sidebar
-            </button>
-        </div>
-
-        <h3 className="font-bold text-lg mb-4">Καλάθι Παραγγελιών</h3>
-
-        {/* Order Items */}
-        <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
-            {orderItems.length === 0 ? (
-                <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
-            ) : (
-            orderItems.map((item) => {
-                // Build a unique key using productId + ingredient IDs
-                const ingredientKey = (item.selectedIngredients || [])
-                .map((ing) => ing.id)
-                .sort((a, b) => a - b)
-                .join('-');
-
-                const key = `${item.productId}-${ingredientKey || 'no-ingredients'}`;
-
-                return (
-                <div
-                  key={key}
-                  onClick={() => {
-                    setEditableOrderItem(item);
-                    setQuantity(item.quantity);
-                  }}// 👈 this will open the modal
-                  className="border p-2 rounded flex flex-col gap-2 cursor-pointer hover:bg-gray-100 transition"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-semibold">{item.name}</h4>
-                      <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
-
-                      {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                        <ul className="text-xs text-gray-500 list-disc list-inside">
-                          {item.selectedIngredients.map((ing) => (
-                            <li key={ing.id}>{ing.name}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                );
-            })
-            )}
-        </div>
-
-        {/* Total and Checkout */}
-        {orderItems.length > 0 && (
-            <div className="mt-4 border-t pt-4">
-            <p className="font-bold mb-2">
-                Σύνολο: ${orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0).toFixed(2)}
-            </p>
-            <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
-                Πλήρωμή
-            </button>
-            </div>
-        )}
-        </div>
-
-        {/* Open Sidebar Button */}
-        {!isSidebarOpen && (
-            <button
-            className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
-            onClick={() => setIsSidebarOpen(true)}
-            >
-            Open Sidebar
-            </button>
-        )}
       </div>
       {selectedProduct && (
         <ProductModal
@@ -324,17 +269,31 @@ export default function Menu({ categories }: { categories: Category[] }) {
       {editableOrderItem && (
         <EditModal
           orderItem={editableOrderItem}
-          product={
-            categories
-              .flatMap((cat) => cat.products) // flatten products from all categories
-              .find((p) => p.id === editableOrderItem.productId)!
-          }
           defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
           onClose={() => setEditableOrderItem(null)}
           editItem={editItem}
           changeQuantity={changeQuantity}
           quantity={quantity}
         />
+      )}
+
+      <OrderSidebar
+        orderItems={orderItems}
+        setEditableOrderItem={setEditableOrderItem}
+        setQuantity={setQuantity}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        removeItem={removeItem}
+      />
+
+      {/* Open Sidebar Button */}
+      {!isSidebarOpen && (
+          <button
+          className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
+          onClick={() => setIsSidebarOpen(true)}
+          >
+          Open Sidebar
+          </button>
       )}
 
       {/* Footer */}

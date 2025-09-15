@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 type Ingredient = {
   id: number;
@@ -13,27 +13,18 @@ type IngCategory = {
   ingredients: Ingredient[];
 };
 
-type Product = {
-  id: number;
-  name: string;
-  price: number;
-  offer: boolean;
-  image?: string;
-  ingCategories?: IngCategory[]; // lazy-loaded
-};
-
 type OrderItem = {
   productId: number;
   name: string;
   price: number;
   quantity: number;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
+  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
 // types.ts or inside EditModal.tsx
 interface EditModalProps {
   orderItem: OrderItem;
-  product: Product; 
   defaultSelectedIngredients?: Ingredient[];
   onClose: () => void;
   editItem: (
@@ -44,12 +35,11 @@ interface EditModalProps {
   quantity?: number;
 }
 
-export default function EditModal({ orderItem, product, defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
+export default function EditModal({ orderItem,  defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
   const [loading, setLoading] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(
     defaultSelectedIngredients
   );
-  const [fullProduct, setFullProduct] = useState<Product | null>(null);
 
   const toggleIngredient = (ingredient: Ingredient) => {
     setSelectedIngredients((prev) =>
@@ -60,28 +50,6 @@ export default function EditModal({ orderItem, product, defaultSelectedIngredien
   };
 
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
-
-  useEffect(() => {
-    if (!product) return;
-
-    // Fetch product details including IngCategories and Ingredients
-    const fetchProductDetails = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/products/${product.id}`); // create this API route
-        const data = await res.json();
-        setFullProduct(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductDetails();
-  }, [product]);
-
-  if (!product) return null;
 
   return (
     <div
@@ -145,7 +113,7 @@ export default function EditModal({ orderItem, product, defaultSelectedIngredien
             </button>
             </div>
 
-            {fullProduct && fullProduct.ingCategories?.map((ingCat) => (
+            {orderItem && orderItem.selectedIngCategories?.map((ingCat) => (
                 <div key={ingCat.id} className="mb-4">
                     <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
                     <div className="space-y-2">
