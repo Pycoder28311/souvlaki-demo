@@ -39,8 +39,8 @@ type OrderItem = {
   name: string;
   price: number;
   quantity: number;
+  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
 };
-
 
 export default function Menu({ categories }: { categories: Category[] }) {
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
@@ -67,6 +67,22 @@ export default function Menu({ categories }: { categories: Category[] }) {
     });
     setSelectedProduct(null); // close modal after adding
  };
+
+  // In your Menu component
+    const addIngredientToOrderItem = (productId: number, ingredient: Ingredient) => {
+    setOrderItems((prev) =>
+        prev.map((item) => {
+        if (item.productId !== productId) return item;
+
+        const existingIngredients = item.selectedIngredients || [];
+        const updatedIngredients = existingIngredients.some((i) => i.id === ingredient.id)
+            ? existingIngredients.filter((i) => i.id !== ingredient.id) // remove
+            : [...existingIngredients, ingredient]; // add
+
+        return { ...item, selectedIngredients: updatedIngredients };
+        })
+    );
+    };
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -202,15 +218,30 @@ export default function Menu({ categories }: { categories: Category[] }) {
         {/* Order Items */}
         <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
             {orderItems.length === 0 ? (
-            <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
+                <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
             ) : (
             orderItems.map((item) => (
-                <div key={item.productId} className="border p-2 rounded flex justify-between items-center">
-                <div>
+                <div key={item.productId} className="border p-2 rounded flex flex-col gap-2">
+                <div className="flex justify-between items-center">
+                    <div>
                     <h4 className="font-semibold">{item.name}</h4>
                     <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
+                    </div>
                 </div>
-                <p className="font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+
+                {/* Render selected ingredients */}
+                {item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                    <div className="ml-4 text-sm text-gray-700">
+                    <p>Ingredients:</p>
+                    <ul className="list-disc list-inside">
+                        {item.selectedIngredients.map((ing) => (
+                        <li key={ing.id}>
+                            {ing.name} 
+                        </li>
+                        ))}
+                    </ul>
+                    </div>
+                )}
                 </div>
             ))
             )}
@@ -244,6 +275,7 @@ export default function Menu({ categories }: { categories: Category[] }) {
             product={selectedProduct}
             onClose={() => setSelectedProduct(null)}
             addToCart={addToCart}
+            addIngredientToOrderItem={addIngredientToOrderItem}
         />
         )}
 

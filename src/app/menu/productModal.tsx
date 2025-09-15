@@ -25,10 +25,11 @@ type Product = {
 type ModalProps = {
   product: Product | null;
   onClose: () => void;
-  addToCart: (p: Product) => void;
+  addToCart: (product: Product) => void;
+  addIngredientToOrderItem: (productId: number, ingredient: Ingredient) => void;
 };
 
-export default function ProductModal({ product, onClose, addToCart }: ModalProps) {
+export default function ProductModal({ product, onClose, addToCart, addIngredientToOrderItem }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
 
@@ -96,23 +97,32 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
               Προσθήκη στο Καλάθι
             </button>
 
-            {/* IngCategories and Ingredients */}
             {fullProduct.ingCategories?.map((ingCat) => (
-              <div key={ingCat.id} className="mb-4">
-                <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
-                <div className="space-y-2">
-                  {ingCat.ingredients.map((ing) => (
-                    <div key={ing.id} className="flex items-center gap-2 border p-2 rounded">
-                      {ing.image && (
-                        <img src={ing.image} alt={ing.name} className="w-10 h-10 object-cover rounded" />
-                      )}
-                      <div>
-                        <p className="font-semibold">{ing.name}</p>
-                      </div>
+                <div key={ingCat.id} className="mb-4">
+                    <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
+                    <div className="space-y-2">
+                    {ingCat.ingredients.map((ing) => (
+                        <label
+                        key={ing.id}
+                        className="flex items-center gap-2 border p-2 rounded cursor-pointer"
+                        >
+                        <input
+                            type="checkbox"
+                        />
+                        {ing.image && (
+                            <img
+                            src={ing.image}
+                            alt={ing.name}
+                            className="w-10 h-10 object-cover rounded"
+                            />
+                        )}
+                        <div>
+                            <p className="font-semibold">{ing.name}</p>
+                        </div>
+                        </label>
+                    ))}
                     </div>
-                  ))}
                 </div>
-              </div>
             ))}
           </>
         )}
