@@ -1,5 +1,4 @@
 // src/app/api/send-email/route.ts
-import { Email } from '../../email/EmailComposition';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import Mailgen from 'mailgen';
@@ -27,20 +26,35 @@ export async function POST(request: Request) {
     const body = await request.json();
     console.log("Request body:", body);
 
-    // Generate HTML email using Mailgen
-    console.log("Generating email with Mailgen...");
-    const email = Email(body.name);
-    console.log("Email object:");
+    const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password/${body.resetToken}`;
+    console.log("Reset URL:", resetUrl);
 
-    const emailBody = mailGenerator.generate(email.styledEmail);
+    console.log("Generating email with Mailgen...");
+    const emailContent = {
+      body: {
+        name: body.name || body.email.split('@')[0],
+        intro: 'You requested a password reset.',
+        action: {
+          instructions: 'Click the button below to reset your password:',
+          button: {
+            color: '#22BC66',
+            text: 'Reset Password',
+            link: resetUrl,
+          },
+        },
+        outro: 'If you did not request this, please ignore this email.',
+      },
+    };
+
+    const emailBody = mailGenerator.generate(emailContent);
     console.log("Email HTML generated.");
 
     // Prepare the message
     console.log("Preparing to send email via Resend...");
     const message = {
-      from: 'ScanA Team <kopotitore@souvlaki.info>', // must be a verified domain/email in Resend
+      from: 'ScanA Team <kopotitore@souvlaki.info>', // verified domain/email
       to: body.email,
-      subject: 'Using Resend with Next.js',
+      subject: 'Password Reset Request',
       html: emailBody,
     };
     console.log("Message prepared:", message);
@@ -57,5 +71,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }
-
 

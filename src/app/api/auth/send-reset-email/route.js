@@ -1,7 +1,9 @@
 // src/app/api/auth/reset-password/route.js
+import { NextResponse } from 'next/server';
 
 import { prisma } from '../../../../lib/prisma';  // Adjust according to your setup
-import { sendPasswordResetEmail } from '../../../../lib/resetEmail'; // Adjust with your email utility
+//import { sendPasswordResetEmail } from '../../../../lib/resetEmail'; // Adjust with your email utility
+import { sendPasswordResetEmail } from '../../../../lib/send-rese-email';
 
 // Handle POST requests (for sending reset email)
 export async function POST(req) {
@@ -33,7 +35,12 @@ export async function POST(req) {
     });
     console.log('Password reset token saved to database');
 
-    await sendPasswordResetEmail(email, resetToken); 
+    await sendPasswordResetEmail({
+      email,
+      name: user.name, // or undefined if you don't have it
+      resetToken,
+    });
+
     console.log('Password reset email sent to:', email);
 
     return new Response(
@@ -42,9 +49,6 @@ export async function POST(req) {
     );
   } catch (error) {
     console.error(error);
-    return new Response(
-      JSON.stringify({ message: 'An unexpected error occurred' }),
-      { status: 500 }
-    );
+    return NextResponse.json({ message: 'Email is required' }, { status: 400 });
   }
 }
