@@ -51,6 +51,7 @@ export default function Menu({ categories }: { categories: Category[] }) {
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
+    if (typeof window === "undefined") return []; // server
     try {
       const stored = localStorage.getItem("orderItems");
       return stored ? JSON.parse(stored) : [];
@@ -63,7 +64,6 @@ export default function Menu({ categories }: { categories: Category[] }) {
   // Save to localStorage whenever orderItems change
   useEffect(() => {
     localStorage.setItem("orderItems", JSON.stringify(orderItems));
-    
   }, [orderItems]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
@@ -266,17 +266,6 @@ export default function Menu({ categories }: { categories: Category[] }) {
         />
       )}
 
-      {editableOrderItem && (
-        <EditModal
-          orderItem={editableOrderItem}
-          defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
-          onClose={() => setEditableOrderItem(null)}
-          editItem={editItem}
-          changeQuantity={changeQuantity}
-          quantity={quantity}
-        />
-      )}
-
       <OrderSidebar
         orderItems={orderItems}
         setEditableOrderItem={setEditableOrderItem}
@@ -294,6 +283,17 @@ export default function Menu({ categories }: { categories: Category[] }) {
           >
           Open Sidebar
           </button>
+      )}
+
+      {editableOrderItem && (
+        <EditModal
+          orderItem={editableOrderItem}
+          defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
+          onClose={() => setEditableOrderItem(null)}
+          editItem={editItem}
+          changeQuantity={changeQuantity}
+          quantity={quantity}
+        />
       )}
 
       {/* Footer */}

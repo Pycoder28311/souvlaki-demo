@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 
 import { prisma } from '../../../../lib/prisma';  // Adjust according to your setup
 //import { sendPasswordResetEmail } from '../../../../lib/resetEmail'; // Adjust with your email utility
-import { sendPasswordResetEmail } from '../../../../lib/send-rese-email';
+import { sendPasswordResetEmail } from '../../../../lib/send-reset-email';
 
 // Handle POST requests (for sending reset email)
 export async function POST(req) {
@@ -33,15 +33,12 @@ export async function POST(req) {
     await prisma.passwordReset.create({
       data: { userId: user.id, token: resetToken },
     });
-    console.log('Password reset token saved to database');
 
     await sendPasswordResetEmail({
       email,
       name: user.name, // or undefined if you don't have it
       resetToken,
     });
-
-    console.log('Password reset email sent to:', email);
 
     return new Response(
       JSON.stringify({ message: 'Password reset email sent' }),

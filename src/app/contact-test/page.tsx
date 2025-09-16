@@ -36,7 +36,6 @@ export default function Home() {
           setLoading(false);
           setEmail('');
           setName('');
-          console.log(data);
       });
 
       

@@ -20,7 +20,6 @@ export default async function handler(req, res) {
       });
 
       const data = await response.json();
-      console.log(data)
       res.status(response.status).json(data);
     } catch (error) {
       console.error(error);

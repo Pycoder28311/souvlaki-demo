@@ -35,7 +35,7 @@ export default function ResetPassword() {
         <h1 className={styles.title}>Reset Password</h1>
         
         {message && (
-          <div className={`${styles.message} ${message.includes('success') ? styles.success : styles.error}`}>
+          <div className={`${styles.message}`}>
             {message}
           </div>
         )}

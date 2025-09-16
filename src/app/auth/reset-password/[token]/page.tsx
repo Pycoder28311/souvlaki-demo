@@ -73,59 +73,87 @@ const ResetPassword = () => {
   }
 
   return (
-    <div className="reset-password-container">
-      <h2>Reset Password</h2>
-      {message && <p>{message}</p>}
-      <form onSubmit={handleResetPassword}>
-        <div>
-          <label htmlFor="newPassword">New Password</label>
-          <div className="password-input-container">
-            <input
-              type={showNewPassword ? 'text' : 'password'} // Toggle between 'text' and 'password'
-              id="newPassword"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowNewPassword(!showNewPassword)} // Toggle password visibility
-            >
-              {showNewPassword ? 'Hide' : 'Show'}
-            </button>
-          </div>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+      <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8 space-y-6">
+        <h2 className="text-2xl font-bold text-gray-800 text-center">Reset Password</h2>
 
-        <div>
-          <label htmlFor="confirmPassword">Confirm Password</label>
-          <div className="password-input-container">
-            <input
-              type={showConfirmPassword ? 'text' : 'password'} // Toggle between 'text' and 'password'
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)} // Toggle password visibility
-            >
-              {showConfirmPassword ? 'Hide' : 'Show'}
-            </button>
-          </div>
-        </div>
-        
-        {!emailSent && !message.includes('Password successfully reset') && (
-          <div>
-            <p>If you did not receive the reset email, you can click Reset Password button again.</p>
-          </div>
+        {message && (
+          <p className="text-center text-green-600 font-medium">{message}</p>
         )}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Resetting...' : 'Reset Password'}
-        </button>
-        {error && <div style={{ color: "red" }}>{error}</div>}
-      </form>
+
+        <form onSubmit={handleResetPassword} className="space-y-5">
+          {/* New Password */}
+          <div>
+            <label htmlFor="newPassword" className="block text-gray-700 font-medium mb-1">
+              New Password
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                className="flex-1 px-4 py-2 focus:outline-none"
+                placeholder="Enter new password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
+              >
+                {showNewPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirm Password */}
+          <div>
+            <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">
+              Confirm Password
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="flex-1 px-4 py-2 focus:outline-none"
+                placeholder="Confirm new password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
+              >
+                {showConfirmPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </div>
+
+          {/* Info message */}
+          {!emailSent && !message.includes('Password successfully reset') && (
+            <div className="text-sm text-gray-500">
+              If you did not receive the reset email, you can click the Reset Password button again.
+            </div>
+          )}
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2 rounded-lg transition-colors duration-200"
+          >
+            {loading ? 'Resetting...' : 'Reset Password'}
+          </button>
+
+          {/* Error message */}
+          {error && <div className="text-red-600 font-medium text-center">{error}</div>}
+        </form>
+      </div>
     </div>
+
   );
 };
 

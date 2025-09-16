@@ -163,6 +163,7 @@ export default function Home() {
 
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
+    if (typeof window === "undefined") return []; // server
     try {
       const stored = localStorage.getItem("orderItems");
       return stored ? JSON.parse(stored) : [];
@@ -194,7 +195,6 @@ export default function Home() {
       });
 
       const data = await res.json();
-      console.log(data, data.PaymentURL);
 
       if (data.OrderCode) {
         // Αν είσαι σε sandbox

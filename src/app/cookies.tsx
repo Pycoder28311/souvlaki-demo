@@ -23,7 +23,6 @@ export default function CookieConsent() {
         body: JSON.stringify({ accepted: true }),
     });
     const data = await res.json();
-    console.log('Server response:', data);
     setShowBanner(false);
     };
 
