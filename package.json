@@ -13,17 +13,20 @@
     "@prisma/client": "^6.2.1",
     "@sendgrid/mail": "^8.1.5",
     "bcryptjs": "^3.0.2",
+    "mailgen": "^2.0.29",
     "next": "15.5.3",
     "next-auth": "^4.24.11",
     "nodemailer": "^6.10.1",
     "prisma": "^6.2.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "resend": "^6.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/mailgen": "^2.0.7",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.1",
     "@types/react": "^19",
