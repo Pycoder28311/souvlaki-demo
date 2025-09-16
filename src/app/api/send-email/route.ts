@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     // Generate HTML email using Mailgen
     console.log("Generating email with Mailgen...");
     const email = Email(body.name);
-    console.log("Email object:", email);
+    console.log("Email object:");
 
     const emailBody = mailGenerator.generate(email.styledEmail);
     console.log("Email HTML generated.");
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Prepare the message
     console.log("Preparing to send email via Resend...");
     const message = {
-      from: 'ScanA Team <kopotitore@gmail.com>', // must be a verified domain/email in Resend
+      from: 'ScanA Team <kopotitore@souvlaki.info>', // must be a verified domain/email in Resend
       to: body.email,
       subject: 'Using Resend with Next.js',
       html: emailBody,
