@@ -1,10 +1,25 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import { useState } from 'react';
 
 export default function ErrorPage() {
   const router = useRouter();
-  
+  const { error } = useParams() ?? {};
+
+  // Default message if error is undefined or unknown
+  let message = "There was an issue with your authentication. Please try again.";
+
+  if (error === "ExistingUser") {
+    message = "An account with this email already exists. Please use your original sign-in method.";
+  } else if (error === "OAuthCreateAccount") {
+    message = "We couldn't create an account for you. Please try again.";
+  } else if (error === "OAuthCallback") {
+    message = "Authentication failed during the OAuth process. Please try again.";
+  }
+
+  const [hover, setHover] = useState(false);
+
   return (
     <div style={{
       display: 'flex',
@@ -38,13 +53,15 @@ export default function ErrorPage() {
           marginBottom: '32px',
           lineHeight: '1.5'
         }}>
-          There was an issue with your authentication. Please try again.
+          {message}
         </p>
         
         <button 
-          onClick={() => router.push('/auth/signin')}
+          onClick={() => router.replace('/auth/signin')} // replace prevents back button issues
+          onMouseEnter={() => setHover(true)}
+          onMouseLeave={() => setHover(false)}
           style={{
-            backgroundColor: '#dc3545',
+            backgroundColor: hover ? '#bb2d3b' : '#dc3545',
             color: 'white',
             border: 'none',
             padding: '12px 24px',
@@ -58,8 +75,6 @@ export default function ErrorPage() {
             margin: '0 auto',
             display: 'block'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#bb2d3b'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#dc3545'}
         >
           Go to Sign In
         </button>

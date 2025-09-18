@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Image from 'next/image';
 
 type Ingredient = {
   id: number;
@@ -36,7 +37,7 @@ interface EditModalProps {
 }
 
 export default function EditModal({ orderItem,  defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
-  const [loading, setLoading] = useState(false);
+  
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(
     defaultSelectedIngredients
   );
@@ -68,10 +69,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
           ×
         </button>
 
-        {/* Loading state */}
-        {loading && <p className="text-center py-6">Loading...</p>}
-
-        {!loading && orderItem && (
+        { orderItem && (
           <>
 
             <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
@@ -128,10 +126,12 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                         onChange={() => toggleIngredient(ing)}
                         />
                         {ing.image && (
-                            <img
-                            src={ing.image}
-                            alt={ing.name}
-                            className="w-10 h-10 object-cover rounded"
+                            <Image
+                              src={ing.image}           // URL of the image
+                              alt={ing.name}            // alt text
+                              width={40}                // width in pixels
+                              height={40}               // height in pixels
+                              className="object-cover rounded"
                             />
                         )}
                         <div>

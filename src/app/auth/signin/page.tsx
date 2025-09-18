@@ -27,6 +27,13 @@ export default function SignIn() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Sign In</h1>
+        <button
+          onClick={() =>
+            signIn("google", { callbackUrl: "/" }) // ← redirect to homepage
+          }
+        >
+          Sign in with Google
+        </button>
         
         <form onSubmit={handleLogin} className={styles.form}>
           <div className={styles.inputGroup}>

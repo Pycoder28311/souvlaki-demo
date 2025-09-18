@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 type Ingredient = {
   id: number;
@@ -94,10 +95,12 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
         {!loading && fullProduct && (
           <>
             {fullProduct.image && (
-              <img
-                src={fullProduct.image}
-                alt={fullProduct.name}
-                className="w-full h-64 object-cover rounded mb-4"
+              <Image
+                src={fullProduct.image}           // URL of the image
+                alt={fullProduct.name}            // alt text
+                width={40}                // width in pixels
+                height={40}               // height in pixels
+                className="object-cover rounded"
               />
             )}
 
@@ -160,10 +163,12 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
                         onChange={() => toggleIngredient(ing)}
                         />
                         {ing.image && (
-                            <img
-                            src={ing.image}
-                            alt={ing.name}
-                            className="w-10 h-10 object-cover rounded"
+                            <Image
+                              src={ing.image}           // URL of the image
+                              alt={ing.name}            // alt text
+                              width={40}                // width in pixels
+                              height={40}               // height in pixels
+                              className="object-cover rounded"
                             />
                         )}
                         <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Footer from '../footer';
 import Image from 'next/image';
@@ -33,7 +33,6 @@ type OrderItem = {
 export default function About() {
   const [activeTab, setActiveTab] = useState('history');
 
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {

@@ -32,17 +32,11 @@ export default function Home() {
           }
       })
       .then(res => res.json())
-      .then(data => {
-          setLoading(false);
-          setEmail('');
-          setName('');
-      });
-
-      
   }
+
   return (
    <React.Fragment> 
-        <Form name={name} email={email} isLoading={loading} nameChange={handleNameChange} emailChange={handleEmailChange} onsubmit={onFormSubmitted}/>  
+      <Form name={name} email={email} isLoading={loading} nameChange={handleNameChange} emailChange={handleEmailChange} onsubmit={onFormSubmitted}/>  
    </React.Fragment>
   );
 }

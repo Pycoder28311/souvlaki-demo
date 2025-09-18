@@ -6,6 +6,7 @@ import Footer from '../footer';
 import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
+import Image from "next/image";
 
 type Ingredient = {
   id: number;
@@ -46,7 +47,6 @@ type OrderItem = {
 
 export default function Menu({ categories }: { categories: Category[] }) {
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
@@ -149,20 +149,6 @@ export default function Menu({ categories }: { categories: Category[] }) {
     }
   };
 
-  // Scroll detection
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const removeItem = (item: OrderItem) => {
     setOrderItems((prev) => {
       const updated = prev.filter((itm) => itm !== item);
@@ -239,10 +225,12 @@ export default function Menu({ categories }: { categories: Category[] }) {
                             onClick={() => setSelectedProduct(product)} // open modal on click
                         >
                             {product.image && (
-                            <img
-                                src={product.image}
-                                alt={product.name}
-                                className="w-full h-40 object-cover rounded mb-2"
+                            <Image
+                              src={product.image}           // URL of the image
+                              alt={product.name}            // alt text
+                              width={40}                // width in pixels
+                              height={40}               // height in pixels
+                              className="object-cover rounded"
                             />
                             )}
                             <h3 className="font-bold text-lg">{product.name}</h3>

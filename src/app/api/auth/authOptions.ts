@@ -1,11 +1,13 @@
-import { AuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "../../../lib/prisma";
-import bcrypt from "bcryptjs";
+import { AuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
+import { PrismaAdapter } from "@next-auth/prisma-adapter"
+import { prisma } from "../../../lib/prisma"
+import bcrypt from "bcryptjs"
 
 export const authOptions: AuthOptions = {
   providers: [
+    // Keep your credentials provider
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -15,17 +17,15 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         const user = await prisma.user.findUnique({
           where: { email: credentials?.email },
-        });
+        })
 
-        if (user) {
-          // Compare the entered password with the hashed password
+        if (user?.password) {
           const isPasswordValid = await bcrypt.compare(
             credentials?.password || "",
             user.password
           );
 
           if (isPasswordValid) {
-            // Return the user object if authentication is successful
             return {
               id: user.id.toString(),
               email: user.email,
@@ -33,19 +33,43 @@ export const authOptions: AuthOptions = {
             };
           }
         }
+
+        // If password is null or invalid, return null
         return null;
       },
     }),
+
+    // Add Google provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
   ],
+
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
   },
   pages: {
-    signIn: "/auth/signin", // Custom sign-in page
-    signOut: "/auth/signout", // Custom sign-out page
-    error: "/auth/error", // Custom error page
+    signIn: "/auth/signin",
+    signOut: "/auth/signout",
+    error: "/auth/error",
   },
   secret: process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET,
   debug: true,
-};
+  callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email! },
+          include: { accounts: true },
+        });
+
+        if (existingUser && !existingUser.accounts.some(a => a.provider === "google")) {
+          return `/auth/error/ExistingUser`;
+        }
+      }
+      return true;
+    },
+  }
+}

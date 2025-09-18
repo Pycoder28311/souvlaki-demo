@@ -78,12 +78,14 @@ export default function Home() {
       { threshold: 0.2 } // trigger when 20% visible
     );
 
-    cardsRef.current.forEach((card) => card && observer.observe(card));
+    // Capture the current refs in a local variable
+    const currentCards = cardsRef.current;
+    currentCards.forEach((card) => card && observer.observe(card));
 
     return () => {
-      cardsRef.current.forEach((card) => card && observer.unobserve(card));
+      currentCards.forEach((card) => card && observer.unobserve(card));
     };
-  }, []);
+  }, []); // empty dependency array is fine
 
   const editItem = (
     orderItemToEdit: OrderItem,
@@ -176,7 +178,6 @@ export default function Home() {
   // Save to localStorage whenever orderItems change
   useEffect(() => {
     localStorage.setItem("orderItems", JSON.stringify(orderItems));
-    
   }, [orderItems]);
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
 
