@@ -24,6 +24,7 @@ export default function CookieConsent() {
     });
     const data = await res.json();
     setShowBanner(false);
+    console.log(data)
     };
 
   if (!showBanner) return null;
