@@ -46,6 +46,7 @@ export default function UploadPage() {
   return (
     <div className="p-6 max-w-lg mx-auto">
       <h1 className="text-xl font-bold mb-4">Upload an Image</h1>
+
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="file"
@@ -54,18 +55,6 @@ export default function UploadPage() {
           className="block w-full border p-2 rounded"
         />
 
-        {preview && (
-          <div className="mt-4">
-            <p className="text-sm mb-1">Preview:</p>
-            <Image
-              src={preview}
-              alt="preview"
-              fill
-              className="rounded shadow object-contain" // or object-cover if you prefer cropping
-            />
-          </div>
-        )}
-
         <button
           type="submit"
           disabled={uploading || !file}
@@ -73,6 +62,18 @@ export default function UploadPage() {
         >
           {uploading ? "Uploading..." : "Upload"}
         </button>
+
+        {/* Preview below button */}
+        {preview && (
+          <div className="mt-4 w-32 h-32 relative mx-auto">
+            <Image
+              src={preview}
+              alt="preview"
+              fill
+              className="rounded shadow object-contain"
+            />
+          </div>
+        )}
       </form>
 
       {message && <p className="mt-4">{message}</p>}
