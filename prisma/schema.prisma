@@ -55,6 +55,7 @@ model User {
   image        String?
   emailVerified DateTime?
   business     Boolean   @default(false)
+  address      String?
 
   orders       Order[]
   passwordResets PasswordReset[]

@@ -40,6 +40,7 @@ type User = {
   email: string;
   image?: string;
   business: boolean;
+  address?: string;
 };
 
 export default function OrderSidebar({
@@ -53,6 +54,7 @@ export default function OrderSidebar({
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
@@ -117,10 +119,11 @@ export default function OrderSidebar({
   }
 
   return (
-    <div
-      className={`w-64 bg-gray-100 p-4 border-l transition-all duration-300 ${
-        isSidebarOpen ? "translate-x-0" : "translate-x-full"
-      } fixed right-0 top-[55px] z-50`}
+    
+   <div
+      className={`w-full md:w-64 bg-gray-100 p-4 border-l transition-all duration-300 
+        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"} 
+        fixed right-0 top-[55px] z-50`}
       style={{ height: `calc(100vh - 55px)` }} // dynamic height
     >
       {/* Button aligned to the right */}
@@ -191,11 +194,40 @@ export default function OrderSidebar({
         <div className="mt-4 border-t pt-4">
           <p className="font-bold mb-2">Σύνολο: ${total.toFixed(2)}</p>
           <button
-            onClick={handlePayment}
+            onClick={() => setShowPaymentModal(true)}
             className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition mt-4"
           >
             Πλήρωμή
           </button>
+        </div>
+      )}
+
+      {showPaymentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex justify-center items-center h-full">
+          <div className="bg-white p-6 rounded shadow-lg w-96 max-h-full overflow-y-auto">
+            <h2 className="text-xl font-bold mb-4">Confirm Payment</h2>
+            <p className="mb-2">{user?.address}</p>
+            <ul className="mb-4">
+              {orderItems.map(item => (
+                <li key={item.productId}>
+                  {item.quantity} x {item.name} - €{item.price}
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 font-bold">Total: €{total}</p>
+            <button
+              className="mt-4 bg-green-500 px-4 py-2 rounded w-full"
+              onClick={handlePayment}
+            >
+              Confirm Payment
+            </button>
+            <button
+              className="mt-2 bg-gray-300 px-4 py-2 rounded w-full"
+              onClick={() => setShowPaymentModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

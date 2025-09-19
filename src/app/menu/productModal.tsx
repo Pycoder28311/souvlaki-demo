@@ -68,6 +68,22 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
     fetchProductDetails();
   }, [product]);
 
+  useEffect(() => {
+      document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+      // Trigger animation on next tick
+      const timer = setTimeout(() => setAnimate(true), 10);
+      return () => clearTimeout(timer);
+  }, []);
+
   if (!product) return null;
 
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
@@ -78,12 +94,19 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-lg max-w-md w-full relative max-h-[90vh] overflow-y-auto"
+       className={`
+          bg-white 
+          w-full h-full p-6 relative overflow-y-auto
+          sm:w-auto sm:h-auto sm:max-w-md sm:max-h-[90vh] sm:rounded-lg
+          transform transition-transform duration-300
+          ${animate ? "translate-y-0" : "translate-y-full"}
+          sm:translate-y-0 sm:transition-none
+        `}
         onClick={handleContentClick}
       >
         {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-gray-700 font-bold"
+          className="absolute top-2 right-2 text-gray-700 font-bold text-3xl p-2"
           onClick={onClose}
         >
           ×

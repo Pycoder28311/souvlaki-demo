@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import "./navbar.css";
 import { FiShoppingCart } from "react-icons/fi";
+import Image from "next/image";
 
 export default function Navbar({scrolled = false}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
@@ -74,7 +75,7 @@ export default function Navbar({scrolled = false}) {
             </span>
           </Link>
 
-          <div className="flex-1 flex justify-center hidden md:flex space-x-8 ml-40">
+          <div className="flex-1 flex justify-center hidden md:flex space-x-8">
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>
@@ -92,7 +93,7 @@ export default function Navbar({scrolled = false}) {
           {/* Desktop links */}
           <div className="hidden md:flex items-center space-x-8">
             {user ? (
-              <div className="flex space-x-4">
+              <div className="flex flex-col space-y-1">
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
@@ -124,29 +125,54 @@ export default function Navbar({scrolled = false}) {
             )}
           </div>
 
-          {/* Mobile hamburger */}
-          <div className={'md:hidden'}>
-            <button
-              onClick={() => setMobileOpen((v) => !v)}
-              className="relative w-8 h-8 flex items-center justify-center focus:outline-none"
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
-            >
-              {/* Top bar */}
-              <span
-                className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
-                  ${mobileOpen ? 'rotate-45 -translate-x-1/2 -translate-y-0' : '-translate-x-1/2 -translate-y-2.5'}`}
-              />
-              {/* Middle bar */}
-              <span
-                className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
-                  ${mobileOpen ? 'opacity-0 -translate-x-1/2' : '-translate-x-1/2 translate-y-0'}`}
-              />
-              {/* Bottom bar */}
-              <span
-                className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
-                  ${mobileOpen ? '-rotate-45 -translate-x-1/2 -translate-y-0' : '-translate-x-1/2 translate-y-2.5'}`}
-              />
-            </button>
+          <div className="md:hidden flex items-center justify-end space-x-2">
+            {/* Mobile profile icon */}
+            <div>
+              <button
+                onClick={() => setSidebarOpen((v) => !v)}
+                className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 focus:outline-none"
+                aria-label={sidebarOpen ? "Close profile sidebar" : "Open profile sidebar"}
+              >
+                {user?.image ? (
+                  <Image
+                    src={user.image || "/default-profile.png"} // fallback if no image
+                    alt="Profile"
+                    layout="fill" // fills the parent container
+                    objectFit="cover" // same as object-cover
+                    className="rounded-full" // optional, make it circular
+                  />
+                ) : (
+                  <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold">
+                    {user?.name?.charAt(0).toUpperCase() || "U"}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            {/* Mobile hamburger */}
+            <div>
+              <button
+                onClick={() => setMobileOpen((v) => !v)}
+                className="relative w-8 h-8 flex items-center justify-center focus:outline-none"
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              >
+                {/* Top bar */}
+                <span
+                  className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
+                    ${mobileOpen ? 'rotate-45 -translate-x-1/2 -translate-y-0' : '-translate-x-1/2 -translate-y-2.5'}`}
+                />
+                {/* Middle bar */}
+                <span
+                  className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
+                    ${mobileOpen ? 'opacity-0 -translate-x-1/2' : '-translate-x-1/2 translate-y-0'}`}
+                />
+                {/* Bottom bar */}
+                <span
+                  className={`absolute left-1/2 top-1/2 w-8 h-0.5 bg-gray-900 transform transition duration-300 origin-center
+                    ${mobileOpen ? '-rotate-45 -translate-x-1/2 -translate-y-0' : '-translate-x-1/2 translate-y-2.5'}`}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -154,7 +180,7 @@ export default function Navbar({scrolled = false}) {
       {/* Mobile Navigation */}
       <div
         className={`md:hidden fixed top-0 left-0 w-full bg-white z-20 transform transition-transform duration-300 ease-in-out ${
-          mobileOpen ? "translate-y-10" : "-translate-y-full"
+          mobileOpen ? "translate-y-13" : "-translate-y-full"
         }`}
       >
         <div className="px-2 pt-10 pb-6 space-y-4 sm:px-3">
@@ -209,9 +235,9 @@ export default function Navbar({scrolled = false}) {
 
       {/* Sidebar from the right */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300
+          top-[50px] md:top-0
+          ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
       >
         <div className="p-6">
           <h2 className="text-xl font-bold mb-4">{user?.name}</h2>
@@ -219,6 +245,11 @@ export default function Navbar({scrolled = false}) {
             <li>
               <Link href="/profile" className="hover:text-yellow-600">Προφίλ</Link>
             </li>
+            {user && user.address && (
+              <p className="text-sm text-gray-600 truncate max-w-xs">
+                {user.address}
+              </p>
+            )}
             <li>
               <Link href="/orders-history/" className="hover:text-yellow-600">Οι Παραγγελίες μου</Link>
             </li>

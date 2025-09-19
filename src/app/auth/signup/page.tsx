@@ -16,6 +16,29 @@ export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const getUserAddress = async () => {
+    if (!navigator.geolocation) {
+      console.log("Geolocation not supported");
+      return null;
+    }
+  
+    return new Promise<string | null>((resolve) => {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
+  
+        // Reverse geocode to get address
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        );
+        const data = await res.json();
+        resolve(data.display_name); // full address string
+      }, (err) => {
+        console.error(err);
+        resolve(null);
+      });
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -35,9 +58,11 @@ export default function SignUp() {
       setError("");
     }
 
+    const address = await getUserAddress();
+
     const res = await fetch("/api/auth/signup", {
       method: "POST",
-      body: JSON.stringify({ email, password, name }),
+      body: JSON.stringify({ email, password, name, address }),
       headers: { "Content-Type": "application/json" },
     });
 

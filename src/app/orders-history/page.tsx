@@ -84,14 +84,13 @@ export default function MyOrdersPage() {
   
   const reorder = async (order: Order) => {
     try {
-      const userId = user?.id; // Replace with current logged-in user id
       const payload = {
         userId,
         items: order.items.map((item) => ({
           productId: item.product.id,
           quantity: item.quantity,
           price: item.price,
-          selectedIngredients: item.ingredients || [],
+          ingredients: item.ingredients || [],
         })),
       };
 
