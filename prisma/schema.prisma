@@ -94,6 +94,12 @@ model Message {
   receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id])
 }
 
+model Image {
+  id        Int      @id @default(autoincrement())
+  data      Bytes    // Prisma supports binary fields
+  createdAt DateTime @default(now())
+}
+
 model Transaction {
   id         String   @id @default(uuid())
   senderName String
