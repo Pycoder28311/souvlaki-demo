@@ -11,7 +11,7 @@ type Ingredient = {
 
 type OrderItem = {
   id: number;
-  product: { name: string };
+  product: { id: number, name: string };
   quantity: number;
   price: number;
   ingredients: Ingredient[];
@@ -81,6 +81,38 @@ export default function MyOrdersPage() {
 
     fetchOrders();
   }, [userId]);
+  
+  const reorder = async (order: Order) => {
+    try {
+      const userId = user?.id; // Replace with current logged-in user id
+      const payload = {
+        userId,
+        items: order.items.map((item) => ({
+          productId: item.product.id,
+          quantity: item.quantity,
+          price: item.price,
+          selectedIngredients: item.ingredients || [],
+        })),
+      };
+
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Order created successfully!");
+      } else {
+        alert("Error creating order: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    }
+  };
 
   if (loading) return <p>Loading...</p>;
   if (!orders.length) return <p>No orders found.</p>;
@@ -110,6 +142,12 @@ export default function MyOrdersPage() {
                 </li>
               ))}
             </ul>
+            <button
+              className="mt-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+              onClick={() => reorder(order)}
+            >
+              Παράγγειλε ξανά
+            </button>
           </div>
         ))}
       </div>

@@ -82,7 +82,7 @@ export default function Navbar({scrolled = false}) {
             {business ? (
               <>
                 <Link href="/messages" className={linkClass}>Μηνύματα</Link>
-                <Link href="/orders-list" className={linkClass}>Παραγγελίες</Link>
+                <Link href="/all-orders" className={linkClass}>Παραγγελίες</Link>
               </>
             ) : (
               <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
