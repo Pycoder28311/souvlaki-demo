@@ -7,6 +7,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import OrderSidebar from "../cart";
 import EditModal from '../menu/editModal';
+import Navbar from '../navigator';
 
 type Ingredient = {
   id: number;
@@ -91,6 +92,8 @@ export default function About() {
         <meta name="description" content="Η ιστορία και η φιλοσοφία του σουβλατζίδικου μας" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <Navbar />
 
       {/* About Header */}
       <section className="bg-gray-900 py-24">

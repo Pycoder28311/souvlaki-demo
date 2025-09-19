@@ -3,6 +3,7 @@
 import Head from 'next/head';
 import { useState } from 'react';
 import Footer from '../footer';
+import Navbar from '../navigator';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -55,6 +56,8 @@ export default function Contact() {
         <meta name="description" content="Επικοινωνήστε με το Souvlaki Palace" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative bg-gray-700 text-white py-24">

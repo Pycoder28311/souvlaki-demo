@@ -10,6 +10,7 @@ export default function Navbar({scrolled = false}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null); 
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // derive business from user
   const business = user?.business ?? false;
@@ -79,7 +80,10 @@ export default function Navbar({scrolled = false}) {
             <Link href="/about" className={linkClass}>Σχετικά</Link>
 
             {business ? (
-              <Link href="/messages" className={linkClass}>Μηνύματα</Link>
+              <>
+                <Link href="/messages" className={linkClass}>Μηνύματα</Link>
+                <Link href="/orders-list" className={linkClass}>Παραγγελίες</Link>
+              </>
             ) : (
               <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
             )}
@@ -89,23 +93,13 @@ export default function Navbar({scrolled = false}) {
           <div className="hidden md:flex items-center space-x-8">
             {user ? (
               <div className="flex space-x-4">
-                <Link
-                  href="/api/auth/signout"
-                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
-                    isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
-                  }`}
-                >
-                  Αποσύνδεση
-                </Link>
                 <button
+                  onClick={() => setSidebarOpen(true)}
                   className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
-                  <div className="flex items-center font-bold">
-                    <FiShoppingCart className="mr-2" size={20} />
-                  </div>
-                  Καλάθι
+                  {user.name}
                 </button>
               </div>
             ) : (
@@ -202,6 +196,41 @@ export default function Navbar({scrolled = false}) {
             <FiShoppingCart className="mr-2" size={24} />
             Καλάθι
           </button>
+        </div>
+      </div>
+
+      {/* Sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Sidebar from the right */}
+      <div
+        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="p-6">
+          <h2 className="text-xl font-bold mb-4">{user?.name}</h2>
+          <ul className="space-y-4">
+            <li>
+              <Link href="/profile" className="hover:text-yellow-600">Προφίλ</Link>
+            </li>
+            <li>
+              <Link href="/orders-history/" className="hover:text-yellow-600">Οι Παραγγελίες μου</Link>
+            </li>
+            <Link
+              href="/api/auth/signout"
+              className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
+              }`}
+            >
+              Αποσύνδεση
+            </Link>
+          </ul>
         </div>
       </div>
     </nav>

@@ -34,6 +34,14 @@ interface OrderSidebarProps {
   removeItem: (item: OrderItem) => void;
 }
 
+type User = {
+  id: number;
+  name: string;
+  email: string;
+  image?: string;
+  business: boolean;
+};
+
 export default function OrderSidebar({
   orderItems,
   setEditableOrderItem,
@@ -44,10 +52,64 @@ export default function OrderSidebar({
 }: OrderSidebarProps) {
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
   }, []);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session");
+        if (!response.ok) throw new Error("Failed to fetch session data");
+
+        const session = await response.json();
+        if (session?.user) {
+          setUser(session.user);
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  const handlePayment = async () => {
+    try {
+      const userId = user?.id; // Replace with current logged-in user id
+      const payload = {
+        userId,
+        items: orderItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          selectedIngredients: item.selectedIngredients || [],
+        })),
+      };
+
+      const res = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("Order created successfully!");
+        orderItems.forEach((item) => removeItem(item));
+
+        setIsSidebarOpen(false);
+      } else {
+        alert("Error creating order: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    }
+  };
 
   if (!hydrated) {
     // Render nothing (or a skeleton) until client + localStorage are ready
@@ -128,7 +190,10 @@ export default function OrderSidebar({
       {orderItems.length > 0 && (
         <div className="mt-4 border-t pt-4">
           <p className="font-bold mb-2">Σύνολο: ${total.toFixed(2)}</p>
-          <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">
+          <button
+            onClick={handlePayment}
+            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition mt-4"
+          >
             Πλήρωμή
           </button>
         </div>

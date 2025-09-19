@@ -7,6 +7,7 @@ import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
 import Image from "next/image";
+import Navbar from "../navigator";
 
 type Ingredient = {
   id: number;
@@ -167,6 +168,8 @@ export default function Menu({ categories }: { categories: Category[] }) {
         <meta name="description" content="Μενού αυθεντικών ελληνικών σουβλακιών" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <Navbar />
 
       <section className="bg-gray-900 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

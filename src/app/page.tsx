@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import RedSquareCarousel from './carousel';
 import OrderSidebar from "./cart";
 import EditModal from './menu/editModal';
+import Navbar from './navigator';
 
 export type User = {
   id: number;
@@ -233,6 +234,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
+      <Navbar />
+
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center">
         <div className="absolute inset-0 overflow-hidden">
@@ -255,13 +258,6 @@ export default function Home() {
             <Link  href="/menu" className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300 transform hover:scale-105">
               Δες το Μενού
             </Link>
-            <a
-              href="https://www.e-food.gr/"
-              target="_blank"
-              rel="noopener noreferrer" className="bg-transparent hover:bg-white border-2 border-white text-white hover:text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300"
-            >
-              Παράγγειλε Online
-            </a>
           </div>
         </div>
       </section>

@@ -1,5 +1,6 @@
 // src/app/data/page.tsx
 import { prisma } from "@/lib/prisma";
+import Navbar from '../navigator';
 
 export const revalidate = 0;
 
@@ -23,20 +24,23 @@ export default async function DataPage() {
   });
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl">Messages</h1>
+    <div>
+      <Navbar />
+      <div className="p-8">
+        <h1 className="text-2xl">Messages</h1>
 
-      <ul className="list-disc list-inside mt-4">
-        {messages.length > 0 ? (
-          messages.map((m: MessageItem) => (
-            <li key={m.id}>
-              ({m.senderEmail}) {m.content}
-            </li>
-          ))
-        ) : (
-          <p>No messages found</p>
-        )}
-      </ul>
+        <ul className="list-disc list-inside mt-4">
+          {messages.length > 0 ? (
+            messages.map((m: MessageItem) => (
+              <li key={m.id}>
+                ({m.senderEmail}) {m.content}
+              </li>
+            ))
+          ) : (
+            <p>No messages found</p>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
