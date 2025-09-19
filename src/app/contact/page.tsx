@@ -17,7 +17,7 @@ export default function Contact() {
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/contact", {
+      const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -25,8 +25,8 @@ export default function Contact() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        alert("✅ Thank you for your message! We will get back to you soon.");
+      if (data.success) {
+        alert("Το μήνυμά σας στάλθηκε επιτυχώς!");
         setFormData({
           name: "",
           email: "",
@@ -35,11 +35,11 @@ export default function Contact() {
           message: "",
         });
       } else {
-        alert(`❌ Error: ${data.message || "Failed to send message"}`);
+        alert("Σφάλμα: " + data.error);
       }
-    } catch (error) {
-      console.error("Contact form error:", error);
-      alert("❌ An unexpected error occurred. Please try again later.");
+    } catch (err) {
+      console.error(err);
+      alert("Κάτι πήγε στραβά!");
     }
   };
 

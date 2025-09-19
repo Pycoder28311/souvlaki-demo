@@ -9,7 +9,10 @@ import { FiShoppingCart } from "react-icons/fi";
 export default function Navbar({scrolled = false}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState(); 
+  const [user, setUser] = useState(null); 
+
+  // derive business from user
+  const business = user?.business ?? false;
 
   const linkClass = isScrolled
     ? "text-gray-700 hover:text-yellow-600 transition-colors"
@@ -20,10 +23,8 @@ export default function Navbar({scrolled = false}) {
 
     const handleScroll = () => {
       if (window.innerWidth < 768) {
-        // always true on mobile
         setIsScrolled(true);
       } else {
-        // on desktop respect the scrolled prop if passed
         if (scrolled) {
           setIsScrolled(true);
         } else {
@@ -32,7 +33,6 @@ export default function Navbar({scrolled = false}) {
       }
     };
 
-    // run once on mount
     handleScroll();
 
     window.addEventListener("scroll", handleScroll);
@@ -47,22 +47,19 @@ export default function Navbar({scrolled = false}) {
   useEffect(() => {
     const fetchSession = async () => {
       try {
-        const response = await fetch("/api/session"); // Call your API endpoint
-        if (!response.ok) {
-          throw new Error("Failed to fetch session data");
-        }
-        const session = await response.json();
+        const response = await fetch("/api/session");
+        if (!response.ok) throw new Error("Failed to fetch session data");
 
-        // Log the userId if it exists
+        const session = await response.json();
         if (session?.user) {
-          setUser(session.user)
+          setUser(session.user);
         }
       } catch (error) {
         console.error("Error fetching session:", error);
-      } 
+      }
     };
-    
-    fetchSession(); 
+
+    fetchSession();
   }, []);
 
   return (
@@ -80,7 +77,12 @@ export default function Navbar({scrolled = false}) {
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>
-            <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
+
+            {business ? (
+              <Link href="/messages" className={linkClass}>Μηνύματα</Link>
+            ) : (
+              <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
+            )}
           </div>
 
           {/* Desktop links */}

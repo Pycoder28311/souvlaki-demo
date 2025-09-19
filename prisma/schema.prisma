@@ -63,6 +63,8 @@ model User {
   reviewsReceived  Review[] @relation("UserReviewsReceived")
   accounts      Account[]
   sessions      Session[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 model PasswordReset {
@@ -73,6 +75,22 @@ model PasswordReset {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  senderId    Int?
+  receiverId  Int?
+  subject     String
+  content     String
+  senderName  String
+  senderEmail String
+  senderPhone String?
+  createdAt   DateTime @default(now())
+  read        Boolean  @default(false)
+
+  sender   User? @relation("SentMessages", fields: [senderId], references: [id])
+  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id])
 }
 
 model Transaction {
