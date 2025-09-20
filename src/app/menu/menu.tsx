@@ -24,14 +24,21 @@ type IngCategory = {
   ingredients: Ingredient[];
 };
 
+type ImageType = {
+  id: number
+  data: Uint8Array
+  createdAt: Date
+}
+
 type Product = {
-  id: number;
-  name: string;
-  price: number;
-  offer: boolean;
-  image?: string;
-  ingCategories?: IngCategory[]; // lazy-loaded
-};
+  id: number
+  name: string
+  price: number
+  offer: boolean
+  image?: ImageType | null
+  imageId?: number | null; 
+  ingCategories?: IngCategory[]
+}
 
 type Category = {
   id: number;
@@ -490,15 +497,20 @@ export default function Menu({ categories: initialCategories, email }: { categor
                         className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer relative"
                         onClick={() => setSelectedProduct(product)}
                       >
-                        {product.image && (
+                        {product.imageId ? (
                           <Image
-                            src={product.image}
+                            src={`/api/images/${product.imageId}`}
                             alt={product.name}
                             width={40}
                             height={40}
                             className="object-cover rounded"
                           />
+                        ) : (
+                          <div className=" bg-gray-200 flex items-center justify-center text-gray-500 rounded">
+                            No Image
+                          </div>
                         )}
+
                         <h3 className="font-bold text-lg">{product.name}</h3>
                         {product.offer && <p className="text-red-500 font-semibold">On Offer!</p>}
                         <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>

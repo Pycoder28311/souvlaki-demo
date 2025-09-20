@@ -96,8 +96,9 @@ model Message {
 
 model Image {
   id        Int      @id @default(autoincrement())
-  data      Bytes    // Prisma supports binary fields
+  data      Bytes
   createdAt DateTime @default(now())
+  product   Product? // optional back relation
 }
 
 model Transaction {
@@ -136,7 +137,8 @@ model Product {
   name        String
   offer       Boolean       @default(false)
   price       Decimal       @db.Decimal(10,2)
-  image       String?
+  image    Image?  @relation(fields: [imageId], references: [id])
+  imageId  Int?    @unique
   category    Category      @relation(fields: [categoryId], references: [id])
   ingCategories IngCategory[]
   orderItems  OrderItem[]
