@@ -11,6 +11,9 @@ export default async function DataPage() {
 
   // Server-side fetch
   const categoriesFromDb = await prisma.category.findMany({
+    orderBy: {
+      position: "asc", // ascending order (lowest position first)
+    },
     select: {
       id: true,
       name: true,

@@ -9,6 +9,7 @@ import OrderSidebar from "../cart";
 import Image from "next/image";
 import Navbar from "../navigator";
 import { useRouter } from "next/navigation";
+import { Search, X } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -47,8 +48,9 @@ type OrderItem = {
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
-export default function Menu({ categories, email }: { categories: Category[], email?: string }) {
-  const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
+export default function Menu({ categories: initialCategories, email }: { categories: Category[], email?: string }) {
+  const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
+  const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
@@ -70,6 +72,8 @@ export default function Menu({ categories, email }: { categories: Category[], em
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
   const router = useRouter();
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const addToCart = (
     product: Product,
@@ -288,6 +292,53 @@ export default function Menu({ categories, email }: { categories: Category[], em
     }
   };
 
+  function moveCategory(categoryId: number, direction: "up" | "down") {
+    setCategories((prevCategories) => {
+      // Clone the array
+      const categoriesCopy = [...prevCategories];
+
+      // Find index of category to move
+      const index = categoriesCopy.findIndex((c) => c.id === categoryId);
+      if (index === -1) return categoriesCopy;
+
+      // Determine new index
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+
+      // Prevent going out of bounds
+      if (newIndex < 0 || newIndex >= categoriesCopy.length) return categoriesCopy;
+
+      // Swap positions
+      const temp = categoriesCopy[newIndex];
+      categoriesCopy[newIndex] = categoriesCopy[index];
+      categoriesCopy[index] = temp;
+
+      return categoriesCopy;
+    });
+  }
+
+  const saveCategoryPositions = async () => {
+    try {
+      // Send an array of { id, position } to the backend
+      const body = categories.map((c, index) => ({
+        id: c.id,
+        position: index + 1, // or use c.position if already updated
+      }));
+
+      const res = await fetch("/api/position-categories", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Failed to save positions");
+
+      alert("Positions saved successfully!");
+    } catch (err) {
+      console.error(err);
+      alert("Error saving positions");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -334,23 +385,65 @@ export default function Menu({ categories, email }: { categories: Category[], em
                         {cat.name}
                     </button>
                     ))}
+
+                    <button
+                      onClick={() => setShowSearch((prev) => !prev)}
+                      className="ml-4 p-2 rounded hover:bg-gray-100"
+                    >
+                      {showSearch ? (
+                        <X className="w-6 h-6 text-gray-600" />
+                      ) : (
+                        <Search className="w-6 h-6 text-gray-600" />
+                      )}
+                    </button>
+
+                    {/* Search Input (appears when icon clicked) */}
+                    {showSearch && (
+                      <input
+                        type="text"
+                        placeholder="Search products..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="ml-2 px-3 py-2 border rounded"
+                        autoFocus
+                      />
+                    )}
                 </div>
             </section>
 
             {/* Categories & Products */}
             <div className="space-y-12 mt-6 p-6">
-              {categories.map((category) => (
-                <section
-                  key={category.id}
-                  ref={(el) => {
-                    categoryRefs.current[category.id] = el;
-                  }}
-                >
+              {categories.map((category) => {
+                const filteredProducts = category.products.filter((product) =>
+                  product.name.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+
+                return (
+                  <section
+                    key={category.id}
+                    ref={(el) => {
+                      categoryRefs.current[category.id] = el;
+                    }}
+                  >
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-2xl font-bold">{category.name}</h2>
 
                     {email === "kopotitore@gmail.com" && (
                       <div className="flex gap-1">
+                        <div className="flex gap-1">
+                          <button onClick={() => moveCategory(category.id, "up")}>↑</button>
+                          <button onClick={() => moveCategory(category.id, "down")}>↓</button>
+                        </div>
+
+                        <div className="my-4">
+                          <button
+                            onClick={saveCategoryPositions}
+                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                          >
+                            Save Positions
+                          </button>
+                        </div>
+
                         {/* Create Product Icon */}
                         <button
                           onClick={() => handleCreateProduct(category.id)}
@@ -391,7 +484,7 @@ export default function Menu({ categories, email }: { categories: Category[], em
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {category.products.map((product) => (
+                    {filteredProducts.map((product) => (
                       <div
                         key={product.id}
                         className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer relative"
@@ -448,7 +541,7 @@ export default function Menu({ categories, email }: { categories: Category[], em
                     ))}
                   </div>
                 </section>
-              ))}
+                )})}
             </div>
         </div>
       </div>

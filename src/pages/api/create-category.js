@@ -12,9 +12,19 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: "Category name is required" });
     }
 
-    // Create category in database
+    // Get the current maximum position
+    const maxPositionResult = await prisma.category.aggregate({
+      _max: { position: true },
+    });
+
+    const maxPosition = maxPositionResult._max.position ?? 0;
+
+    // Create category with position = max + 1
     const newCategory = await prisma.category.create({
-      data: { name },
+      data: {
+        name,
+        position: maxPosition + 1,
+      },
     });
 
     return res.status(201).json(newCategory);

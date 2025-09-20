@@ -104,6 +104,7 @@ export default function OrderSidebar({
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
+        setShowPaymentModal(false);
       } else {
         alert("Error creating order: " + data.error);
       }
@@ -208,8 +209,8 @@ export default function OrderSidebar({
             <h2 className="text-xl font-bold mb-4">Confirm Payment</h2>
             <p className="mb-2">{user?.address}</p>
             <ul className="mb-4">
-              {orderItems.map(item => (
-                <li key={item.productId}>
+              {orderItems.map((item, index) => (
+                <li key={`${item.productId}-${index}`}>
                   {item.quantity} x {item.name} - €{item.price}
                 </li>
               ))}
