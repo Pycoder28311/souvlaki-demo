@@ -2,16 +2,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation"
 import Link from "next/link";
 import "./navbar.css";
-import { FiShoppingCart } from "react-icons/fi";
 import Image from "next/image";
+import { X } from "lucide-react"
 
 export default function Navbar({scrolled = false}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
 
   // derive business from user
   const business = user?.business ?? false;
@@ -64,13 +66,34 @@ export default function Navbar({scrolled = false}) {
     fetchSession();
   }, []);
 
+  const handleClick = () => {
+    if (user) {
+      setSidebarOpen((v) => !v) // toggle sidebar
+    } else {
+      router.push("/auth/signin") // redirect to login
+    }
+  }
+
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : 'navbar-default'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <span className={`navbar-logo ${isScrolled ? 'scrolled' : ''}`}>
+            {/* Logo image */}
+            <div className="relative w-10 h-10 rounded-full overflow-hidden bg-yellow-400 md:bg-transparent">
+              <Image
+                src="/favicon.ico" // your favicon
+                alt="Logo"
+                fill
+                style={{ objectFit: "cover" }} // cover ensures it fills the circle
+              />
+            </div>
+
+            {/* Text, hidden on small screens */}
+            <span
+              className={`ml-2 font-bold text-xl hidden md:inline ${isScrolled ? "text-gray-900" : "text-white"}`}
+            >
               ΣΟΥΒΛΑΚΙΑ
             </span>
           </Link>
@@ -129,23 +152,13 @@ export default function Navbar({scrolled = false}) {
             {/* Mobile profile icon */}
             <div>
               <button
-                onClick={() => setSidebarOpen((v) => !v)}
+                onClick={handleClick}
                 className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 focus:outline-none"
                 aria-label={sidebarOpen ? "Close profile sidebar" : "Open profile sidebar"}
               >
-                {user?.image ? (
-                  <Image
-                    src={user.image || "/default-profile.png"} // fallback if no image
-                    alt="Profile"
-                    layout="fill" // fills the parent container
-                    objectFit="cover" // same as object-cover
-                    className="rounded-full" // optional, make it circular
-                  />
-                ) : (
-                  <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold">
-                    {user?.name?.charAt(0).toUpperCase() || "U"}
-                  </span>
-                )}
+                <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold">
+                  {user?.name?.charAt(0).toUpperCase() || "U"}
+                </span>
               </button>
             </div>
 
@@ -183,45 +196,35 @@ export default function Navbar({scrolled = false}) {
           mobileOpen ? "translate-y-13" : "-translate-y-full"
         }`}
       >
-        <div className="px-2 pt-10 pb-6 space-y-4 sm:px-3">
+        <div className="px-4 pt-10 pb-6 space-y-4 sm:px-3">
           <Link
             href="/"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Αρχική
           </Link>
           <Link
             href="/menu"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Μενού
           </Link>
           <Link
             href="/about"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Σχετικά
           </Link>
           <Link
             href="/contact"
-            className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Επικοινωνία
           </Link>
-        </div>
-        <div className="px-4 pb-4 space-y-2">
-          <button
-            className={`w-full flex items-center justify-center px-6 py-3 font-bold text-xl transition-all duration-300 transform hover:scale-105 ${
-              isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
-            }`}
-          >
-            <FiShoppingCart className="mr-2" size={24} />
-            Καλάθι
-          </button>
         </div>
       </div>
 
@@ -235,33 +238,68 @@ export default function Navbar({scrolled = false}) {
 
       {/* Sidebar from the right */}
       <div
-        className={`fixed right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300
+        className={`fixed right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300
           top-[50px] md:top-0
           ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
       >
-        <div className="p-6">
-          <h2 className="text-xl font-bold mb-4">{user?.name}</h2>
-          <ul className="space-y-4">
+        <div className="p-4 flex flex-col h-full">
+          {/* Close Button aligned to the right */}
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-2 rounded-md hover:bg-gray-200 transition w-auto"
+              aria-label="Close Sidebar"
+            >
+              <X className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
+
+          {/* Header with Close Button */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm">
+                <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold text-lg">
+                  {user?.name?.charAt(0) || "U"}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <h2 className="text-lg font-semibold text-gray-800 truncate max-w-xs">{user?.name}</h2>
+                {user?.address && (
+                  <p className="text-sm text-gray-500 truncate max-w-xs">{user.address}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Links */}
+          <ul className="flex-1 flex flex-col gap-3">
             <li>
-              <Link href="/profile" className="hover:text-yellow-600">Προφίλ</Link>
+              <Link
+                href="/profile"
+                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+              >
+                Προφίλ
+              </Link>
             </li>
-            {user && user.address && (
-              <p className="text-sm text-gray-600 truncate max-w-xs">
-                {user.address}
-              </p>
-            )}
             <li>
-              <Link href="/orders-history/" className="hover:text-yellow-600">Οι Παραγγελίες μου</Link>
+              <Link
+                href="/orders-history"
+                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+              >
+                Οι Παραγγελίες μου
+              </Link>
             </li>
+          </ul>
+
+          {/* Sign Out Button */}
+          <div className="mt-auto">
             <Link
               href="/api/auth/signout"
-              className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
-                isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
-              }`}
+              className="block w-full text-center px-4 py-2 rounded-md font-bold shadow hover:shadow-md bg-white text-gray-900 transition-all"
             >
               Αποσύνδεση
             </Link>
-          </ul>
+          </div>
         </div>
       </div>
     </nav>

@@ -8,6 +8,7 @@ import Link from 'next/link';
 import OrderSidebar from "../cart";
 import EditModal from '../menu/editModal';
 import Navbar from '../navigator';
+import { ShoppingCart } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -324,12 +325,13 @@ export default function About() {
 
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
-          <button
-          className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
+        <button
+          className="fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-gray-800 text-white rounded-l z-40 flex items-center justify-center"
           onClick={() => setIsSidebarOpen(true)}
-          >
-          Open Sidebar
-          </button>
+          aria-label="Open Cart"
+        >
+          <ShoppingCart className="w-8 h-8" />
+        </button>
       )}
 
       {editableOrderItem && (

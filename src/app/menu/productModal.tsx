@@ -272,9 +272,9 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     >
       <div
        className={`
-          bg-white 
+          bg-white
           w-full h-full p-6 relative overflow-y-auto
-          sm:w-auto sm:h-auto sm:max-w-md sm:max-h-[90vh] sm:rounded-lg
+          sm:w-11/12 sm:h-auto sm:max-w-xl sm:max-h-[90vh] sm:rounded-lg
           transform transition-transform duration-300
           ${animate ? "translate-y-0" : "translate-y-full"}
           sm:translate-y-0 sm:transition-none
@@ -283,7 +283,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
       >
         {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-gray-700 font-bold text-3xl p-2"
+          className="absolute top-0 right-0 text-gray-700 font-bold text-3xl p-2"
           onClick={onClose}
         >
           ×
@@ -295,15 +295,17 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
         {!loading && fullProduct && (
           <>
             {fullProduct.imageId ? (
-              <Image
-                src={`/api/images/${fullProduct.imageId}`}
-                alt={fullProduct.name}
-                width={40}
-                height={40}
-                className="object-cover rounded"
-              />
+              <div className="w-full max-h-[40vh] sm:h-64 relative rounded-lg overflow-hidden border border-gray-200 shadow-sm mb-4">
+                <Image
+                  src={`/api/images/${fullProduct.imageId}`}
+                  alt={fullProduct.name}
+                  fill
+                  style={{ objectFit: "cover", objectPosition: "top" }} // full width, show top
+                  className="rounded-lg"
+                />
+              </div>
             ) : (
-              <div className=" bg-gray-200 flex items-center justify-center text-gray-500 rounded">
+              <div className="w-full max-h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
                 No Image
               </div>
             )}
@@ -347,47 +349,6 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
             <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
             {fullProduct.offer && <p className="text-red-500 font-semibold mb-2">On Offer!</p>}
-
-            <div className="flex flex-col gap-4">
-            {/* Quantity controls */}
-            <div className="flex items-center gap-4">
-                <button
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                –
-                </button>
-                <span className="font-semibold text-lg">{quantity}</span>
-                <button
-                onClick={() => setQuantity((q) => q + 1)}
-                className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                +
-                </button>
-            </div>
-
-            {/* Add to cart button */}
-            <button
-                onClick={() => {
-                if (product) {
-                    // Add product with chosen quantity
-                    for (let i = 0; i < quantity; i++) {
-                    addToCart(
-                      product,
-                      selectedIngredients,
-                      ingCategories ?? [] // ✅ fallback to empty array
-                    );
-                    }
-                    setSelectedIngredients([]); // reset for next product
-                    setQuantity(1); // reset quantity
-                    onClose(); // close modal
-                }
-                }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
-            >
-                Προσθήκη στο Καλάθι
-            </button>
-            </div>
 
             {fullProduct.ingCategories?.map((ingCat) => (
                 <div key={ingCat.id} className="mb-4">
@@ -495,6 +456,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
             )}
           </>
         )}
+        {email === "kopotitore@gmail.com" && (
         <button
           onClick={async () => {
             if (!fullProduct) return;
@@ -523,6 +485,42 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
         >
           {loading ? "Saving..." : "Save Changes"}
         </button>
+        )}
+        <div className="absolute bottom-0 left-0 w-full bg-white p-4 border-t border-gray-300 shadow-md flex flex-col gap-4">
+          {/* Quantity controls */}
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+              className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              –
+            </button>
+            <span className="font-semibold text-lg">{quantity}</span>
+            <button
+              onClick={() => setQuantity((q) => q + 1)}
+              className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Add to cart button */}
+          <button
+            onClick={() => {
+              if (product) {
+                for (let i = 0; i < quantity; i++) {
+                  addToCart(product, selectedIngredients, ingCategories ?? []);
+                }
+                setSelectedIngredients([]);
+                setQuantity(1);
+                onClose();
+              }
+            }}
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
+          >
+            Προσθήκη στο Καλάθι
+          </button>
+        </div>
       </div>
     </div>
   );

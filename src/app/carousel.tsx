@@ -106,7 +106,6 @@ const RedSquareCarousel: React.FC = () => {
                     <h3 className="offer-title">{offer.title}</h3>
                 </div>
                 <p className="offer-description">{offer.description}</p>
-                <button className="offer-button">Δες περισσότερα →</button>
                 </div>
             </div>
         ))}

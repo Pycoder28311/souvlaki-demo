@@ -2,6 +2,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import React from "react";
+import { X, ShoppingCart, Trash2, Edit2 } from "lucide-react";
+import Link from "next/link";
 
 type Ingredient = {
   id: number;
@@ -122,35 +124,41 @@ export default function OrderSidebar({
   return (
     
    <div
-      className={`w-full md:w-64 bg-gray-100 p-4 border-l transition-all duration-300 
-        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"} 
+      className={`flex flex-col h-full w-full md:w-80 bg-gray-100 p-4 border-l border-gray-200 border-l-2 border-yellow-400 shadow-lg transition-all duration-300
+        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
         fixed right-0 top-[55px] z-50`}
-      style={{ height: `calc(100vh - 55px)` }} // dynamic height
+      style={{ height: `calc(100vh - 55px)` }}
     >
-      {/* Button aligned to the right */}
-      <div className="flex justify-end mb-4">
+      {/* Header with Close Button in same line */}
+      <div className="flex justify-between items-center mb-4 border-b border-gray-400 pb-3">
+        <h3 className="font-bold text-xl text-gray-800 flex items-center gap-2">
+          <ShoppingCart className="w-8 h-8" /> Το καλάθι μου
+        </h3>
+
         <button
-          className="px-4 py-2 bg-gray-900 text-white rounded"
+          className="p-1 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500 transition"
           onClick={() => setIsSidebarOpen(false)}
+          aria-label="Close Cart Sidebar"
         >
-          Close Sidebar
+          <X className="w-8 h-8" />
         </button>
       </div>
 
-      <h3 className="font-bold text-lg mb-4">Καλάθι Παραγγελιών</h3>
-
       {/* Order Items */}
-      <div className="space-y-4 overflow-y-auto" style={{ maxHeight: "calc(100% - 80px)" }}>
+      <div
+        className="flex-1 space-y-4 overflow-y-auto"
+        style={{ maxHeight: "calc(100% - 80px)" }}
+      >
         {orderItems.length === 0 ? (
-          <p className="text-gray-500">Το καλάθι είναι άδειο.</p>
+          <p className="text-gray-500 text-center mt-4">Το καλάθι είναι άδειο.</p>
         ) : (
           orderItems.map((item, index) => {
             const ingredientKey = (item.selectedIngredients || [])
               .map((ing) => ing.id)
               .sort((a, b) => a - b)
-              .join('-');
+              .join("-");
 
-            const key = `${item.productId}-${ingredientKey || 'no-ingredients'}-${index}`;
+            const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
 
             return (
               <div
@@ -158,31 +166,41 @@ export default function OrderSidebar({
                 onClick={() => {
                   setEditableOrderItem(item);
                   setQuantity(item.quantity);
-                }} // 👈 opens the modal
-                className="border p-2 rounded flex flex-col gap-2 cursor-pointer hover:bg-gray-100 transition"
+                }}
+                className="bg-white rounded-md shadow hover:shadow-lg transition p-4 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
               >
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-semibold">{item.name}</h4>
+                <div className="flex justify-between items-start">
+                  <div className="flex flex-col gap-1">
+                    <h4 className="font-bold text-gray-800">{item.name}</h4>
                     <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
 
                     {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                      <ul className="text-xs text-gray-500 list-disc list-inside">
+                      <ul className="text-xs text-gray-500 list-disc list-inside mt-1">
                         {item.selectedIngredients.map((ing: Ingredient) => (
                           <li key={ing.id}>{ing.name}</li>
                         ))}
                       </ul>
                     )}
                   </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation(); // ✅ prevent parent onClick
-                      removeItem(item);
-                    }}
-                    className="ml-4 px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
+                  <div className="flex gap-2">
+
+                    {/* Edit Button */}
+                    <button
+                      className="flex items-center gap-1 px-2 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-yellow-400 hover:text-gray-800 transition"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    {/* Delete Button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeItem(item);
+                      }}
+                      className="flex items-center gap-1 px-2 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-red-500 hover:text-white transition"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -191,43 +209,78 @@ export default function OrderSidebar({
       </div>
 
       {/* Total and Checkout */}
-      {orderItems.length > 0 && (
-        <div className="mt-4 border-t pt-4">
-          <p className="font-bold mb-2">Σύνολο: ${total.toFixed(2)}</p>
+      {orderItems.length > 0 && user?.email !== "kopotitore@gmail.com" && (
+        <div className="mt-4 border-t border-gray-400 pt-4">
+          <p className="font-bold text-lg mb-3">Σύνολο: €{total.toFixed(2)}</p>
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition mt-4"
+            className="w-full bg-yellow-400 text-gray-800 py-2 rounded-md font-semibold hover:bg-yellow-500 transition"
           >
             Πλήρωμή
           </button>
         </div>
       )}
 
+      {orderItems.length === 0 && user?.email !== "kopotitore@gmail.com" && (
+        <div className="mt-4 border-t border-gray-400 pt-4">
+          <Link href="/menu" className="block w-full">
+            <button
+              className="w-full bg-yellow-400 text-gray-800 py-4 text-lg font-bold rounded-md hover:bg-yellow-500 transition"
+            >
+              Δες το Μενού
+            </button>
+          </Link>
+        </div>
+      )}
+
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-60 flex justify-center items-center h-full">
-          <div className="bg-white p-6 rounded shadow-lg w-96 max-h-full overflow-y-auto">
-            <h2 className="text-xl font-bold mb-4">Confirm Payment</h2>
-            <p className="mb-2">{user?.address}</p>
-            <ul className="mb-4">
-              {orderItems.map((item, index) => (
-                <li key={`${item.productId}-${index}`}>
-                  {item.quantity} x {item.name} - €{item.price}
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 font-bold">Total: €{total}</p>
-            <button
-              className="mt-4 bg-green-500 px-4 py-2 rounded w-full"
-              onClick={handlePayment}
-            >
-              Confirm Payment
-            </button>
-            <button
-              className="mt-2 bg-gray-300 px-4 py-2 rounded w-full"
-              onClick={() => setShowPaymentModal(false)}
-            >
-              Cancel
-            </button>
+        <div className="fixed inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+          <div className="bg-gray-100 shadow-lg w-full h-full max-w-md max-h-full flex flex-col">
+            
+            {/* Modal Header */}
+            <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
+              Επιβεβαίωση Πληρωμής
+            </h2>
+
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {user?.address && (
+                <p className="mb-4 text-gray-700">Διεύθυνση: {user.address}</p>
+              )}
+
+              <ul className="space-y-2">
+                {orderItems.map((item, index) => (
+                  <li
+                    key={`${item.productId}-${index}`}
+                    className="flex justify-between items-center p-3 bg-white rounded-md shadow-sm hover:bg-gray-50 transition"
+                  >
+                    <span className="font-medium text-gray-800">
+                      {item.quantity} x {item.name}
+                    </span>
+                    <span className="font-semibold text-gray-900">€{item.price.toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Buttons at the bottom */}
+            <div className="px-6 pb-6 border-gray-300 mt-auto">
+              <p className="mt-4 font-bold text-gray-900 text-lg">
+                Σύνολο: €{total.toFixed(2)}
+              </p>
+              <button
+                className="w-full bg-yellow-400 text-gray-800 py-2 rounded-md font-semibold hover:bg-yellow-500 transition mt-2 shadow-sm"
+                onClick={handlePayment}
+              >
+                Επιβεβαίωση Πληρωμής
+              </button>
+              <button
+                className="mt-2 w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition shadow-sm"
+                onClick={() => setShowPaymentModal(false)}
+              >
+                Ακύρωση
+              </button>
+            </div>
           </div>
         </div>
       )}

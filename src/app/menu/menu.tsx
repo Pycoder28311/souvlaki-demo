@@ -10,6 +10,7 @@ import Image from "next/image";
 import Navbar from "../navigator";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -58,7 +59,7 @@ type OrderItem = {
 export default function Menu({ categories: initialCategories, email }: { categories: Category[], email?: string }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
   const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
@@ -544,27 +545,41 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer relative"
+                        className="flex items-center justify-between border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
                         onClick={() => setSelectedProduct(product)}
                       >
+                        {/* Product Info */}
+                        <div className="flex-1 pr-4">
+                          <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{product.name}</h3>
+                          {product.offer && (
+                            <p className="text-sm text-red-500 font-semibold mb-2">Προσφορά!</p>
+                          )}
+                          <p className="font-bold text-yellow-600 text-lg mb-2">${product.price.toFixed(2)}</p>
+
+                          {/* + Button */}
+                          <button
+                            className="mt-2 px-4 py-1 bg-yellow-400 text-gray-800 font-bold rounded-md shadow hover:bg-yellow-500 transition"
+                            
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {/* Product Image */}
                         {product.imageId ? (
-                          <Image
-                            src={`/api/images/${product.imageId}`}
-                            alt={product.name}
-                            width={40}
-                            height={40}
-                            className="object-cover rounded"
-                          />
+                          <div className="w-32 h-32 relative rounded-lg overflow-hidden border border-yellow-400 flex-shrink-0">
+                            <Image
+                              src={`/api/images/${product.imageId}`}
+                              alt={product.name}
+                              fill
+                              style={{ objectFit: "cover" }}
+                            />
+                          </div>
                         ) : (
-                          <div className=" bg-gray-200 flex items-center justify-center text-gray-500 rounded">
+                          <div className="w-32 h-32 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg flex-shrink-0">
                             No Image
                           </div>
                         )}
-
-                        <h3 className="font-bold text-lg">{product.name}</h3>
-                        {product.offer && <p className="text-red-500 font-semibold">On Offer!</p>}
-                        <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>
-
                         {/* Delete Product Button */}
                         {email === "kopotitore@gmail.com" && (
                           <div className="absolute top-2 right-2 flex flex-col gap-1">
@@ -638,10 +653,11 @@ export default function Menu({ categories: initialCategories, email }: { categor
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
         <button
-          className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
+          className="fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-gray-800 text-white rounded-l z-40 flex items-center justify-center"
           onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open Cart"
         >
-          Open Sidebar
+          <ShoppingCart className="w-8 h-8" />
         </button>
       )}
 
