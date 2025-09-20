@@ -24,12 +24,13 @@ type Product = {
 };
 
 type ModalProps = {
+  email?: string;
   product: Product | null;
   onClose: () => void;
   addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[]) => void;
 };
 
-export default function ProductModal({ product, onClose, addToCart }: ModalProps) {
+export default function ProductModal({ email, product, onClose, addToCart }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
@@ -83,6 +84,135 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
       const timer = setTimeout(() => setAnimate(true), 10);
       return () => clearTimeout(timer);
   }, []);
+
+
+  const handleEditIngredientName = (catId: number, ingId: number) => {
+    const cat = fullProduct?.ingCategories?.find((c) => c.id === catId);
+    const ing = cat?.ingredients.find((i) => i.id === ingId);
+    if (!ing) return;
+
+    const newName = prompt("Edit ingredient name", ing.name);
+    if (!newName) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((c) => {
+        if (c.id !== catId) return c;
+
+        const newIngredients = c.ingredients.map((i) =>
+          i.id === ingId ? { ...i, name: newName } : i
+        );
+
+        return { ...c, ingredients: newIngredients };
+      });
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
+  const handleEditCategoryName = (catId: number) => {
+    const cat = fullProduct?.ingCategories?.find((c) => c.id === catId);
+    if (!cat) return;
+
+    const newName = prompt("Edit category name", cat.name);
+    if (!newName) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((c) =>
+        c.id === catId ? { ...c, name: newName } : c
+      );
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
+  const handleAddCategory = () => {
+    const name = prompt("Enter new category name");
+    if (!name) return;
+
+    setFullProduct((prev) => {
+      if (!prev) return prev;
+      const newCategory: IngCategory = {
+        id: Date.now(), // temporary ID
+        name,
+        ingredients: [],
+      };
+      return { ...prev, ingCategories: [...(prev.ingCategories || []), newCategory] };
+    });
+  };
+
+  const handleDeleteCategory = (catId: number) => {
+    if (!confirm("Are you sure you want to delete this category?")) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+      return { ...prev, ingCategories: prev.ingCategories.filter((c) => c.id !== catId) };
+    });
+  };
+
+  const handleAddIngredient = (catId: number) => {
+    const name = prompt("Enter ingredient name");
+    if (!name) return;
+
+    const priceStr = prompt("Enter ingredient price");
+    if (!priceStr) return;
+    const price = parseFloat(priceStr);
+    if (isNaN(price)) return alert("Price must be a number");
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((cat) => {
+        if (cat.id !== catId) return cat;
+        const newIngredient: Ingredient = { id: Date.now(), name, price };
+        return { ...cat, ingredients: [...cat.ingredients, newIngredient] };
+      });
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
+  const handleDeleteIngredient = (catId: number, ingId: number) => {
+    if (!confirm("Are you sure you want to delete this ingredient?")) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((cat) => {
+        if (cat.id !== catId) return cat;
+        return { ...cat, ingredients: cat.ingredients.filter((i) => i.id !== ingId) };
+      });
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
+  const handleEditIngredientPrice = (catId: number, ingId: number, currentPrice: number) => {
+    const newPriceStr = prompt("Enter new ingredient price", currentPrice.toString());
+    if (!newPriceStr) return;
+
+    const newPrice = parseFloat(newPriceStr);
+    if (isNaN(newPrice)) return alert("Price must be a number");
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((cat) => {
+        if (cat.id !== catId) return cat;
+
+        const newIngredients = cat.ingredients.map((ing) =>
+          ing.id === ingId ? { ...ing, price: newPrice } : ing
+        );
+
+        return { ...cat, ingredients: newIngredients };
+      });
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
 
   if (!product) return null;
 
@@ -174,6 +304,25 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
             {fullProduct.ingCategories?.map((ingCat) => (
                 <div key={ingCat.id} className="mb-4">
                     <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
+                    {email === "kopotitore@gmail.com" && (
+                      <div className="flex gap-1">
+                        {/* Edit Category */}
+                        <button
+                          onClick={() => handleEditCategoryName(ingCat.id)}
+                          className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-sm"
+                        >
+                          Edit
+                        </button>
+
+                        {/* Delete Category */}
+                        <button
+                          onClick={() => handleDeleteCategory(ingCat.id)}
+                          className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
                     <div className="space-y-2">
                     {ingCat.ingredients.map((ing) => (
                         <label
@@ -186,24 +335,106 @@ export default function ProductModal({ product, onClose, addToCart }: ModalProps
                         onChange={() => toggleIngredient(ing)}
                         />
                         {ing.image && (
-                            <Image
-                              src={ing.image}           // URL of the image
-                              alt={ing.name}            // alt text
-                              width={40}                // width in pixels
-                              height={40}               // height in pixels
-                              className="object-cover rounded"
-                            />
+                          <Image
+                            src={ing.image}           // URL of the image
+                            alt={ing.name}            // alt text
+                            width={40}                // width in pixels
+                            height={40}               // height in pixels
+                            className="object-cover rounded"
+                          />
                         )}
                         <div>
                             <p className="font-semibold">{ing.name}</p>
                         </div>
+                        {email === "kopotitore@gmail.com" && (
+                           <div className="flex gap-1">
+                              {/* Edit Ingredient */}
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleEditIngredientName(ingCat.id, ing.id);
+                                }}
+                                className="px-1 py-0.5 bg-yellow-500 text-white rounded hover:bg-yellow-600 text-xs"
+                              >
+                                Edit
+                              </button>
+
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
+                                }}
+                                className="px-1 py-0.5 bg-orange-500 text-white rounded hover:bg-orange-600 text-xs"
+                              >
+                                Edit Price
+                              </button>
+
+                              {/* Delete Ingredient */}
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleDeleteIngredient(ingCat.id, ing.id);
+                                }}
+                                className="px-1 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                        )}
                         </label>
                     ))}
+                    {email === "kopotitore@gmail.com" && (
+                      <button
+                        onClick={() => handleAddIngredient(ingCat.id)}
+                        className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                      >
+                        + Add Ingredient
+                      </button>
+                    )}
                     </div>
                 </div>
             ))}
+            {email === "kopotitore@gmail.com" && (
+              <button
+                onClick={handleAddCategory}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+              >
+                + Add Category
+              </button>
+            )}
           </>
         )}
+        <button
+          onClick={async () => {
+            if (!fullProduct) return;
+            setLoading(true);
+
+            try {
+              const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(fullProduct),
+              });
+
+              if (!res.ok) throw new Error("Failed to save changes");
+
+              alert("Changes saved successfully!");
+              onClose();
+            } catch (err) {
+              console.error(err);
+              alert("Error saving changes");
+            } finally {
+              setLoading(false);
+            }
+          }}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "Save Changes"}
+        </button>
       </div>
     </div>
   );

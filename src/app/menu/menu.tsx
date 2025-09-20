@@ -8,6 +8,7 @@ import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
 import Image from "next/image";
 import Navbar from "../navigator";
+import { useRouter } from "next/navigation";
 
 type Ingredient = {
   id: number;
@@ -46,7 +47,7 @@ type OrderItem = {
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
-export default function Menu({ categories }: { categories: Category[] }) {
+export default function Menu({ categories, email }: { categories: Category[], email?: string }) {
   const [activeCategory, setActiveCategory] = useState<number>(categories[0]?.id || 0);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
@@ -68,6 +69,7 @@ export default function Menu({ categories }: { categories: Category[] }) {
   }, [orderItems]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
+  const router = useRouter();
 
   const addToCart = (
     product: Product,
@@ -161,6 +163,131 @@ export default function Menu({ categories }: { categories: Category[] }) {
     });
   };
 
+
+  const handleCreateProduct = async (categoryId: number) => {
+    const name = prompt("Enter product name");
+    if (!name) return;
+
+    const priceStr = prompt("Enter product price");
+    if (!priceStr) return;
+
+    const price = parseFloat(priceStr);
+    if (isNaN(price)) {
+      alert("Price must be a number");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/create-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, price, categoryId }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create product");
+
+      // Refresh page to show the new product
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error creating product");
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    const name = prompt("Enter new category name");
+    if (!name) return;
+
+    try {
+      const res = await fetch("/api/create-category", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create category");
+
+      // Refresh page to show the new category
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error creating category");
+    }
+  };
+
+  const handleDeleteProduct = async (productId: number, productName: string) => {
+    if (!confirm(`Are you sure you want to delete product "${productName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/delete-product/${productId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete product");
+
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting product");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
+    if (!confirm(`Are you sure you want to delete category "${categoryName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/delete-category/${categoryId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete category");
+
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting category");
+    }
+  };
+
+  const handleEditCategory = async (categoryId: number, currentName: string) => {
+    const newName = prompt("Enter new category name", currentName);
+    if (!newName || newName === currentName) return;
+
+    try {
+      const res = await fetch(`/api/update-category/${categoryId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update category");
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating category");
+    }
+  };
+
+  const handleEditProduct = async (productId: number, currentName: string) => {
+    const newName = prompt("Enter new product name", currentName);
+    if (!newName || newName === currentName) return;
+
+    try {
+      const res = await fetch(`/api/update-product/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update product");
+
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+      alert("Error updating product");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -212,48 +339,135 @@ export default function Menu({ categories }: { categories: Category[] }) {
 
             {/* Categories & Products */}
             <div className="space-y-12 mt-6 p-6">
-            {categories.map((category) => (
+              {categories.map((category) => (
                 <section
-                key={category.id}
-                ref={(el) => {
+                  key={category.id}
+                  ref={(el) => {
                     categoryRefs.current[category.id] = el;
-                }}
+                  }}
                 >
-                <h2 className="text-2xl font-bold mb-4">{category.name}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {category.products.map((product) => (
-                        <div
-                            key={product.id}
-                            className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer"
-                            onClick={() => setSelectedProduct(product)} // open modal on click
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-2xl font-bold">{category.name}</h2>
+
+                    {email === "kopotitore@gmail.com" && (
+                      <div className="flex gap-1">
+                        {/* Create Product Icon */}
+                        <button
+                          onClick={() => handleCreateProduct(category.id)}
+                          className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
+                          title="Create Product"
                         >
-                            {product.image && (
-                            <Image
-                              src={product.image}           // URL of the image
-                              alt={product.name}            // alt text
-                              width={40}                // width in pixels
-                              height={40}               // height in pixels
-                              className="object-cover rounded"
-                            />
-                            )}
-                            <h3 className="font-bold text-lg">{product.name}</h3>
-                            {product.offer && (
-                            <p className="text-red-500 font-semibold">On Offer!</p>
-                            )}
-                            <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>
-                        </div>
+                          {/* Plus icon */}
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                        </button>
+
+                        {/* Edit Category Icon */}
+                        <button
+                          onClick={() => handleEditCategory(category.id, category.name)}
+                          className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                          title="Edit Category"
+                        >
+                          {/* Pencil icon */}
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
+                          </svg>
+                        </button>
+
+                        {/* Delete Category Icon */}
+                        <button
+                          onClick={() => handleDeleteCategory(category.id, category.name)}
+                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                          title="Delete Category"
+                        >
+                          {/* Trash icon */}
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {category.products.map((product) => (
+                      <div
+                        key={product.id}
+                        className="border p-4 rounded shadow hover:shadow-md transition cursor-pointer relative"
+                        onClick={() => setSelectedProduct(product)}
+                      >
+                        {product.image && (
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            width={40}
+                            height={40}
+                            className="object-cover rounded"
+                          />
+                        )}
+                        <h3 className="font-bold text-lg">{product.name}</h3>
+                        {product.offer && <p className="text-red-500 font-semibold">On Offer!</p>}
+                        <p className="mt-1 font-semibold">${product.price.toFixed(2)}</p>
+
+                        {/* Delete Product Button */}
+                        {email === "kopotitore@gmail.com" && (
+                          <div className="absolute top-2 right-2 flex flex-col gap-1">
+                            {/* Edit Product Icon */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditProduct(product.id, product.name);
+                              }}
+                              className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                              title="Edit Product"
+                            >
+                              {/* Pencil icon */}
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
+                              </svg>
+                            </button>
+
+                            {/* Delete Product Icon */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProduct(product.id, product.name);
+                              }}
+                              className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                              title="Delete Product"
+                            >
+                              {/* Trash icon */}
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     ))}
-                </div>
+                  </div>
                 </section>
-            ))}
+              ))}
             </div>
         </div>
       </div>
+
+      {email === "kopotitore@gmail.com" && (
+        <button
+          onClick={handleCreateCategory}
+          className="inline-block px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex-shrink-0"
+        >
+          + Create Category
+        </button>
+      )}
+
       {selectedProduct && (
         <ProductModal
-            product={selectedProduct}
-            onClose={() => setSelectedProduct(null)}
-            addToCart={addToCart}
+          email={email}
+          product={selectedProduct}
+          onClose={() => setSelectedProduct(null)}
+          addToCart={addToCart}
         />
       )}
 
@@ -268,12 +482,12 @@ export default function Menu({ categories }: { categories: Category[] }) {
 
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
-          <button
+        <button
           className="fixed right-0 top-[90px] -translate-y-1/2 px-4 py-2 bg-gray-400 text-white rounded-l z-40"
           onClick={() => setIsSidebarOpen(true)}
-          >
+        >
           Open Sidebar
-          </button>
+        </button>
       )}
 
       {editableOrderItem && (
