@@ -217,7 +217,6 @@ export default function Menu({ categories: initialCategories, email }: { categor
       });
 
       if (!res.ok) throw new Error("Failed to create category");
-
       // Refresh page to show the new category
       router.refresh();
     } catch (err) {
@@ -346,6 +345,22 @@ export default function Menu({ categories: initialCategories, email }: { categor
     }
   };
 
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  const hiddenCategories = categories.slice(5)
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -378,44 +393,79 @@ export default function Menu({ categories: initialCategories, email }: { categor
         >
             {/* Categories Buttons */}
             <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
-                <div className="flex gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center">
-                    {categories.map((cat) => (
-                    <button
-                        key={cat.id}
-                        onClick={() => handleCategoryClick(cat.id)}
-                        className={`inline-block px-6 py-3 font-bold transition-all flex-shrink-0 ${
-                        activeCategory === cat.id
-                            ? "bg-gray-900 text-white"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                        }`}
-                    >
-                        {cat.name}
-                    </button>
-                    ))}
+              <div className="flex gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center items-center">
+                {categories.slice(0, 5).map((cat) => ( // show first 5 inline
+                  <button
+                    key={cat.id}
+                    onClick={() => handleCategoryClick(cat.id)}
+                    className={`inline-block px-6 py-3 font-bold transition-all flex-shrink-0 ${
+                      activeCategory === cat.id
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
 
+                {/* Περισσότερα dropdown - only on md+ */}
+                {categories.length > 5 && (
+                  <div className="relative hidden md:inline-block">
                     <button
-                      onClick={() => setShowSearch((prev) => !prev)}
-                      className="ml-4 p-2 rounded hover:bg-gray-100"
+                      onClick={() => setDropdownOpen((prev) => !prev)}
+                      className="px-6 py-3 font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded"
                     >
-                      {showSearch ? (
-                        <X className="w-6 h-6 text-gray-600" />
-                      ) : (
-                        <Search className="w-6 h-6 text-gray-600" />
-                      )}
+                      Περισσότερα ▼
                     </button>
-
-                    {/* Search Input (appears when icon clicked) */}
-                    {showSearch && (
-                      <input
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="ml-2 px-3 py-2 border rounded"
-                        autoFocus
-                      />
+                    {dropdownOpen && (
+                      <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50">
+                        {hiddenCategories.map((cat: Category) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => {
+                              handleCategoryClick(cat.id)
+                              setDropdownOpen(false)
+                            }}
+                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                          >
+                            {cat.name}
+                          </button>
+                        ))}
+                      </div>
                     )}
-                </div>
+                    <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50 hidden group-hover:block md:group-hover:block">
+                      {categories.slice(5).map((cat) => (
+                        <button
+                          key={cat.id}
+                          onClick={() => handleCategoryClick(cat.id)}
+                          className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                        >
+                          {cat.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search toggle */}
+                <button
+                  onClick={() => setShowSearch((prev) => !prev)}
+                  className="ml-4 p-2 rounded hover:bg-gray-100"
+                >
+                  {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
+                </button>
+
+                {showSearch && (
+                  <input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="ml-2 px-3 py-2 border rounded"
+                    autoFocus
+                  />
+                )}
+              </div>
             </section>
 
             {/* Categories & Products */}
