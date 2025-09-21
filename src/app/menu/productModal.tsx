@@ -492,7 +492,8 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
           </button>
           )}
         </div>
-        <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-300 shadow-md flex gap-4 z-50 rounded-b-lg">
+        <div className="fixed inset-x-0 bottom-0 bg-white p-4 border-t border-gray-300 shadow-md flex gap-4 z-50 rounded-b-lg">
+
           {/* Quantity controls */}
           <div className="flex items-center gap-4">
             <button
