@@ -16,8 +16,6 @@ export async function POST(req) {
     });
   }
 
-  console.log(address)
-
   const user = await prisma.$transaction([
     prisma.user.create({
       data: {

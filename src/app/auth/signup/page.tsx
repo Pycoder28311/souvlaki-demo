@@ -28,10 +28,10 @@ export default function SignUp() {
   
         // Reverse geocode to get address
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
         );
         const data = await res.json();
-        resolve(data.display_name); // full address string
+        resolve(data.results[0].formatted_address); // full address string
       }, (err) => {
         console.error(err);
         resolve(null);

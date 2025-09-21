@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Image from 'next/image';
+import { Minus, Plus } from "lucide-react"
 
 type Ingredient = {
   id: number;
@@ -58,12 +59,17 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
       onClick={onClose}
     >
       <div
-        className="bg-white p-6 rounded-lg max-w-md w-full relative max-h-[90vh] overflow-y-auto"
+        className="
+          bg-white p-6 
+          w-full h-full
+          sm:max-w-md sm:rounded-lg sm:max-h-[90vh]
+          relative overflow-y-auto
+        "
         onClick={handleContentClick}
       >
         {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-gray-700 font-bold"
+          className="absolute top-2 right-2 text-gray-700 text-5xl"
           onClick={onClose}
         >
           ×
@@ -71,44 +77,45 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
 
         { orderItem && (
           <>
-
             <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
 
-            <div className="flex flex-col gap-4">
-            {/* Quantity controls */}
-            <div className="flex items-center gap-4">
+            <div className="bg-white flex gap-4 z-50">
+              {/* Quantity controls */}
+              <div className="flex items-center gap-4">
                 <button
-                onClick={() =>
-                    changeQuantity(-1)
-                }
-                className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  onClick={() =>
+                      changeQuantity(-1)
+                  }
+                  className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
                 >
-                -
+                  <Minus className="w-6 h-6 text-black" />
                 </button>
-                <span className="font-semibold text-lg">{quantity}</span>
-                <button
-                onClick={() =>
-                    changeQuantity(1)
-                }
-                className="px-3 py-1 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                +
-                </button>
-            </div>
 
-            {/* Add to cart button */}
-            <button
+                <span className="font-semibold text-lg">{quantity}</span>
+
+                <button
+                  onClick={() =>
+                      changeQuantity(1)
+                  }
+                  className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                >
+                  <Plus className="w-6 h-6 text-black" />
+                </button>
+              </div>
+
+              {/* Add to cart button */}
+              <button
                 onClick={() => {
-                if (orderItem) {
-                    editItem(orderItem, selectedIngredients);
-                    setSelectedIngredients([]);
-                    onClose(); // close modal
-                }
+                  if (orderItem) {
+                      editItem(orderItem, selectedIngredients);
+                      setSelectedIngredients([]);
+                      onClose(); // close modal
+                  }
                 }}
-                className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200"
-            >
-                Ενημέρωση
-            </button>
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
+              >
+                <span>Ενημέρωση</span>
+              </button>
             </div>
 
             {orderItem && orderItem.selectedIngCategories?.map((ingCat) => (

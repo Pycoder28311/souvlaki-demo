@@ -304,7 +304,7 @@ export default function About() {
             Απολαύστε τα αυθεντικά ελληνικά σουβλάκια που φτιάχνονται με την ίδια αγάπη και πάθος εδώ και 40 χρόνια
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/menu" className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-8 py-3 font-bold text-lg transition-colors">
+            <Link href="/menu" className="bg-yellow-500 rounded-lg hover:bg-yellow-600 text-gray-900 px-8 py-3 font-bold text-lg transition-colors">
               Δείτε το Μενού
             </Link>
             <Link href="/contact" className="bg-transparent hover:bg-white border-2 border-white text-white hover:text-gray-900 px-8 py-3 font-bold text-lg transition-colors">
@@ -326,11 +326,25 @@ export default function About() {
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
         <button
-          className="fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-gray-800 text-white rounded-l z-40 flex items-center justify-center"
+          className="hidden md:flex fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-green-600 text-white rounded-l z-40 items-center justify-center"
           onClick={() => setIsSidebarOpen(true)}
           aria-label="Open Cart"
         >
           <ShoppingCart className="w-8 h-8" />
+        </button>
+      )}
+
+      {!isSidebarOpen && (
+        <button
+          className="
+            block md:hidden
+            fixed bottom-4 left-4 right-4 w-auto px-6 py-3 bg-green-600 text-white flex items-center justify-center rounded-lg z-40
+            text-lg font-semibold shadow-lg hover:bg-green-700 active:bg-green-800 transition-colors duration-200
+          "
+          onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open Cart"
+        >
+          <ShoppingCart className="w-8 h-8 mr-2" /> Καλάθι
         </button>
       )}
 

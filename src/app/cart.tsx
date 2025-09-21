@@ -136,7 +136,7 @@ export default function OrderSidebar({
         </h3>
 
         <button
-          className="p-1 bg-yellow-400 text-gray-800 rounded-md hover:bg-yellow-500 transition"
+          className="p-1 bg-yellow-400 text-gray-800 rounded-lg hover:bg-yellow-500 transition"
           onClick={() => setIsSidebarOpen(false)}
           aria-label="Close Cart Sidebar"
         >
@@ -210,22 +210,21 @@ export default function OrderSidebar({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="mt-4 border-t border-gray-400 pt-4">
-          <p className="font-bold text-lg mb-3">Σύνολο: €{total.toFixed(2)}</p>
+        <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="w-full bg-yellow-400 text-gray-800 py-2 rounded-md font-semibold hover:bg-yellow-500 transition"
+            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-lg font-semibold hover:bg-yellow-500 transition"
           >
-            Πλήρωμή
+            Πλήρωμή €{total.toFixed(2)}
           </button>
         </div>
       )}
 
       {orderItems.length === 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="mt-4 border-t border-gray-400 pt-4">
+        <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
             <button
-              className="w-full bg-yellow-400 text-gray-800 py-4 text-lg font-bold rounded-md hover:bg-yellow-500 transition"
+              className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base font-bold rounded-lg hover:bg-yellow-500 transition"
             >
               Δες το Μενού
             </button>
@@ -269,13 +268,13 @@ export default function OrderSidebar({
                 Σύνολο: €{total.toFixed(2)}
               </p>
               <button
-                className="w-full bg-yellow-400 text-gray-800 py-2 rounded-md font-semibold hover:bg-yellow-500 transition mt-2 shadow-sm"
+                className="w-full bg-yellow-400 text-gray-800 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition mt-2 shadow-sm"
                 onClick={handlePayment}
               >
                 Επιβεβαίωση Πληρωμής
               </button>
               <button
-                className="mt-2 w-full bg-gray-200 text-gray-700 py-2 rounded-md hover:bg-gray-300 transition shadow-sm"
+                className="mt-2 w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition shadow-sm"
                 onClick={() => setShowPaymentModal(false)}
               >
                 Ακύρωση

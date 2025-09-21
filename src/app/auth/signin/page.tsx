@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import styles from '../Auth.module.css'; // Create this CSS module
+import { LogIn } from "lucide-react";
 
 export default function SignIn() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -27,13 +28,6 @@ export default function SignIn() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Sign In</h1>
-        <button
-          onClick={() =>
-            signIn("google", { callbackUrl: "/" }) // ← redirect to homepage
-          }
-        >
-          Sign in with Google
-        </button>
         
         <form onSubmit={handleLogin} className={styles.form}>
           <div className={styles.inputGroup}>

@@ -119,7 +119,7 @@ export default function Navbar({scrolled = false}) {
               <div className="flex flex-col space-y-1">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                  className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
@@ -130,15 +130,15 @@ export default function Navbar({scrolled = false}) {
               <div className="flex space-x-4">
                 <Link
                   href="/auth/signin"
-                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
                   Σύνδεση
                 </Link>
                 <Link
-                  href="/auth/signup"
-                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 ${
+                  href="/login-options"
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
@@ -265,7 +265,9 @@ export default function Navbar({scrolled = false}) {
               <div className="flex flex-col">
                 <h2 className="text-lg font-semibold text-gray-800 truncate max-w-xs">{user?.name}</h2>
                 {user?.address && (
-                  <p className="text-sm text-gray-500 truncate max-w-xs">{user.address}</p>
+                  <p className="text-sm text-gray-500 truncate max-w-xs">
+                    {user.address ? user.address.split(",")[0] : ""}
+                  </p>
                 )}
               </div>
             </div>

@@ -256,14 +256,14 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Αυθεντικά Ελληνικά Σουβλάκια</h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Γεύση που θυμίζει Ελλάδα. Φτιαγμένα με φρέσκα υλικά και παράδοση.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link  href="/menu" className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300 transform hover:scale-105">
+            <Link  href="/menu" className="bg-yellow-500 rounded-lg hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300 transform hover:scale-105">
               Δες το Μενού
             </Link>
           </div>
         </div>
       </section>
 
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div className="hidden min-h-screen flex flex-col items-center justify-center p-4">
         <h1 className="text-2xl font-bold mb-4">Πληρωμή με Viva Wallet</h1>
 
         <div className="mb-4 flex flex-col gap-2 w-full max-w-sm">
@@ -317,7 +317,7 @@ export default function Home() {
                 <p className="text-gray-600 mb-4">{item.description}</p>
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-900">{item.price}</span>
-                  <button className="bg-gray-900 hover:bg-yellow-500 text-white hover:text-gray-900 px-4 py-2 font-bold transition-colors">
+                  <button className="bg-gray-900 hover:bg-yellow-500 rounded-lg text-white hover:text-gray-900 px-4 py-2 font-bold transition-colors">
                     Προσθήκη
                   </button>
                 </div>
@@ -355,7 +355,7 @@ export default function Home() {
                   className="bg-white border border-gray-200 p-8 transition-all duration-300 hover:shadow-lg"
                 >
                   <div className="flex items-center mb-4">
-                    <div className="h-12 w-12 bg-yellow-500 flex items-center justify-center mr-4">
+                    <div className="h-12 w-12 bg-yellow-500 rounded-lg flex items-center justify-center mr-4">
                       <span className="text-white font-bold">{offer.badge}</span>
                     </div>
                     <h3 className="text-xl font-bold">{offer.title}</h3>
@@ -385,7 +385,7 @@ export default function Home() {
               <p className="text-gray-600 mb-6">
                 Η συνταγή μας παραμένει αμετάβλητη για δεκαετίες, διατηρώντας ζωντανή την παράδοση του ελληνικού σουβλακιού.
               </p>
-              <Link href="/about" className="bg-gray-900 hover:bg-yellow-500 text-white hover:text-gray-900 px-6 py-3 font-bold transition-colors">
+              <Link href="/about" className="bg-gray-900 hover:bg-yellow-500 rounded-lg text-white hover:text-gray-900 px-6 py-3 font-bold transition-colors">
                 Διαβάστε Περισσότερα
               </Link>
             </div>
@@ -457,11 +457,25 @@ export default function Home() {
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
         <button
-          className="fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-gray-800 text-white rounded-l z-40 flex items-center justify-center"
+          className="hidden md:flex fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-green-600 text-white rounded-l-lg z-40 items-center justify-center"
           onClick={() => setIsSidebarOpen(true)}
           aria-label="Open Cart"
         >
           <ShoppingCart className="w-8 h-8" />
+        </button>
+      )}
+
+      {!isSidebarOpen && (
+        <button
+          className="
+            block md:hidden
+            fixed bottom-4 left-4 right-4 w-auto px-6 py-3 bg-green-600 text-white flex items-center justify-center rounded-lg z-40
+            text-lg font-semibold shadow-lg hover:bg-green-700 active:bg-green-800 transition-colors duration-200
+          "
+          onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open Cart"
+        >
+          <ShoppingCart className="w-8 h-8 mr-2" /> Καλάθι
         </button>
       )}
 

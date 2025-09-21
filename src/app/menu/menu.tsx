@@ -56,10 +56,78 @@ type OrderItem = {
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
 
+function useIsMobile(breakpoint = 768) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < breakpoint);
+    handleResize(); // initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [breakpoint]);
+
+  return isMobile;
+}
+
 export default function Menu({ categories: initialCategories, email }: { categories: Category[], email?: string }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
   const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(categories.length);
+
+  useEffect(() => {
+    const updateVisibleCount = () => {
+      if (!containerRef.current) return;
+      const containerWidth = 6 * containerRef.current.offsetWidth / 10; // half screen
+      let totalWidth = 0;
+      let count = 0;
+
+      const buttons = containerRef.current.children;
+      for (let i = 0; i < buttons.length; i++) {
+        const buttonWidth = (buttons[i] as HTMLElement).offsetWidth + 16; // add margin
+        if (totalWidth + buttonWidth > containerWidth) break;
+        totalWidth += buttonWidth;
+        count++;
+      }
+      setVisibleCount(count);
+    };
+
+    updateVisibleCount();
+    window.addEventListener("resize", updateVisibleCount);
+    return () => window.removeEventListener("resize", updateVisibleCount);
+  }, [categories]);
+
+  const visibleCategories = categories.slice(0, visibleCount);
+  const hiddenCategories = categories.slice(visibleCount);
+
+  const isMobile = useIsMobile();
+  // Client-only state
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // default safe for server
+
+  useEffect(() => {
+    // Set initial value on client
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth >= 768);
+    };
+
+    handleResize(); // set immediately on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
@@ -360,8 +428,6 @@ export default function Menu({ categories: initialCategories, email }: { categor
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  const hiddenCategories = categories.slice(5)
-
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -381,7 +447,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
         </div>
       </section>
 
-      <div className="flex gap-4">
+      <div className=" gap-4">
         {/* Main Content */}
         <div
             className={`transition-all duration-300 ${
@@ -389,17 +455,18 @@ export default function Menu({ categories: initialCategories, email }: { categor
             }`}
             style={{
             // shrink main content if sidebar is open
-            marginRight: isSidebarOpen ? "16rem" : "0", // sidebar width = 64 = 16rem
+            marginRight: isSidebarOpen ? "20rem" : "0", // sidebar width = 64 = 16rem
             }}
         >
+
             {/* Categories Buttons */}
             <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
-              <div className="flex gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center items-center">
-                {categories.slice(0, 5).map((cat) => ( // show first 5 inline
+              <div className=" gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center items-center" ref={containerRef}>
+                {(isMobile ? categories : visibleCategories).map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryClick(cat.id)}
-                    className={`inline-block px-6 py-3 font-bold transition-all flex-shrink-0 ${
+                    className={`inline-block px-4 py-2 font-bold transition-all flex-shrink-0 mx-2 rounded-lg ${
                       activeCategory === cat.id
                         ? "bg-gray-900 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -410,11 +477,11 @@ export default function Menu({ categories: initialCategories, email }: { categor
                 ))}
 
                 {/* Περισσότερα dropdown - only on md+ */}
-                {categories.length > 5 && (
+                {hiddenCategories.length > 0 && !isMobile && (
                   <div className="relative hidden md:inline-block">
                     <button
                       onClick={() => setDropdownOpen((prev) => !prev)}
-                      className="px-6 py-3 font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded"
+                      className="ml-2 px-4 py-2 font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg"
                     >
                       Περισσότερα ▼
                     </button>
@@ -451,26 +518,28 @@ export default function Menu({ categories: initialCategories, email }: { categor
                 {/* Search toggle */}
                 <button
                   onClick={() => setShowSearch((prev) => !prev)}
-                  className="ml-4 p-2 rounded hover:bg-gray-100"
+                  className="ml-4 p-1 rounded hover:bg-gray-100"
                 >
                   {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
                 </button>
-
-                {showSearch && (
-                  <input
-                    type="text"
-                    placeholder="Search products..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="ml-2 px-3 py-2 border rounded"
-                    autoFocus
-                  />
-                )}
               </div>
             </section>
 
+            {showSearch && (
+              <div className=" w-screen bg-white z-50 flex justify-start p-2 shadow-md">
+                <input
+                  type="text"
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full md:w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-gray-300"
+                  autoFocus
+                />
+              </div>
+            )}
+
             {/* Categories & Products */}
-            <div className="space-y-12 mt-6 p-6">
+            <div className=" space-y-12 mt-6 p-6">
               {categories.map((category) => {
                 const filteredProducts = category.products.filter((product) =>
                   product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -517,7 +586,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                         {/* Edit Category Icon */}
                         <button
                           onClick={() => handleEditCategory(category.id, category.name)}
-                          className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                          className="p-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
                           title="Edit Category"
                         >
                           {/* Pencil icon */}
@@ -541,7 +610,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
@@ -558,7 +627,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
                           {/* + Button */}
                           <button
-                            className="mt-2 px-4 py-1 bg-yellow-400 text-gray-800 font-bold rounded-md shadow hover:bg-yellow-500 transition"
+                            className="mt-2 px-4 py-1 bg-yellow-400 text-gray-800 font-bold rounded-lg shadow hover:bg-yellow-500 transition"
                             
                           >
                             +
@@ -589,7 +658,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                                 e.stopPropagation();
                                 handleEditProduct(product.id, product.name);
                               }}
-                              className="p-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                              className="p-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
                               title="Edit Product"
                             >
                               {/* Pencil icon */}
@@ -653,11 +722,25 @@ export default function Menu({ categories: initialCategories, email }: { categor
       {/* Open Sidebar Button */}
       {!isSidebarOpen && (
         <button
-          className="fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-gray-800 text-white rounded-l z-40 flex items-center justify-center"
+          className="hidden md:flex fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-green-600 text-white rounded-l z-40 items-center justify-center"
           onClick={() => setIsSidebarOpen(true)}
           aria-label="Open Cart"
         >
           <ShoppingCart className="w-8 h-8" />
+        </button>
+      )}
+
+      {!isSidebarOpen && (
+        <button
+          className="
+            block md:hidden
+            fixed bottom-4 left-4 right-4 w-auto px-6 py-3 bg-green-600 text-white flex items-center justify-center rounded-lg z-40
+            text-lg font-semibold shadow-lg hover:bg-green-700 active:bg-green-800 transition-colors duration-200
+          "
+          onClick={() => setIsSidebarOpen(true)}
+          aria-label="Open Cart"
+        >
+          <ShoppingCart className="w-8 h-8 mr-2" /> Καλάθι
         </button>
       )}
 
