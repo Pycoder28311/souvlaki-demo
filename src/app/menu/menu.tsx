@@ -35,6 +35,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  description: string;
   image?: ImageType | null
   imageId?: number | null; 
   ingCategories?: IngCategory[]
@@ -83,7 +84,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       // Use full width if sidebar is open, otherwise 60% width
       const containerWidth = isSidebarOpen
-        ? (6 * containerRef.current.offsetWidth) / 10
+        ? (5 * containerRef.current.offsetWidth) / 10
         : containerRef.current.offsetWidth;
 
       let totalWidth = 0;
@@ -253,6 +254,9 @@ export default function Menu({ categories: initialCategories, email }: { categor
     const name = prompt("Enter product name");
     if (!name) return;
 
+    const description = prompt("Enter product description");
+    if (!description) return;
+
     const priceStr = prompt("Enter product price");
     if (!priceStr) return;
 
@@ -266,7 +270,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
       const res = await fetch("/api/create-product", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, price, categoryId }),
+        body: JSON.stringify({ name, price, categoryId, description }),
       });
 
       if (!res.ok) throw new Error("Failed to create product");
@@ -453,18 +457,12 @@ export default function Menu({ categories: initialCategories, email }: { categor
       <div className=" gap-4">
         {/* Main Content */}
         <div
-            className={`transition-all duration-300 ${
-            isSidebarOpen ? "flex-1" : "flex-1"
-            }`}
-            style={{
-            // shrink main content if sidebar is open
-            marginRight: isSidebarOpen ? "20rem" : "0", // sidebar width = 64 = 16rem
-            }}
+          className={`transition-all duration-300`}
         >
 
             {/* Categories Buttons */}
             <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
-              <div className=" gap-4 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-center items-center" ref={containerRef}>
+              <div className="flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center" ref={containerRef}>
                 {(isMobile ? categories : visibleCategories).map((cat) => (
                   <button
                     key={cat.id}
@@ -521,7 +519,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                 {/* Search toggle */}
                 <button
                   onClick={() => setShowSearch((prev) => !prev)}
-                  className="ml-4 p-1 rounded hover:bg-gray-100"
+                  className="ml-4 p-2 rounded-lg hover:bg-gray-100"
                 >
                   {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
                 </button>
@@ -542,7 +540,12 @@ export default function Menu({ categories: initialCategories, email }: { categor
             )}
 
             {/* Categories & Products */}
-            <div className=" space-y-12 mt-6 p-6">
+            <div
+              className="flex flex-col space-y-12 mt-6 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
+              style={{
+                transform: isSidebarOpen ? "translateX(0)" : "translateX(20%)",
+              }}
+            >
               {categories.map((category) => {
                 const filteredProducts = category.products.filter((product) =>
                   product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -613,7 +616,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}

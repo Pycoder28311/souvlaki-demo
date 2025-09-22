@@ -10,6 +10,7 @@ import RedSquareCarousel from './carousel';
 import OrderSidebar from "./cart";
 import EditModal from './menu/editModal';
 import { ShoppingCart } from "lucide-react";
+import MenuGrid from "./offers";
 
 export type User = {
   id: number;
@@ -41,6 +42,23 @@ type OrderItem = {
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
+
+type ImageType = {
+  id: number
+  data: Uint8Array
+  createdAt: Date
+}
+
+type Product = {
+  id: number
+  name: string
+  price: number
+  offer: boolean
+  description: string;
+  image?: ImageType | null
+  imageId?: number | null; 
+  ingCategories?: IngCategory[]
+}
 
 export default function Home() {
 
@@ -128,42 +146,11 @@ export default function Home() {
     },
   ];
 
-  type MenuItem = {
-    name: string;
-    description: string;
-    price: string;
-    imageSrc: string; // path to the image
-    imageAlt: string;
-  };
-
-  const menuItems: MenuItem[] = [
-    {
-      name: "Σουβλάκι Χοιρινό",
-      description: "Χοιρινό με άρωμα θυμάρι και λεμόνι, σε παραδοσιακό πίτα",
-      price: "€2.80",
-      imageSrc: "/hirino.jpg",
-      imageAlt: "Σουβλάκι Χοιρινό",
-    },
-    {
-      name: "Γύρος Κοτόπουλο",
-      description: "Γύρος κοτόπουλου με γιαούρτι και φρέσκια λαχανικά",
-      price: "€3.20",
-      imageSrc: "/gyros.jpg",
-      imageAlt: "Γύρος Κοτόπουλο",
-    },
-    {
-      name: "Πίτα Γύρος Μικτή",
-      description: "Μικτή πίτα με χοιρινό και κοτόπουλο, τζατζίκι και πατάτες",
-      price: "€4.50",
-      imageSrc: "/pita.png",
-      imageAlt: "Πίτα Γύρος Μικτή",
-    },
-  ];
-
   const [amount, setAmount] = useState(50);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
@@ -182,6 +169,50 @@ export default function Home() {
     localStorage.setItem("orderItems", JSON.stringify(orderItems));
   }, [orderItems]);
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
+
+  const addToCart = (
+    product: Product,
+    selectedIngredients: Ingredient[],
+    selectedIngCategories: IngCategory[] // 👈 add categories too
+  ) => {
+    setOrderItems((prev) => {
+      // Check if product with same ingredients already exists
+      const existing = prev.find((item) => {
+        if (item.productId !== product.id) return false;
+
+        const itemIngredients = item.selectedIngredients || [];
+        if (itemIngredients.length !== selectedIngredients.length) return false;
+
+        return itemIngredients.every((ing) =>
+          selectedIngredients.some((sel) => sel.id === ing.id)
+        );
+      });
+
+      if (existing) {
+        return prev.map((item) =>
+          item === existing
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+
+      // Otherwise add new item with categories too
+      return [
+        ...prev,
+        {
+          imageId: product.imageId ?? null,
+          productId: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1,
+          selectedIngredients,
+          selectedIngCategories, // 👈 store them here
+        },
+      ];
+    });
+
+    setSelectedProduct(null);
+  };
 
   const handlePayment = async () => {
     setLoading(true);
@@ -298,31 +329,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Το Μενού Μας</h2>
           
-          <div className="grid md:grid-cols-3 gap-6">
-            {menuItems.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-lg"
-              >
-                <div className="h-48 mb-4 relative">
-                  <Image
-                    src={item.imageSrc}
-                    alt={item.imageAlt}
-                    fill
-                    className="object-cover rounded"
-                  />
-                </div>
-                <h3 className="text-xl font-bold mb-2">{item.name}</h3>
-                <p className="text-gray-600 mb-4">{item.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-900">{item.price}</span>
-                  <button className="bg-gray-900 hover:bg-yellow-500 rounded-lg text-white hover:text-gray-900 px-4 py-2 font-bold transition-colors">
-                    Προσθήκη
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MenuGrid addToCart={addToCart} selectedProduct={selectedProduct} setSelectedProduct={setSelectedProduct}/>
 
           <div className="text-center mt-12">
             <Link

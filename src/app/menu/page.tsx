@@ -23,6 +23,7 @@ export default async function DataPage() {
           name: true,
           price: true,
           offer: true,
+          description: true,
           image: {
             select: {
               id: true, // only fetch the image ID
@@ -41,6 +42,7 @@ export default async function DataPage() {
       price: Number(p.price),
       imageId: p.image?.id ?? null, // only store the ID
       image: undefined, // remove full image data
+      description: p.description ?? "",
     })),
   }));
 

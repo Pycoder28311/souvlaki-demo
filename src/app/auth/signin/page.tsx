@@ -59,7 +59,7 @@ export default function SignIn() {
         </form>
 
         <div className={styles.links}>
-          <Link href="/auth/signup" className={styles.link}>
+          <Link href="/login-options" className={styles.link}>
             Dont have an account? <span>Sign Up</span>
           </Link>
           <Link href="/auth/email-reset-input" className={styles.link}>

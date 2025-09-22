@@ -56,6 +56,7 @@ type Product = {
   name: string;
   price: number;
   offer: boolean;
+  description: string;
   image?: ImageType | null;
   imageId?: number | null; 
   ingCategories?: IngCategory[]
@@ -105,7 +106,6 @@ export default function MyOrdersPage() {
       try {
         const res = await fetch(`/api/read-orders?userId=${userId}`);
         const data = await res.json();
-        console.log(data)
         if (data.success) {
           setOrders(data.orders);
         } else {
@@ -229,10 +229,16 @@ export default function MyOrdersPage() {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden"
+            className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden"
           >
             {/* Header */}
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
+              <p className="text-gray-700">
+                <strong>Σύνολο:</strong> €{order.total}
+              </p>
+              <p className="text-gray-500 text-sm">
+                <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString()}
+              </p>
               <span
                 className={`px-3 py-1 text-sm font-medium rounded-full ${
                   order.status === "completed"
@@ -251,57 +257,68 @@ export default function MyOrdersPage() {
             </div>
 
             {/* Details */}
-            <div className="p-4 space-y-3">
-              <p className="text-gray-700">
-                <strong>Σύνολο:</strong> €{order.total}
-              </p>
-              <p className="text-gray-500 text-sm">
-                <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString()}
-              </p>
+            <div className="p-4 space-y-3 bg-gray-100">
+              <ul className="space-y-2">
+                {order.items.map((item: OrderItemList) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden"
+                  >
+                    {/* Product Image */}
+                    {item.product.imageId ? (
+                      <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
+                        <Image
+                          src={`/api/images/${item.product.imageId}`}
+                          alt={item.product.name}
+                          fill
+                          style={{ objectFit: "cover", objectPosition: "top" }}
+                          className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
+                        No Image
+                      </div>
+                    )}
 
-              {/* Items */}
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <h2 className="text-gray-800 font-medium mb-2">Περιεχόμενα Παραγγελίας</h2>
-                <ul className="space-y-2">
-                  {order.items.map((item: OrderItemList) => (
-                    <li key={item.id} className="text-gray-700">
-                      {item.product.imageId ? (
-                        <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
-                          <Image
-                            src={`/api/images/${item.product.imageId}`}
-                            alt={item.product.name}
-                            fill
-                            style={{ objectFit: "cover", objectPosition: "top" }}
-                            className="rounded-t-lg"
-                          />
+                    {/* Order Details */}
+                    <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
+                          <h3 className="text-lg font-semibold text-gray-800">{item.product.name}</h3>
+                          <span className="mt-2 sm:mt-0 text-gray-900 font-bold">
+                            {item.quantity} × €{item.price}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="w-full h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
-                          No Image
-                        </div>
-                      )}
-                      {item.quantity} × {item.product.name} - €
-                      {item.price}
-                      {item.ingredients.length > 0 && (
-                        <ul className="ml-5 mt-1 text-sm text-gray-600 list-disc">
-                          {item.ingredients.map((ing) => (
-                            <li key={ing.id}>
-                              + {ing.name} - €{ing.price}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+
+                        {/* Ingredients */}
+                        {item.ingredients.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {item.ingredients.map((ing) => (
+                              <span
+                                key={ing.id}
+                                className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                              >
+                                {ing.name} - €{ing.price}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Repeat Order Button */}
                       <button
-                        key={item.id}
-                        className="w-full mt-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                        onClick={() => addToCart(item.product, item.ingredients, item.ingCategories)}
+                        className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                        onClick={() =>
+                          addToCart(item.product, item.ingredients, item.ingCategories)
+                        }
                       >
-                        Παράγγειλε ξανά: {item.product.name}
+                        Παράγγειλε ξανά
                       </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         ))}

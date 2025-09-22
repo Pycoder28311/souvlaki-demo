@@ -6,10 +6,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, price, categoryId, offer, image } = req.body;
+    const { name, price, categoryId, offer, image, description } = req.body;
 
     if (!name || typeof name !== "string") {
       return res.status(400).json({ message: "Product name is required" });
+    }
+
+    if (!description || typeof description !== "string") {
+      return res.status(400).json({ message: "Product description is required" });
     }
 
     if (!price || typeof price !== "number") {
@@ -27,6 +31,7 @@ export default async function handler(req, res) {
         price,
         offer: offer ?? false,
         image: image ?? null,
+        description,
         category: {
           connect: { id: categoryId },
         },

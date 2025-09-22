@@ -1,9 +1,10 @@
 // components/OrderSidebar.tsx
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { X, ShoppingCart, Trash2, Edit2 } from "lucide-react";
-import Link from "next/link";
+import Link from "next/link"
 
 type Ingredient = {
   id: number;
@@ -58,6 +59,9 @@ export default function OrderSidebar({
   const [hydrated, setHydrated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentWayModal, setPaymentWayModal] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
@@ -117,6 +121,49 @@ export default function OrderSidebar({
     }
   };
 
+  const router = useRouter();
+
+  const handleClick = () => {
+    if (!user) {
+      router.push("/login-options");
+      return;
+    }
+    handlePayment();
+  };
+
+  const handleOnlinePayment = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/createPayment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          customerEmail: user?.email
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.OrderCode) {
+        // Αν είσαι σε sandbox
+        window.location.href = `https://demo.vivapayments.com/web/checkout?ref=${data.OrderCode}`;
+
+        // Για production
+        // window.location.href = `https://www.vivapayments.com/web/checkout?ref=${data.OrderCode}`;
+      } else {
+        setError('Αποτυχία δημιουργίας πληρωμής');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Σφάλμα κατά την επικοινωνία με το server');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!hydrated) {
     // Render nothing (or a skeleton) until client + localStorage are ready
     return null;
@@ -168,20 +215,11 @@ export default function OrderSidebar({
                   setEditableOrderItem(item);
                   setQuantity(item.quantity);
                 }}
-                className="bg-white rounded-md shadow hover:shadow-lg transition p-4 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
+                className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
               >
                 <div className="flex justify-between items-start">
                   <div className="flex flex-col gap-1">
-                    <h4 className="font-bold text-gray-800">{item.name}</h4>
-                    <p className="text-sm text-gray-600">Ποσότητα: {item.quantity}</p>
-
-                    {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                      <ul className="text-xs text-gray-500 list-disc list-inside mt-1">
-                        {item.selectedIngredients.map((ing: Ingredient) => (
-                          <li key={ing.id}>{ing.name}</li>
-                        ))}
-                      </ul>
-                    )}
+                    <h4 className="font-bold text-gray-800">{item.quantity} x {item.name}</h4>
                   </div>
                   <div className="flex gap-2">
 
@@ -203,6 +241,18 @@ export default function OrderSidebar({
                     </button>
                   </div>
                 </div>
+                {item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {item.selectedIngredients.map((ing: Ingredient) => (
+                      <span
+                        key={ing.id}
+                        className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                      >
+                        {ing.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })
@@ -214,7 +264,7 @@ export default function OrderSidebar({
         <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-lg font-semibold hover:bg-yellow-500 transition"
+            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
           >
             Πλήρωμή €{total.toFixed(2)}
           </button>
@@ -245,19 +295,26 @@ export default function OrderSidebar({
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {user?.address && (
-                <p className="mb-4 text-gray-700">Διεύθυνση: {user.address}</p>
+                <p className="mb-4 text-gray-700 text-sm flex items-center justify-between">
+                  <span>
+                    <span className="font-semibold text-gray-800">Διεύθυνση:</span> {user.address}
+                  </span>
+                  <Link href="/profile" className="text-gray-500 hover:text-gray-800 transition-colors">
+                    <Edit2 size={18} />
+                  </Link>
+                </p>
               )}
 
               <ul className="space-y-2">
                 {orderItems.map((item, index) => (
                   <li
                     key={`${item.productId}-${index}`}
-                    className="flex justify-between items-center p-3 bg-white rounded-md shadow-sm hover:bg-gray-50 transition"
+                    className="flex justify-between items-center p-3 bg-white rounded-xl shadow-sm hover:bg-gray-50 transition"
                   >
                     <span className="font-medium text-gray-800">
                       {item.quantity} x {item.name}
                     </span>
-                    <span className="font-semibold text-gray-900">€{item.price.toFixed(2)}</span>
+                    <span className="font-semibold text-gray-900">€{item.price}</span>
                   </li>
                 ))}
               </ul>
@@ -269,16 +326,53 @@ export default function OrderSidebar({
                 Σύνολο: €{total.toFixed(2)}
               </p>
               <button
-                className="w-full bg-yellow-400 text-gray-800 py-2 rounded-lg font-semibold hover:bg-yellow-500 transition mt-2 shadow-sm"
-                onClick={handlePayment}
+                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
+                onClick={() => setPaymentWayModal(true)}
               >
                 Επιβεβαίωση Πληρωμής
               </button>
               <button
-                className="mt-2 w-full bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition shadow-sm"
+                className="mt-2 w-full bg-gray-200 text-gray-700 py-3 sm:py-2 rounded-xl hover:bg-gray-300 transition"
                 onClick={() => setShowPaymentModal(false)}
               >
-                Ακύρωση
+                Πίσω
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {paymentWayModal && (
+        <div className="fixed inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+          <div className="bg-gray-100 shadow-lg w-full h-full max-w-md max-h-full flex flex-col">
+            
+            {/* Modal Header */}
+            <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
+              Τρόπος Πληρωμής
+            </h2>
+
+            {/* Buttons at the bottom */}
+            <div className="px-6 pb-6 border-gray-300 mt-auto">
+              <p className="mt-4 font-bold text-gray-900 text-lg">
+                Σύνολο: €{total.toFixed(2)}
+              </p>
+              <button
+                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
+                onClick={handleClick}
+              >
+                Πληρωμή με POS
+              </button>
+              <button
+                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
+                onClick={handleOnlinePayment}
+              >
+                Πληρωμή Online
+              </button>
+              <button
+                className="mt-2 w-full bg-gray-200 text-gray-700 py-3 sm:py-2 rounded-xl hover:bg-gray-300 transition"
+                onClick={() => setPaymentWayModal(false)}
+              >
+                Πίσω
               </button>
             </div>
           </div>

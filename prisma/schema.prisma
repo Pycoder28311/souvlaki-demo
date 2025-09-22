@@ -137,8 +137,9 @@ model Product {
   name        String
   offer       Boolean       @default(false)
   price       Decimal       @db.Decimal(10,2)
-  image    Image?  @relation(fields: [imageId], references: [id])
-  imageId  Int?    @unique
+  image       Image?        @relation(fields: [imageId], references: [id])
+  imageId     Int?          @unique
+  description String?       @default("description")
   category    Category      @relation(fields: [categoryId], references: [id])
   ingCategories IngCategory[]
   orderItems  OrderItem[]
@@ -193,6 +194,7 @@ model OrderItemIngredient {
   id           Int        @id @default(autoincrement())
   orderItemId  Int
   ingredientId Int
+  name         String  @default("Unknown") 
   price        Decimal    @db.Decimal(10,2) // snapshot of ingredient price
   orderItem    OrderItem  @relation(fields: [orderItemId], references: [id])
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
