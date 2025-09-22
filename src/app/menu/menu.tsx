@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
+import { Plus } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -543,7 +544,10 @@ export default function Menu({ categories: initialCategories, email }: { categor
             <div
               className="flex flex-col space-y-12 mt-6 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
               style={{
-                transform: isSidebarOpen ? "translateX(0)" : "translateX(20%)",
+                transform:
+                  isSidebarOpen || window.innerWidth < 1024 // mobile & tablet (lg breakpoint)
+                    ? "translateX(0)"
+                    : "translateX(20%)",
               }}
             >
               {categories.map((category) => {
@@ -652,13 +656,10 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
                         {/* + Button (absolute positioned) */}
                         <button
-                          className="absolute bottom-2 right-2 px-3 py-1 bg-yellow-400 text-gray-800 font-bold rounded-lg shadow hover:bg-yellow-500 transition"
-                          onClick={(e) => {
-                            e.stopPropagation(); // 👈 prevent triggering setSelectedProduct
-                            // your add-to-cart logic here
-                          }}
+                          className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 
+                                    shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
                         >
-                          +
+                          <Plus size={20} />
                         </button>
                         {/* Delete Product Button */}
                         {email === "kopotitore@gmail.com" && (
