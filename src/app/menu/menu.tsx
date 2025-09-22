@@ -617,29 +617,23 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="flex items-center justify-between border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
+                        className="relative flex items-start justify-between h-28 border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
                         onClick={() => setSelectedProduct(product)}
                       >
                         {/* Product Info */}
-                        <div className="flex-1 pr-4">
+                         <div className="flex-1 p-2 pr-12">
                           <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{product.name}</h3>
                           {product.offer && (
                             <p className="text-sm text-red-500 font-semibold mb-2">Προσφορά!</p>
                           )}
-                          <p className="font-bold text-yellow-600 text-lg mb-2">${product.price.toFixed(2)}</p>
-
-                          {/* + Button */}
-                          <button
-                            className="mt-2 px-4 py-1 bg-yellow-400 text-gray-800 font-bold rounded-lg shadow hover:bg-yellow-500 transition"
-                            
-                          >
-                            +
-                          </button>
+                          <p className="font-bold text-yellow-600 text-lg mb-2">
+                            ${product.price.toFixed(2)}
+                          </p>
                         </div>
 
                         {/* Product Image */}
                         {product.imageId ? (
-                          <div className="w-32 h-32 relative rounded-lg overflow-hidden border border-yellow-400 flex-shrink-0">
+                          <div className="w-28 h-full relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0">
                             <Image
                               src={`/api/images/${product.imageId}`}
                               alt={product.name}
@@ -648,10 +642,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
                             />
                           </div>
                         ) : (
-                          <div className="w-32 h-32 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg flex-shrink-0">
+                          <div className="w-28 h-full bg-gray-200 flex items-center justify-center text-gray-500 rounded-r-xl flex-shrink-0">
                             No Image
                           </div>
                         )}
+
+                        {/* + Button (absolute positioned) */}
+                        <button
+                          className="absolute bottom-2 right-2 px-3 py-1 bg-yellow-400 text-gray-800 font-bold rounded-lg shadow hover:bg-yellow-500 transition"
+                          onClick={(e) => {
+                            e.stopPropagation(); // 👈 prevent triggering setSelectedProduct
+                            // your add-to-cart logic here
+                          }}
+                        >
+                          +
+                        </button>
                         {/* Delete Product Button */}
                         {email === "kopotitore@gmail.com" && (
                           <div className="flex flex-col gap-1">

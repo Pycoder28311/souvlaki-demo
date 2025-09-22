@@ -244,7 +244,7 @@ export default function Navbar({scrolled = false}) {
       >
         <div className="p-4 flex flex-col h-full">
           {/* Close Button aligned to the right */}
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end mb-4 hidden lg:flex">
             <button
               onClick={() => setSidebarOpen(false)}
               className="p-2 rounded-md hover:bg-gray-200 transition w-auto"
@@ -294,10 +294,11 @@ export default function Navbar({scrolled = false}) {
           </ul>
 
           {/* Sign Out Button */}
-          <div className="mt-auto">
+          <div className="mt-auto pb-12 lg:pb-0">
             <Link
               href="/api/auth/signout"
-              className="block w-full text-center px-4 py-2 rounded-md font-bold shadow hover:shadow-md bg-white text-gray-900 transition-all"
+              className="block w-full text-center px-4 py-2 rounded-md font-bold shadow hover:shadow-md 
+                        bg-yellow-400 text-gray-900 hover:bg-yellow-500 transition-all"
             >
               Αποσύνδεση
             </Link>

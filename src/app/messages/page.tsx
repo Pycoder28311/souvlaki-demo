@@ -12,7 +12,6 @@ type MessageItem = {
 };
 
 export default async function DataPage() {
-  // Server-side fetch
   const messages: MessageItem[] = await prisma.message.findMany({
     select: {
       id: true,
@@ -23,21 +22,30 @@ export default async function DataPage() {
   });
 
   return (
-    <div>
-      <div className="p-8">
-        <h1 className="text-2xl">Messages</h1>
+    <div className="min-h-screen bg-gray-100 pt-12">
+      <div className="p-8 max-w-3xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Messages</h1>
 
-        <ul className="list-disc list-inside mt-4">
-          {messages.length > 0 ? (
-            messages.map((m: MessageItem) => (
-              <li key={m.id}>
-                ({m.senderEmail}) {m.content}
+        {messages.length > 0 ? (
+          <ul className="space-y-4">
+            {messages.map((m: MessageItem) => (
+              <li
+                key={m.id}
+                className="bg-white shadow-sm rounded-lg p-4 hover:shadow-md transition"
+              >
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-gray-700">{m.senderEmail}</span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(m.createdAt).toLocaleString()}
+                  </span>
+                </div>
+                <p className="text-gray-800">{m.content}</p>
               </li>
-            ))
-          ) : (
-            <p>No messages found</p>
-          )}
-        </ul>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No messages found</p>
+        )}
       </div>
     </div>
   );
