@@ -7,7 +7,6 @@ import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
 import Image from "next/image";
-import Navbar from "../navigator";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
@@ -52,6 +51,7 @@ type OrderItem = {
   name: string;
   price: number;
   quantity: number;
+  imageId: number | null;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
 };
@@ -75,11 +75,17 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // default safe for server
 
   useEffect(() => {
     const updateVisibleCount = () => {
       if (!containerRef.current) return;
-      const containerWidth = 6 * containerRef.current.offsetWidth / 10; // half screen
+
+      // Use full width if sidebar is open, otherwise 60% width
+      const containerWidth = isSidebarOpen
+        ? (6 * containerRef.current.offsetWidth) / 10
+        : containerRef.current.offsetWidth;
+
       let totalWidth = 0;
       let count = 0;
 
@@ -96,14 +102,12 @@ export default function Menu({ categories: initialCategories, email }: { categor
     updateVisibleCount();
     window.addEventListener("resize", updateVisibleCount);
     return () => window.removeEventListener("resize", updateVisibleCount);
-  }, [categories]);
+  }, [categories, isSidebarOpen]); // add sidebarOpen to deps
 
   const visibleCategories = categories.slice(0, visibleCount);
   const hiddenCategories = categories.slice(visibleCount);
 
   const isMobile = useIsMobile();
-  // Client-only state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // default safe for server
 
   useEffect(() => {
     // Set initial value on client
@@ -181,6 +185,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
       return [
         ...prev,
         {
+          imageId: product.imageId ?? null,
           productId: product.id,
           name: product.name,
           price: product.price,
@@ -436,8 +441,6 @@ export default function Menu({ categories: initialCategories, email }: { categor
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Navbar />
-
       <section className="bg-gray-900 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-bold text-gray-100 mb-4">Menu</h1>
@@ -651,7 +654,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                         )}
                         {/* Delete Product Button */}
                         {email === "kopotitore@gmail.com" && (
-                          <div className="absolute top-2 right-2 flex flex-col gap-1">
+                          <div className="flex flex-col gap-1">
                             {/* Edit Product Icon */}
                             <button
                               onClick={(e) => {

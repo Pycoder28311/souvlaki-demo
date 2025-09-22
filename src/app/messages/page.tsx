@@ -1,6 +1,5 @@
 // src/app/data/page.tsx
 import { prisma } from "@/lib/prisma";
-import Navbar from '../navigator';
 
 export const revalidate = 0;
 
@@ -25,7 +24,6 @@ export default async function DataPage() {
 
   return (
     <div>
-      <Navbar />
       <div className="p-8">
         <h1 className="text-2xl">Messages</h1>
 

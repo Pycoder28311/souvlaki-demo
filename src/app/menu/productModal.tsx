@@ -262,6 +262,21 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     });
   };
 
+  const setProductOffer = async (productId: number) => {
+    try {
+      await fetch(`/api/products-offer/${productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer: true }),
+      });
+      alert("Product is now on offer!");
+      // optionally refresh products state here
+    } catch (error) {
+      console.error(error);
+      alert("Failed to set offer");
+    }
+  };
+
   if (!product) return null;
 
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
@@ -307,7 +322,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               )}
 
               <button
-                className="absolute top-0 right-0 bg-white rounded-full px-3 py-1 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+                className="absolute top-0 right-0 bg-white rounded-full px-3 py-0.5 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
                 onClick={onClose}
               >
                 ×
@@ -373,6 +388,12 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
                             >
                               Delete
+                            </button>
+                            <button
+                              onClick={() => setProductOffer(ingCat.id)} // assuming product ID is ingCat.id, adjust if needed
+                              className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                            >
+                              Make Offer
                             </button>
                           </div>
                         )}
@@ -485,7 +506,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 setLoading(false);
               }
             }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-12"
             disabled={loading}
           >
             {loading ? "Saving..." : "Save Changes"}

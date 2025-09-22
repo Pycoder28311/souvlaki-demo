@@ -2,8 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import styles from '../Auth.module.css'; // Create this CSS module
-import { LogIn } from "lucide-react";
+import styles from '../Auth.module.css';
 
 export default function SignIn() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {

@@ -19,6 +19,7 @@ type IngCategory = {
 };
 
 type OrderItem = {
+  imageId: number | null;
   productId: number;
   name: string;
   price: number;

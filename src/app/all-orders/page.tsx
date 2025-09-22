@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import Navbar from '../navigator';
 
 export const revalidate = 0;
 
@@ -23,7 +22,6 @@ export default async function MyOrdersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar scrolled={true}/>
       <div className="p-8 max-w-3xl mx-auto pt-24">
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Orders List</h1>
 

@@ -9,7 +9,6 @@ import { useEffect, useRef, useState } from "react";
 import RedSquareCarousel from './carousel';
 import OrderSidebar from "./cart";
 import EditModal from './menu/editModal';
-import Navbar from './navigator';
 import { ShoppingCart } from "lucide-react";
 
 export type User = {
@@ -34,6 +33,7 @@ type IngCategory = {
 };
 
 type OrderItem = {
+  imageId: number | null;
   productId: number;
   name: string;
   price: number;
@@ -235,7 +235,6 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Navbar />
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center">

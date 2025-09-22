@@ -7,7 +7,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import OrderSidebar from "../cart";
 import EditModal from '../menu/editModal';
-import Navbar from '../navigator';
 import { ShoppingCart } from "lucide-react";
 
 type Ingredient = {
@@ -24,6 +23,7 @@ type IngCategory = {
 };
 
 type OrderItem = {
+  imageId: number | null;
   productId: number;
   name: string;
   price: number;
@@ -34,7 +34,6 @@ type OrderItem = {
 
 export default function About() {
   const [activeTab, setActiveTab] = useState('history');
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
@@ -93,8 +92,6 @@ export default function About() {
         <meta name="description" content="Η ιστορία και η φιλοσοφία του σουβλατζίδικου μας" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <Navbar />
 
       {/* About Header */}
       <section className="bg-gray-900 py-24">

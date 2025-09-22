@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
-import Navbar from "../navigator";
 
 type User = {
   id: number;
@@ -80,7 +79,6 @@ export default function ProfilePage() {
 
   return (
     <>
-    <Navbar scrolled={true}/>
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-0">
         <div
             className="

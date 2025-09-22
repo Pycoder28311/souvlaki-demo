@@ -179,6 +179,7 @@ model OrderItem {
   id          Int        @id @default(autoincrement())
   orderId     Int
   productId   Int
+  imageId     Int?    @unique
   quantity    Int        @default(1)
   price       Decimal    @db.Decimal(10,2) // snapshot of product price
   comment     String?    // <-- user comment about this product in the order
