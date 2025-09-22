@@ -84,19 +84,19 @@ const RedSquareCarousel: React.FC = () => {
     <div className="overflow-hidden w-screen relative">
         <div
         ref={containerRef}
-        className="flex gap-4"
+        className="flex gap-4 "
         style={{ width: `${offers.length * 2 * squareWidth}px` }}
         >
         {[...offers, ...offers].map((offer, idx) => (
             <div
-            key={idx}
-            className="flex-shrink-0 flex items-center justify-center text-white text-3xl font-bold"
-            style={{
-                width: `${squareWidth - 16}px`,
-                height: `auto`,
-                padding: '20px 0',
-                backgroundColor: "transparent",
-            }}
+              key={idx}
+              className="flex-shrink-0 flex items-center justify-center text-white text-3xl font-bold"
+              style={{
+                  width: `${squareWidth - 16}px`,
+                  height: `auto`,
+                  padding: '20px 0',
+                  backgroundColor: "transparent",
+              }}
             >
             <div className="offer-card">
                 <div className="offer-card-header">

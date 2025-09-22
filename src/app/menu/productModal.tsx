@@ -381,22 +381,25 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
-                {fullProduct.offer && <p className="text-red-500 font-semibold mb-2">On Offer!</p>}
-                <button
-                  onClick={() => setProductOffer(fullProduct.id)} // assuming product ID is ingCat.id, adjust if needed
-                  className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                >
-                  Make Offer
-                </button>
+                {email === "kopotitore@gmail.com" && (
+                  <>
+                    <button
+                      onClick={() => setProductOffer(fullProduct.id)} // assuming product ID is ingCat.id, adjust if needed
+                      className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                    >
+                      Make Offer
+                    </button>
+
+                    <button
+                      onClick={() => setEditDescription(fullProduct.id)} // create your handler
+                      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
+                    >
+                      Edit Description
+                    </button>
+                  </>
+                )}
 
                 {fullProduct.description}
-
-                <button
-                  onClick={() => setEditDescription(fullProduct.id)} // create your handler
-                  className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                >
-                  Edit Description
-                </button>
 
                 {fullProduct.ingCategories?.map((ingCat) => (
                     <div key={ingCat.id} className="mb-4">

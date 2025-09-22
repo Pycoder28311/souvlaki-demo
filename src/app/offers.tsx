@@ -102,7 +102,8 @@ export default function MenuGrid({
   if (menuItems.length === 0) return <p>No products on offer.</p>;
 
   return (
-    <div className="grid md:grid-cols-3 gap-24 pr-12 pl-12">
+    <div className="grid md:grid-cols-3 gap-24 pr-6 pl-6 md:pr-12 md:pl-12">
+
       {menuItems.map((item, index) => (
         <div
           key={index}
