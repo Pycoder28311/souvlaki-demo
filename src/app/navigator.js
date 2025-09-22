@@ -137,7 +137,7 @@ export default function Navbar({scrolled = false}) {
                   Σύνδεση
                 </Link>
                 <Link
-                  href="/login-options"
+                  href="/auth/login-options"
                   className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}

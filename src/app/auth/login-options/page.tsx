@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { LogIn, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
+import { FcGoogle } from "react-icons/fc"; // Using react-icons for Google icon
 
 export default function AuthPage() {
   return (
@@ -14,8 +15,9 @@ export default function AuthPage() {
         <Link
           href="/auth/signup"
           className="flex items-center justify-center gap-3 w-full px-5 py-3 
-                     bg-blue-500 text-white font-medium rounded-lg shadow-md 
-                     hover:bg-blue-600 transition mb-4"
+                    bg-blue-500 text-white font-medium rounded-lg shadow-md 
+                    hover:bg-blue-600 hover:scale-105 transition transform mb-4
+                    cursor-pointer"
         >
           <UserPlus className="w-5 h-5" />
           Sign up with Email
@@ -25,11 +27,12 @@ export default function AuthPage() {
         <button
           onClick={() => signIn("google", { callbackUrl: "/" })}
           className="flex items-center justify-center gap-3 w-full px-5 py-3 
-                     bg-red-500 text-white font-medium rounded-lg shadow-md 
-                     hover:bg-red-600 transition"
+                    bg-white border border-gray-300 font-medium rounded-lg shadow-md 
+                    hover:bg-gray-100 hover:scale-105 transition transform
+                    cursor-pointer"
         >
-          <LogIn className="w-5 h-5" />
-          Sign un with Google
+          <FcGoogle className="w-5 h-5" />
+          Sign in with Google
         </button>
       </div>
     </div>

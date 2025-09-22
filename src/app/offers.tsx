@@ -102,11 +102,11 @@ export default function MenuGrid({
   if (menuItems.length === 0) return <p>No products on offer.</p>;
 
   return (
-    <div className="grid md:grid-cols-3 gap-6">
+    <div className="grid md:grid-cols-3 gap-24 pr-12 pl-12">
       {menuItems.map((item, index) => (
         <div
           key={index}
-          className="bg-white rounded-xl border border-gray-200 transition-all duration-300 transform hover:-translate-y-2 hover:shadow-lg flex flex-col"
+          className="bg-white rounded-xl border border-gray-200 shadow-md transition-all duration-300 transform hover:-translate-y-2 hover:shadow-lg flex flex-col"
         >
           {/* Image */}
           <div className="h-48 relative">

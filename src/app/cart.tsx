@@ -125,7 +125,7 @@ export default function OrderSidebar({
 
   const handleClick = () => {
     if (!user) {
-      router.push("/login-options");
+      router.push("/auth/login-options");
       return;
     }
     handlePayment();
