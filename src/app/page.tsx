@@ -107,23 +107,6 @@ export default function Home() {
     };
   }, []); // empty dependency array is fine
 
-  const editItem = (
-    orderItemToEdit: OrderItem,
-    newIngredients: Ingredient[],
-  ) => {
-    setOrderItems((prev) =>
-      prev.map((item) =>
-        item === orderItemToEdit
-          ? {
-              ...item,
-              quantity: quantity,
-              selectedIngredients: newIngredients,
-            }
-          : item
-      )
-    );
-  };
-
   const changeQuantity = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta)); // min 1
   };
@@ -196,6 +179,12 @@ export default function Home() {
         );
       }
 
+      const ingredientsTotal = selectedIngredients.reduce(
+        (sum, ing) => sum + Number(ing.price),
+        0
+      );
+      const totalPrice = product.price + ingredientsTotal;
+
       // Otherwise add new item with categories too
       return [
         ...prev,
@@ -203,7 +192,7 @@ export default function Home() {
           imageId: product.imageId ?? null,
           productId: product.id,
           name: product.name,
-          price: product.price,
+          price: totalPrice,
           quantity: 1,
           selectedIngredients,
           selectedIngCategories, // 👈 store them here
@@ -212,6 +201,30 @@ export default function Home() {
     });
 
     setSelectedProduct(null);
+  };
+
+  const editItem = (
+    orderItemToEdit: OrderItem,
+    newIngredients: Ingredient[],
+  ) => {
+    setOrderItems((prev) =>
+      prev.map((item) =>
+        item === orderItemToEdit
+          ? {
+              ...item,
+              quantity: quantity,
+              selectedIngredients: newIngredients,
+              // Recalculate price: base price + sum of ingredient prices
+              price:
+                orderItemToEdit.price - 
+                (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0) + 
+                newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0),
+            }
+          : item
+      )
+    );
+
+    setSelectedProduct(null); // close modal after updating
   };
 
   const handlePayment = async () => {

@@ -143,23 +143,6 @@ export default function MyOrdersPage() {
     }
   });
 
-  const editItem = (
-    orderItemToEdit: OrderItem,
-    newIngredients: Ingredient[],
-  ) => {
-    setOrderItems((prev) =>
-      prev.map((item) =>
-        item === orderItemToEdit
-          ? {
-              ...item,
-              quantity: quantity,
-              selectedIngredients: newIngredients,
-            }
-          : item
-      )
-    );
-  };
-
   const changeQuantity = (delta: number) => {
     setQuantity((prev) => Math.max(1, prev + delta)); // min 1
   };
@@ -196,6 +179,12 @@ export default function MyOrdersPage() {
         );
       }
 
+      const ingredientsTotal = selectedIngredients.reduce(
+        (sum, ing) => sum + Number(ing.price),
+        0
+      );
+      const totalPrice = Number(product.price) + ingredientsTotal;
+
       // Otherwise add new item with categories too
       return [
         ...prev,
@@ -203,13 +192,35 @@ export default function MyOrdersPage() {
           imageId: product.imageId ?? null,
           productId: product.id,
           name: product.name,
-          price: product.price,
+          price: totalPrice,
           quantity: 1,
           selectedIngredients,
           selectedIngCategories, // 👈 store them here
         },
       ];
     });
+  };
+
+  const editItem = (
+    orderItemToEdit: OrderItem,
+    newIngredients: Ingredient[],
+  ) => {
+    setOrderItems((prev) =>
+      prev.map((item) =>
+        item === orderItemToEdit
+          ? {
+              ...item,
+              quantity: quantity,
+              selectedIngredients: newIngredients,
+              // Recalculate price: base price + sum of ingredient prices
+              price:
+                orderItemToEdit.price - 
+                (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0) + 
+                newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0),
+            }
+          : item
+      )
+    );
   };
 
   if (loading) return <p>Φόρτωση...</p>;
@@ -286,9 +297,6 @@ export default function MyOrdersPage() {
                       <div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
                           <h3 className="text-lg font-semibold text-gray-800">{item.product.name}</h3>
-                          <span className="mt-2 sm:mt-0 text-gray-900 font-bold">
-                            {item.quantity} × €{item.price}
-                          </span>
                         </div>
 
                         {/* Ingredients */}
@@ -299,7 +307,7 @@ export default function MyOrdersPage() {
                                 key={ing.id}
                                 className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
                               >
-                                {ing.name} - €{ing.price}
+                                {ing.name}
                               </span>
                             ))}
                           </div>

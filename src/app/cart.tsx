@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { X, ShoppingCart, Trash2, Edit2 } from "lucide-react";
-import Link from "next/link"
+import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
 
 type Ingredient = {
   id: number;
@@ -164,6 +165,64 @@ export default function OrderSidebar({
     }
   };
 
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
+
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<string[]>([]);
+  const [selected, setSelected] = useState("");
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+
+    if (e.target.value.length < 3) return; // only search after 3 chars
+
+    const res = await fetch(
+      `/api/search-address?query=${encodeURIComponent(e.target.value)}`
+    );
+    const data = await res.json();
+    setResults(data.suggestions || []);
+  };
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session");
+        if (!response.ok) throw new Error("Failed to fetch session data");
+
+        const session = await response.json();
+        if (session?.user) {
+          setUser(session.user);
+          setSelected("");
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  const handleUpdate = async () => {
+    try {
+      const payload = { address: selected };
+
+      const response = await fetch("/api/update-user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) throw new Error("Failed to update user");
+
+      const updatedUser = await response.json();
+      setUser(updatedUser);
+      setSelected("")
+      setEditingAddress(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
+
   if (!hydrated) {
     // Render nothing (or a skeleton) until client + localStorage are ready
     return null;
@@ -207,6 +266,7 @@ export default function OrderSidebar({
               .join("-");
 
             const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
+            const isExpanded = !!expandedItems[item.productId];
 
             return (
               <div
@@ -215,35 +275,74 @@ export default function OrderSidebar({
                   setEditableOrderItem(item);
                   setQuantity(item.quantity);
                 }}
-                className="bg-white rounded-xl shadow hover:shadow-lg transition p-4 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
+                className="bg-white rounded-xl shadow hover:shadow-lg transition p-2 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
               >
                 <div className="flex justify-between items-start">
-                  <div className="flex flex-col gap-1">
-                    <h4 className="font-bold text-gray-800">{item.quantity} x {item.name}</h4>
-                  </div>
-                  <div className="flex gap-2">
+                  <div className="w-40">
+                    <div className="flex flex-col gap-1 p-1">
+                      <h4 className="font-bold text-gray-800">{item.quantity} x {item.name}</h4>
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <span className="text-yellow-500 font-semibold px-3 py-1 ">
+                        €{(item.price * item.quantity).toFixed(2)}
+                      </span>
+                      <button
+                        className=" p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400"
 
-                    {/* Edit Button */}
-                    <button
-                      className="flex items-center gap-1 px-2 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-yellow-400 hover:text-gray-800 transition"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    {/* Delete Button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeItem(item);
-                      }}
-                      className="flex items-center gap-1 px-2 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-red-500 hover:text-white transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeItem(item);
+                        }}
+                        className=" p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-red-500"
+
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    {item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                      <div className="mt-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedItems((prev) => ({
+                              ...prev,
+                              [item.productId]: !prev[item.productId],
+                            }));
+                          }}
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition"
+                        >
+                          {expandedItems[item.productId] ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                          {expandedItems[item.productId] ? "Απόκρυψη Υλικών" : "Προβολή Υλικών"}
+                        </button>
+                      </div>
+                    )}
                   </div>
+                  {item.imageId ? (
+                    <div className="w-22 h-22 relative overflow-hidden shadow-sm rounded-lg">
+                      <Image
+                        src={`/api/images/${item.imageId}`}
+                        alt={item.name}
+                        fill
+                        style={{ objectFit: "cover", objectPosition: "top" }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-22 h-22 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg ">
+                      No Image
+                    </div>
+                  )}
                 </div>
-                {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {item.selectedIngredients.map((ing: Ingredient) => (
+                {expandedItems[item.productId] && item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {item.selectedIngredients.map((ing) => (
                       <span
                         key={ing.id}
                         className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
@@ -285,6 +384,7 @@ export default function OrderSidebar({
 
       {showPaymentModal && (
         <div className="fixed inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+          
           <div className="bg-gray-100 shadow-lg w-full h-full max-w-md max-h-full flex flex-col">
             
             {/* Modal Header */}
@@ -293,32 +393,67 @@ export default function OrderSidebar({
             </h2>
 
             {/* Scrollable Content */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
-              {user?.address && (
-                <p className="mb-4 text-gray-700 text-sm flex items-center justify-between">
-                  <span>
-                    <span className="font-semibold text-gray-800">Διεύθυνση:</span> {user.address}
-                  </span>
-                  <Link href="/profile" className="text-gray-500 hover:text-gray-800 transition-colors">
-                    <Edit2 size={18} />
-                  </Link>
-                </p>
-              )}
+            
+            {user?.address && (
+              <div className="mb-4 text-gray-700 text-sm flex flex-col p-6">
+                <span>
+                  <span className="font-semibold text-gray-800">Διεύθυνση:</span> {user.address}
+                </span>
 
-              <ul className="space-y-2">
-                {orderItems.map((item, index) => (
-                  <li
-                    key={`${item.productId}-${index}`}
-                    className="flex justify-between items-center p-3 bg-white rounded-xl shadow-sm hover:bg-gray-50 transition"
-                  >
-                    <span className="font-medium text-gray-800">
-                      {item.quantity} x {item.name}
-                    </span>
-                    <span className="font-semibold text-gray-900">€{item.price}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <div
+                  onClick={() => setEditingAddress(true)}
+                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
+                >
+                  <Edit2 size={18} />
+                  <span>Αλλαγή Διεύθυνσης</span>
+                </div>
+
+                {editingAddress && (
+                  <div className="mt-4 relative">
+                      <div className="flex items-center gap-2">
+                      <input
+                          type="text"
+                          value={query}
+                          onChange={handleSearch}
+                          placeholder="Type your address..."
+                          className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-400"
+                      />
+                      <button
+                          onClick={handleUpdate}
+                          className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
+                      >
+                          <Check className="w-5 h-5" />
+                      </button>
+                      <button
+                          onClick={() => setEditingAddress(!editingAddress)}
+                          className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition flex items-center justify-center"
+                      >
+                          <X className="w-5 h-5" />
+                      </button>
+                      </div>
+
+                      {/* Dropdown Results */}
+                      {results.length > 0 && (
+                      <ul className="absolute top-full left-0 w-full bg-white border rounded-xl max-h-52 overflow-y-auto mt-1 shadow-lg z-20">
+                          {results.map((r, i) => (
+                          <li
+                              key={i}
+                              onClick={() => {
+                              setSelected(r);
+                              setQuery(r);
+                              setResults([]);
+                              }}
+                              className="p-3 hover:bg-gray-100 cursor-pointer text-left"
+                          >
+                              {r}
+                          </li>
+                          ))}
+                      </ul>
+                      )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">
@@ -360,7 +495,7 @@ export default function OrderSidebar({
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
                 onClick={handleClick}
               >
-                Πληρωμή με POS
+                Πληρωμή από κοντά
               </button>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"

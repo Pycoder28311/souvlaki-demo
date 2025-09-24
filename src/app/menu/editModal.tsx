@@ -44,7 +44,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
     defaultSelectedIngredients
   );
 
-  const toggleIngredient = (ingredient: Ingredient) => {
+  const toggleIngredient = (ingredient: Ingredient, action: "added" | "removed" ) => {
     setSelectedIngredients((prev) =>
         prev.some((i) => i.id === ingredient.id)
         ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected
@@ -144,9 +144,12 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                           className="flex items-center gap-2 border p-2 rounded cursor-pointer"
                           >
                           <input
-                          type="checkbox"
-                          checked={selectedIngredients.some((i) => i.id === ing.id)}
-                          onChange={() => toggleIngredient(ing)}
+                            type="checkbox"
+                            checked={selectedIngredients.some((i) => i.id === ing.id)}
+                            onChange={() => {
+                              const isSelected = selectedIngredients.some((i) => i.id === ing.id);
+                              toggleIngredient(ing, isSelected ? "removed" : "added");
+                            }}
                           />
                           {ing.image && (
                               <Image

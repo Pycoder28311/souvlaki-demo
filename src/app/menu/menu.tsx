@@ -7,7 +7,6 @@ import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 import { Plus } from "lucide-react";
@@ -168,7 +167,6 @@ export default function Menu({ categories: initialCategories, email }: { categor
   }, [orderItems]);
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
-  const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -198,6 +196,12 @@ export default function Menu({ categories: initialCategories, email }: { categor
         );
       }
 
+      const ingredientsTotal = selectedIngredients.reduce(
+        (sum, ing) => sum + Number(ing.price),
+        0
+      );
+      const totalPrice = product.price + ingredientsTotal;
+
       // Otherwise add new item with categories too
       return [
         ...prev,
@@ -205,7 +209,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
           imageId: product.imageId ?? null,
           productId: product.id,
           name: product.name,
-          price: product.price,
+          price: totalPrice,
           quantity: 1,
           selectedIngredients,
           selectedIngCategories, // 👈 store them here
@@ -227,6 +231,11 @@ export default function Menu({ categories: initialCategories, email }: { categor
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
+              // Recalculate price: base price + sum of ingredient prices
+              price:
+                orderItemToEdit.price - 
+                (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0) + 
+                newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0),
             }
           : item
       )
