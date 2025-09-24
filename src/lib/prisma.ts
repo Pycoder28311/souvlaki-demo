@@ -10,7 +10,7 @@ declare global {
 export const prisma: PrismaClient =
   globalThis.prisma ||
   new PrismaClient({
-    log: ["query"], // optional: log SQL queries
+    log: ["warn", "error"], // optional: log SQL queries
   });
 
 // store in globalThis for dev

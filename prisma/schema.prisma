@@ -197,7 +197,7 @@ model OrderItemIngredient {
   name         String  @default("Unknown") 
   price        Decimal    @db.Decimal(10,2) // snapshot of ingredient price
   orderItem    OrderItem  @relation(fields: [orderItemId], references: [id])
-  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 }
 
 model Favorite {
@@ -218,5 +218,5 @@ model FavoriteIngredient {
   favoriteId  Int
   ingredientId Int
   favorite    Favorite   @relation(fields: [favoriteId], references: [id])
-  ingredient  Ingredient @relation(fields: [ingredientId], references: [id])
+  ingredient  Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 }

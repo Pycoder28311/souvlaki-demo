@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import styles from '../Auth.module.css';
+import { FcGoogle } from "react-icons/fc";
 
 export default function SignIn() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -59,9 +60,16 @@ export default function SignIn() {
         </form>
 
         <div className={styles.links}>
-          <Link href="/auth/login-options" className={styles.link}>
+          <Link href="/auth/sign-up" className={styles.link}>
             Dont have an account? <span>Sign Up</span>
           </Link>
+          <button
+            onClick={() => signIn("google", { callbackUrl: "/" })}
+              className={styles.link}
+          >
+            <FcGoogle className="w-5 h-5" />
+            Sign in with Google
+          </button>
           <Link href="/auth/email-reset-input" className={styles.link}>
             Forgot Password?
           </Link>

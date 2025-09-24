@@ -239,6 +239,8 @@
     text-decoration: none;
     font-size: 14px;
     transition: color 0.2s;
+    display: flex;
+    gap: 6px;
 }
 
 .link span {

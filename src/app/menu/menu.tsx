@@ -79,6 +79,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
   const [visibleCount, setVisibleCount] = useState(categories.length);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // default safe for server
 
+  const [isClient, setIsClient] = useState(false);
+  const [screenWidth, setScreenWidth] = useState(0);
+
+  useEffect(() => {
+    setIsClient(true);
+    const handleResize = () => setScreenWidth(window.innerWidth);
+
+    // Initialize
+    handleResize();
+
+    // Listen for resizes
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   useEffect(() => {
     const updateVisibleCount = () => {
       if (!containerRef.current) return;
@@ -277,7 +292,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
       if (!res.ok) throw new Error("Failed to create product");
 
       // Refresh page to show the new product
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error creating product");
@@ -297,7 +312,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       if (!res.ok) throw new Error("Failed to create category");
       // Refresh page to show the new category
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error creating category");
@@ -314,7 +329,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       if (!res.ok) throw new Error("Failed to delete product");
 
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error deleting product");
@@ -331,7 +346,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       if (!res.ok) throw new Error("Failed to delete category");
 
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error deleting category");
@@ -350,7 +365,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
       });
 
       if (!res.ok) throw new Error("Failed to update category");
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error updating category");
@@ -370,7 +385,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       if (!res.ok) throw new Error("Failed to update product");
 
-      router.refresh();
+      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Error updating product");
@@ -422,6 +437,42 @@ export default function Menu({ categories: initialCategories, email }: { categor
       console.error(err);
       alert("Error saving positions");
     }
+  };
+
+  const toggleProductOffer = async (productId: number, currentOffer: boolean) => {
+    try {
+      const res = await fetch(`/api/products-offer/${productId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ offer: !currentOffer }), // toggle
+      });
+
+      if (!res.ok) throw new Error("Failed to toggle offer");
+
+      alert(`Product offer is now ${!currentOffer ? "active" : "inactive"}!`);
+
+      // Optionally update state instead of reloading
+      // setProducts(prev => prev.map(p => p.id === productId ? { ...p, offer: !currentOffer } : p));
+
+      window.location.reload(); // remove this if using state update above
+    } catch (error) {
+      console.error(error);
+      alert("Failed to toggle offer");
+    }
+  };
+
+  const setEditDescription = async (productId: number) => {
+    const newDescription = prompt("Enter new product description");
+    if (!newDescription) return;
+
+    await fetch(`/api/products-description/${productId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description: newDescription }),
+    });
+    alert("Description is updated!");
+    window.location.reload();
+    // refresh product list or revalidate
   };
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -545,7 +596,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
               className="flex flex-col space-y-12 mt-6 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
               style={{
                 transform:
-                  isSidebarOpen || window.innerWidth < 1024 // mobile & tablet (lg breakpoint)
+                  isSidebarOpen || (isClient && screenWidth < 1024) // mobile & tablet (lg breakpoint)
                     ? "translateX(0)"
                     : "translateX(20%)",
               }}
@@ -566,56 +617,69 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     <h2 className="text-2xl font-bold">{category.name}</h2>
 
                     {email === "kopotitore@gmail.com" && (
-                      <div className="flex gap-1">
-                        <div className="flex gap-1">
-                          <button onClick={() => moveCategory(category.id, "up")}>↑</button>
-                          <button onClick={() => moveCategory(category.id, "down")}>↓</button>
-                        </div>
+                      <div className="flex items-center gap-2">
 
-                        <div className="my-4">
+                        {/* Move Up/Down */}
+                        <div className="flex flex-col gap-1">
                           <button
-                            onClick={saveCategoryPositions}
-                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            onClick={() => moveCategory(category.id, "up")}
+                            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition"
+                            title="Move Up"
                           >
-                            Save Positions
+                            ↑
+                          </button>
+                          <button
+                            onClick={() => moveCategory(category.id, "down")}
+                            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition"
+                            title="Move Down"
+                          >
+                            ↓
                           </button>
                         </div>
 
-                        {/* Create Product Icon */}
+                        {/* Save Positions */}
                         <button
-                          onClick={() => handleCreateProduct(category.id)}
-                          className="p-1 bg-green-600 text-white rounded hover:bg-green-700"
-                          title="Create Product"
+                          onClick={saveCategoryPositions}
+                          className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
                         >
-                          {/* Plus icon */}
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
+                          Save Positions
                         </button>
 
-                        {/* Edit Category Icon */}
-                        <button
-                          onClick={() => handleEditCategory(category.id, category.name)}
-                          className="p-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
-                          title="Edit Category"
-                        >
-                          {/* Pencil icon */}
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
-                          </svg>
-                        </button>
+                        {/* Action Icons */}
+                        <div className="flex items-center gap-1">
+                          {/* Create Product */}
+                          <button
+                            onClick={() => handleCreateProduct(category.id)}
+                            className="p-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                            title="Create Product"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </button>
 
-                        {/* Delete Category Icon */}
-                        <button
-                          onClick={() => handleDeleteCategory(category.id, category.name)}
-                          className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
-                          title="Delete Category"
-                        >
-                          {/* Trash icon */}
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                          {/* Edit Category */}
+                          <button
+                            onClick={() => handleEditCategory(category.id, category.name)}
+                            className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
+                            title="Edit Category"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
+                            </svg>
+                          </button>
+
+                          {/* Delete Category */}
+                          <button
+                            onClick={() => handleDeleteCategory(category.id, category.name)}
+                            className="p-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            title="Delete Category"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -624,11 +688,13 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className="relative flex items-start justify-between h-28 border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
+                        className={`relative flex items-start justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white ${
+                          email === "kopotitore@gmail.com" ? "h-44" : "h-28"
+                        }`}
                         onClick={() => setSelectedProduct(product)}
                       >
                         {/* Product Info */}
-                         <div className="flex-1 p-2 pr-12">
+                        <div className="flex-1 p-2 pr-12">
                           <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{product.name}</h3>
                           {product.offer && (
                             <p className="text-sm text-red-500 font-semibold mb-2">Προσφορά!</p>
@@ -640,7 +706,8 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
                         {/* Product Image */}
                         {product.imageId ? (
-                          <div className="w-28 h-full relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0">
+                          <div className={`w-28 relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0 ${email === "kopotitore@gmail.com" ? "h-28" : "h-full"
+                          }`}>
                             <Image
                               src={`/api/images/${product.imageId}`}
                               alt={product.name}
@@ -661,41 +728,57 @@ export default function Menu({ categories: initialCategories, email }: { categor
                         >
                           <Plus size={20} />
                         </button>
-                        {/* Delete Product Button */}
+
+                        {/* Admin Buttons */}
                         {email === "kopotitore@gmail.com" && (
-                          <div className="flex flex-col gap-1">
-                            {/* Edit Product Icon */}
+                          <div className="absolute bottom-2 flex gap-1 z-10">
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleEditProduct(product.id, product.name);
                               }}
-                              className="p-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                              className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm font-medium"
                               title="Edit Product"
                             >
-                              {/* Pencil icon */}
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
-                              </svg>
+                              Edit Name
                             </button>
 
-                            {/* Delete Product Icon */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleDeleteProduct(product.id, product.name);
                               }}
-                              className="p-1 bg-red-600 text-white rounded hover:bg-red-700"
+                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm font-medium"
                               title="Delete Product"
                             >
-                              {/* Trash icon */}
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
+                              Delete Product
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleProductOffer(product.id, product.offer);
+                              }}
+                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition text-sm font-medium"
+                              title="Toggle Offer"
+                            >
+                              {product.offer ? "Remove Offer" : "Set Offer"}
+                            </button>
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditDescription(product.id);
+                              }}
+                              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm font-medium"
+                              title="Edit Description"
+                            >
+                              Edit Description
                             </button>
                           </div>
                         )}
                       </div>
+
                     ))}
                   </div>
                 </section>

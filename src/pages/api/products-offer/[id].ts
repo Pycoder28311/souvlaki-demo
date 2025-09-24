@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "@/lib/prisma"; // adjust if your prisma import path is different
+import { prisma } from "@/lib/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
@@ -13,9 +13,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
+    const { offer } = req.body as { offer: boolean };
+
+    if (typeof offer !== "boolean") {
+      return res.status(400).json({ message: "Invalid offer value" });
+    }
+
     const updatedProduct = await prisma.product.update({
       where: { id: Number(id) },
-      data: { offer: true },
+      data: { offer }, // use the value from request body
     });
 
     return res.status(200).json(updatedProduct);

@@ -13,6 +13,7 @@ type IngCategory = {
   id: number;
   name: string;
   ingredients: Ingredient[];
+  delete?: boolean;
 };
 
 type ImageType = {
@@ -198,7 +199,12 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
-      return { ...prev, ingCategories: prev.ingCategories.filter((c) => c.id !== catId) };
+      return {
+        ...prev,
+        ingCategories: prev.ingCategories.map((c) =>
+          c.id === catId ? { ...c, delete: true } : c
+        ),
+      };
     });
   };
 
@@ -261,34 +267,6 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
       return { ...prev, ingCategories: newCategories };
     });
-  };
-
-  const setProductOffer = async (productId: number) => {
-    try {
-      await fetch(`/api/products-offer/${productId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offer: true }),
-      });
-      alert("Product is now on offer!");
-      // optionally refresh products state here
-    } catch (error) {
-      console.error(error);
-      alert("Failed to set offer");
-    }
-  };
-
-  const setEditDescription = async (productId: number) => {
-    const newDescription = prompt("Enter new product description");
-    if (!newDescription) return;
-
-    await fetch(`/api/products-description/${productId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: newDescription }),
-    });
-
-    // refresh product list or revalidate
   };
 
   if (!product) return null;
@@ -381,35 +359,21 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
-                {email === "kopotitore@gmail.com" && (
-                  <>
-                    <button
-                      onClick={() => setProductOffer(fullProduct.id)} // assuming product ID is ingCat.id, adjust if needed
-                      className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                    >
-                      Make Offer
-                    </button>
-
-                    <button
-                      onClick={() => setEditDescription(fullProduct.id)} // create your handler
-                      className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm"
-                    >
-                      Edit Description
-                    </button>
-                  </>
-                )}
 
                 {fullProduct.description}
 
-                {fullProduct.ingCategories?.map((ingCat) => (
+                {fullProduct.ingCategories
+                  ?.filter((ingCat) => !ingCat.delete) // hide deleted categories
+                  .map((ingCat) => (
                     <div key={ingCat.id} className="mb-4">
                         <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
                         {email === "kopotitore@gmail.com" && (
-                          <div className="flex gap-1">
+                          <div className="flex gap-2 mt-1">
                             {/* Edit Category */}
                             <button
                               onClick={() => handleEditCategoryName(ingCat.id)}
-                              className="px-2 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-sm"
+                              className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-sm font-medium"
+                              title="Edit Category"
                             >
                               Edit
                             </button>
@@ -417,7 +381,8 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                             {/* Delete Category */}
                             <button
                               onClick={() => handleDeleteCategory(ingCat.id)}
-                              className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
+                              className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
+                              title="Delete Category"
                             >
                               Delete
                             </button>
@@ -447,49 +412,53 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 <p className="font-semibold">{ing.name}</p>
                             </div>
                             {email === "kopotitore@gmail.com" && (
-                              <div className="flex gap-1">
-                                  {/* Edit Ingredient */}
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      handleEditIngredientName(ingCat.id, ing.id);
-                                    }}
-                                    className="px-1 py-0.5 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 text-xs"
-                                  >
-                                    Edit
-                                  </button>
+                              <div className="flex gap-1 mt-1">
+                                {/* Edit Ingredient Name */}
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEditIngredientName(ingCat.id, ing.id);
+                                  }}
+                                  className="px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-xs font-medium"
+                                  title="Edit Ingredient Name"
+                                >
+                                  Edit
+                                </button>
 
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
-                                    }}
-                                    className="px-1 py-0.5 bg-orange-500 text-white rounded hover:bg-orange-600 text-xs"
-                                  >
-                                    Edit Price
-                                  </button>
+                                {/* Edit Ingredient Price */}
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
+                                  }}
+                                  className="px-2 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-xs font-medium"
+                                  title="Edit Price"
+                                >
+                                  Price
+                                </button>
 
-                                  {/* Delete Ingredient */}
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      handleDeleteIngredient(ingCat.id, ing.id);
-                                    }}
-                                    className="px-1 py-0.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
+                                {/* Delete Ingredient */}
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDeleteIngredient(ingCat.id, ing.id);
+                                  }}
+                                  className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-xs font-medium"
+                                  title="Delete Ingredient"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             )}
                             </label>
                         ))}
                         {email === "kopotitore@gmail.com" && (
                           <button
                             onClick={() => handleAddIngredient(ingCat.id)}
-                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
                           >
                             + Add Ingredient
                           </button>
@@ -500,7 +469,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 {email === "kopotitore@gmail.com" && (
                   <button
                     onClick={handleAddCategory}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                   >
                     + Add Category
                   </button>
@@ -509,32 +478,32 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
             </>
           )}
           {email === "kopotitore@gmail.com" && (
-          <button
-            onClick={async () => {
-              if (!fullProduct) return;
-              setLoading(true);
+            <button
+              onClick={async () => {
+                if (!fullProduct) return;
+                setLoading(true);
 
-              try {
-                const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
-                  method: "PUT",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(fullProduct),
-                });
+                try {
+                  const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(fullProduct),
+                  });
 
-                if (!res.ok) throw new Error("Failed to save changes");
+                  if (!res.ok) throw new Error("Failed to save changes");
 
-                alert("Changes saved successfully!");
-                onClose();
-              } catch (err) {
-                console.error(err);
-                alert("Error saving changes");
-              } finally {
-                setLoading(false);
-              }
-            }}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 mb-12"
-            disabled={loading}
-          >
+                  alert("Changes saved successfully!");
+                  window.location.reload(); // 🔄 reload the page
+                } catch (err) {
+                  console.error(err);
+                  alert("Error saving changes");
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              className="h-12 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-12"
+              disabled={loading}
+            >
             {loading ? "Saving..." : "Save Changes"}
           </button>
           )}

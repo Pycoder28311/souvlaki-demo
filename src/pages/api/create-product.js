@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, price, categoryId, offer, image, description } = req.body;
+    const { name, price, categoryId, offer, description } = req.body;
 
     if (!name || typeof name !== "string") {
       return res.status(400).json({ message: "Product name is required" });
@@ -30,7 +30,6 @@ export default async function handler(req, res) {
         name,
         price,
         offer: offer ?? false,
-        image: image ?? null,
         description,
         category: {
           connect: { id: categoryId },
