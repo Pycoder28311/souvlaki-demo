@@ -357,7 +357,7 @@ export default function Home() {
       <input
         type="number"
         min="1"
-        value={amount}
+        value={amountStripe}
         onChange={(e) => setAmountStripe(Number(e.target.value))}
         placeholder="Enter amount"
         style={{ padding: "5px", marginRight: "10px" }}
