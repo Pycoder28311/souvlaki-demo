@@ -1,8 +1,5 @@
-// File: src/pages/api/create-checkout-session.js
-
 import Stripe from "stripe";
 
-// Δημιούργησε το Stripe client με το secret key από το environment
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
@@ -17,11 +14,11 @@ export default async function handler(req, res) {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: "eur", // <-- changed from "usd" to "eur"
               product_data: {
                 name: "Custom Product",
               },
-              unit_amount: amount, // χρησιμοποιούμε το input του χρήστη
+              unit_amount: amount, // χρησιμοποιούμε το input του χρήστη σε cents
             },
             quantity: 1,
           },
@@ -40,4 +37,3 @@ export default async function handler(req, res) {
     res.status(405).end("Method Not Allowed");
   }
 }
-
