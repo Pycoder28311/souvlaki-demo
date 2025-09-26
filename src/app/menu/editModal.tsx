@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Image from 'next/image';
 import { Minus, Plus } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -55,6 +56,16 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
   
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(defaultSelectedIngredients);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>(orderItem.selectedOptions || []);
+  const [openCategories, setOpenCategories] = useState<Record<number, boolean>>({});
+  const [openOptions, setOpenOptions] = useState<Record<number, boolean>>({});
+
+  // Toggle function
+  const toggleCategory = (catId: number) => {
+    setOpenCategories((prev) => ({
+      ...prev,
+      [catId]: !prev[catId],
+    }));
+  };
 
   // toggleOption όπως toggleIngredient
   const toggleOption = (option: Option, isYes: boolean) => {
@@ -89,7 +100,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
         className="
           bg-white 
           w-full h-full
-          sm:max-w-md sm:rounded-lg sm:max-h-[90vh]
+          sm:max-w-11/12 sm:h-auto sm:max-w-xl sm:rounded-lg sm:max-h-[90vh]
           relative overflow-y-auto
         "
         onClick={handleContentClick}
@@ -121,7 +132,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
 
-              <div className="bg-white flex gap-4 z-50">
+              <div className="bg-white mb-4 flex gap-4 z-50">
                 {/* Quantity controls */}
                 <div className="flex items-center gap-4">
                   <button
@@ -149,9 +160,31 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                 <button
                   onClick={() => {
                     if (orderItem) {
-                        editItem(orderItem, selectedIngredients, selectedOptions);
-                        setSelectedIngredients([]);
-                        onClose(); // close modal
+                      const missingCat = (orderItem.selectedIngCategories ?? []).find(
+                        (cat) =>
+                          cat.isRequired &&
+                          !selectedIngredients.some((ing) => cat.ingredients.some((i) => i.id === ing.id))
+                      );
+
+                      if (missingCat) {
+                        // Open that category
+                        setOpenCategories((prev) => ({
+                          ...prev,
+                          [missingCat.id]: true,
+                        }));
+
+                        // Scroll into view smoothly
+                        const element = document.getElementById(`ing-cat-${missingCat.id}`);
+                        if (element) {
+                          element.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+
+                        return;
+                      }
+
+                      editItem(orderItem, selectedIngredients, selectedOptions);
+                      setSelectedIngredients([]);
+                      onClose(); // close modal
                     }
                   }}
                   className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
@@ -160,67 +193,132 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                 </button>
               </div>
 
-              {orderItem && orderItem.selectedIngCategories?.map((ingCat) => (
-                  <div key={ingCat.id} className="mb-4">
-                      <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
-                      <div className="space-y-2">
-                      {ingCat.ingredients.map((ing) => (
+              {orderItem && orderItem.selectedIngCategories?.map((ingCat) => {
+                const open = openCategories[ingCat.id] ?? false;
+
+                return (
+                  <div 
+                    key={ingCat.id}
+                    id={`ing-cat-${ingCat.id}`}  
+                    className="mb-4 border rounded-lg shadow-sm bg-white"
+                  >
+                    <div
+                      onClick={() => toggleCategory(ingCat.id)}
+                      className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                    >
+                      <div className="flex items-center gap-2">
+                        {open ? (
+                          <ChevronDown className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-gray-600" />
+                        )}
+                        <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                        {ingCat.isRequired && (
+                          <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
+                            Required
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {open && (
+                      <div className="p-3 space-y-2">
+                        {ingCat.ingredients.map((ing) => (
                           <label
-                          key={ing.id}
-                          className="flex items-center gap-2 border p-2 rounded cursor-pointer"
+                            key={ing.id}
+                            className="flex items-center gap-3 border rounded-md p-2 bg-gray-50 hover:bg-gray-100 cursor-pointer transition"
                           >
-                          <input
-                            type="checkbox"
-                            checked={selectedIngredients.some((i) => i.id === ing.id)}
-                            onChange={() => {
-                              toggleIngredient(ing);
-                            }}
-                          />
-                          {ing.image && (
+                            <input
+                              type="checkbox"
+                              checked={selectedIngredients.some((i) => i.id === ing.id)}
+                              onChange={() => toggleIngredient(ing)}
+                              className="h-4 w-4"
+                            />
+
+                            {ing.image && (
                               <Image
-                                src={ing.image}           // URL of the image
-                                alt={ing.name}            // alt text
-                                width={40}                // width in pixels
-                                height={40}               // height in pixels
+                                src={ing.image}
+                                alt={ing.name}
+                                width={40}
+                                height={40}
                                 className="object-cover rounded"
                               />
-                          )}
-                          <div>
-                              <p className="font-semibold">{ing.name}</p>
-                          </div>
+                            )}
+
+                            <div className="flex-1">
+                              <p className="font-semibold text-gray-800">{ing.name}</p>
+                              {ing.price > 0 && (
+                                <p className="text-sm text-gray-600">+€{ing.price}</p>
+                              )}
+                            </div>
                           </label>
-                      ))}
+                        ))}
                       </div>
+                    )}
                   </div>
-              ))}
+                )}
+              )}
 
-              {orderItem && orderItem.options && orderItem.options?.map((opt) => (
-                <div key={opt.id} className="mb-4 border p-3 rounded">
-                  <h3 className="font-bold text-lg mb-2">{opt.question}</h3>
+              {orderItem && orderItem.options && orderItem.options?.map((opt) => {
+                const open = openOptions[opt.id] ?? false;
 
-                  <div className="flex gap-4 mt-2">
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name={`option-${opt.id}`}
-                        checked={selectedOptions.some((o) => o.id === opt.id)}
-                        onChange={() => toggleOption(opt, true)}
-                      />
-                      Yes
-                    </label>
+                return (
+                  <div
+                    key={opt.id}
+                    id={`opt-${opt.id}`}
+                    className="mb-4 border rounded-lg shadow-sm bg-white"
+                  >
+                    <div 
+                      key={opt.id}
+                      id={`opt-${opt.id}`} 
+                      className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                      onClick={() =>
+                        setOpenOptions((prev) => ({
+                          ...prev,
+                          [opt.id]: !prev[opt.id],
+                        }))
+                      }
+                    >
+                      <div className="flex items-center gap-2">
+                        {open ? (
+                          <ChevronDown className="w-5 h-5 text-gray-600" />
+                        ) : (
+                          <ChevronRight className="w-5 h-5 text-gray-600" />
+                        )}
+                        <h3 className="font-bold text-lg text-gray-800">{opt.question}</h3>
+                      </div>
+                    </div>
 
-                    <label className="flex items-center gap-1">
-                      <input
-                        type="radio"
-                        name={`option-${opt.id}`}
-                        checked={!selectedOptions.some((o) => o.id === opt.id)}
-                        onChange={() => toggleOption(opt, false)}
-                      />
-                      No
-                    </label>
+                    {open && (
+                      <div className="p-3 space-y-2">
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name={`option-${opt.id}`}
+                            value="yes"
+                            checked={selectedOptions.some((i) => i.id === opt.id)}
+                            onChange={() => toggleOption(opt,true)}
+                          />
+                          Yes
+                        </label>
+                        <label className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name={`option-${opt.id}`}
+                            value="no"
+                            checked={!selectedOptions.some((i) => i.id === opt.id)}
+                            onChange={() => toggleOption(opt,false)}
+                          />
+                          No
+                        </label>
+                        {opt.price > 0 && (
+                          <p className="text-sm text-gray-600">Price: €{opt.price}</p>
+                        )}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                )}
+              )}
             </div>
           </>
         )}

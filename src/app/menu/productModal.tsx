@@ -499,7 +499,9 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               <div className="p-6">
                 <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
 
-                {fullProduct.description}
+                <p className="text-gray-700 text-base leading-relaxed mb-4">
+                  {fullProduct.description}
+                </p>
 
                 {fullProduct.ingCategories
                 ?.filter((ingCat) => !ingCat.delete) // hide deleted categories
