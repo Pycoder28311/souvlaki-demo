@@ -153,8 +153,8 @@ model Options {
   price     Decimal   @db.Decimal(10,2)
   comment   String?
   productId Int
+  
   product   Product   @relation(fields: [productId], references: [id])
-
   productOptions   OrderItem[] @relation("ProductOptions")
   selectedByOrders OrderItem[] @relation("OrderItemSelectedOptions")
 }
@@ -163,6 +163,8 @@ model IngCategory {
   id        Int          @id @default(autoincrement())
   productId Int
   name      String
+  isRequired  Boolean      @default(false)
+
   product   Product      @relation(fields: [productId], references: [id])
   ingredients Ingredient[]
 }

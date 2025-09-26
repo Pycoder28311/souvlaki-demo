@@ -1,6 +1,9 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react"
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -14,6 +17,7 @@ type IngCategory = {
   name: string;
   ingredients: Ingredient[];
   delete?: boolean;
+  isRequired?: boolean;
 };
 
 type ImageType = {
@@ -60,7 +64,17 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
-  const [message, setMessage] = useState("")
+  const [message, setMessage] = useState("");
+  const [openCategories, setOpenCategories] = useState<Record<number, boolean>>({});
+  const [openOptions, setOpenOptions] = useState<Record<number, boolean>>({});
+
+  // Toggle function
+  const toggleCategory = (catId: number) => {
+    setOpenCategories((prev) => ({
+      ...prev,
+      [catId]: !prev[catId],
+    }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0] || null
@@ -194,6 +208,18 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
       const newCategories = prev.ingCategories.map((c) =>
         c.id === catId ? { ...c, name: newName } : c
+      );
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
+  const handleMakeRequiredCat = (catId: number) => {
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((c) =>
+        c.id === catId ? { ...c, isRequired: !c.isRequired } : c
       );
 
       return { ...prev, ingCategories: newCategories };
@@ -476,24 +502,70 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 {fullProduct.description}
 
                 {fullProduct.ingCategories
-                  ?.filter((ingCat) => !ingCat.delete) // hide deleted categories
-                  .map((ingCat) => (
-                    <div key={ingCat.id} className="mb-4">
-                        <h3 className="font-bold text-lg mb-2">{ingCat.name}</h3>
+                ?.filter((ingCat) => !ingCat.delete) // hide deleted categories
+                .map((ingCat) => {
+                  const open = openCategories[ingCat.id] ?? false;
+
+                  return (
+                    <div 
+                      key={ingCat.id}
+                      id={`ing-cat-${ingCat.id}`} 
+                      className="mb-4 border rounded-lg shadow-sm bg-white"
+                    >
+                      {/* Header with dropdown arrow */}
+                      <div
+                        onClick={() => toggleCategory(ingCat.id)}
+                        className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                      >
+                        <div className="flex items-center gap-2">
+                          {open ? (
+                            <ChevronDown className="w-5 h-5 text-gray-600" />
+                          ) : (
+                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                          )}
+                          <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                          {ingCat.isRequired && (
+                            <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
+                              Required
+                            </span>
+                          )}
+                        </div>
+
                         {email === "kopotitore@gmail.com" && (
-                          <div className="flex gap-2 mt-1">
+                          <div className="flex gap-2">
                             {/* Edit Category */}
                             <button
-                              onClick={() => handleEditCategoryName(ingCat.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleEditCategoryName(ingCat.id);
+                              }}
                               className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-sm font-medium"
                               title="Edit Category"
                             >
                               Edit
                             </button>
 
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleMakeRequiredCat(ingCat.id);
+                              }}
+                              className={`px-3 py-1 rounded-md text-white transition text-sm font-medium ${
+                                ingCat.isRequired
+                                  ? "bg-orange-600 hover:bg-orange-700"
+                                  : "bg-orange-500 hover:bg-orange-600"
+                              }`}
+                              title={ingCat.isRequired ? "Make Optional" : "Make Required"}
+                            >
+                              {ingCat.isRequired ? "Make Optional" : "Make Required"}
+                            </button>
+
                             {/* Delete Category */}
                             <button
-                              onClick={() => handleDeleteCategory(ingCat.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteCategory(ingCat.id);
+                              }}
                               className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
                               title="Delete Category"
                             >
@@ -501,150 +573,200 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                             </button>
                           </div>
                         )}
-                        <div className="space-y-2">
-                        {ingCat.ingredients.map((ing) => (
+                      </div>
+
+                      {/* Collapsible content */}
+                      {open && (
+                        <div className="p-3 space-y-2">
+                          {ingCat.ingredients.map((ing) => (
                             <label
                               key={ing.id}
-                              className="flex items-center gap-2 border p-2 rounded cursor-pointer"
+                              className="flex items-center gap-3 border rounded-md p-2 bg-gray-50 hover:bg-gray-100 cursor-pointer transition"
                             >
-                            <input
-                              type="checkbox"
-                              checked={selectedIngredients.some((i) => i.id === ing.id)}
-                              onChange={() => toggleIngredient(ing)}
-                            />
-                            {ing.image && (
-                              <Image
-                                src={ing.image}           // URL of the image
-                                alt={ing.name}            // alt text
-                                width={40}                // width in pixels
-                                height={40}               // height in pixels
-                                className="object-cover rounded"
+                              <input
+                                type="checkbox"
+                                checked={selectedIngredients.some((i) => i.id === ing.id)}
+                                onChange={() => toggleIngredient(ing)}
+                                className="h-4 w-4"
                               />
-                            )}
-                            <div>
-                                <p className="font-semibold">{ing.name}</p>
-                            </div>
-                            {email === "kopotitore@gmail.com" && (
-                              <div className="flex gap-1 mt-1">
-                                {/* Edit Ingredient Name */}
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleEditIngredientName(ingCat.id, ing.id);
-                                  }}
-                                  className="px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-xs font-medium"
-                                  title="Edit Ingredient Name"
-                                >
-                                  Edit
-                                </button>
 
-                                {/* Edit Ingredient Price */}
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
-                                  }}
-                                  className="px-2 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-xs font-medium"
-                                  title="Edit Price"
-                                >
-                                  Price
-                                </button>
+                              {ing.image && (
+                                <Image
+                                  src={ing.image}
+                                  alt={ing.name}
+                                  width={40}
+                                  height={40}
+                                  className="object-cover rounded"
+                                />
+                              )}
 
-                                {/* Delete Ingredient */}
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleDeleteIngredient(ingCat.id, ing.id);
-                                  }}
-                                  className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-xs font-medium"
-                                  title="Delete Ingredient"
-                                >
-                                  Delete
-                                </button>
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-800">{ing.name}</p>
+                                {ing.price > 0 && (
+                                  <p className="text-sm text-gray-600">+€{ing.price}</p>
+                                )}
                               </div>
-                            )}
+
+                              {email === "kopotitore@gmail.com" && (
+                                <div className="flex gap-1">
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleEditIngredientName(ingCat.id, ing.id);
+                                    }}
+                                    className="px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-xs font-medium"
+                                    title="Edit Ingredient Name"
+                                  >
+                                    Edit
+                                  </button>
+
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
+                                    }}
+                                    className="px-2 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-xs font-medium"
+                                    title="Edit Price"
+                                  >
+                                    Price
+                                  </button>
+
+                                  <button
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      handleDeleteIngredient(ingCat.id, ing.id);
+                                    }}
+                                    className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-xs font-medium"
+                                    title="Delete Ingredient"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
                             </label>
-                        ))}
-                        {email === "kopotitore@gmail.com" && (
-                          <button
-                            onClick={() => handleAddIngredient(ingCat.id)}
-                            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
-                          >
-                            + Add Ingredient
-                          </button>
-                        )}
-                        </div>
-                    </div>
-                ))}
+                          ))}
 
-                {fullProduct.options
-                  ?.filter((opt) => !opt.delete) // κρύψε τα options που έχουν flag delete
-                  .map((opt) => (
-                    <div key={opt.id} className="mb-4 border p-3 rounded">
-                      <h3 className="font-bold text-lg mb-2">{opt.question}</h3>
-                      <p className="text-sm">Price: {opt.price}</p>
-
-                      <label className="flex items-center gap-1">
-                        <input
-                          type="radio"
-                          name={`option-${opt.id}`}
-                          value="yes"
-                          checked={selectedOptions.some((i) => i.id === opt.id)}
-                          onChange={() => toggleOption(opt)}
-                        />
-                        Yes
-                      </label>
-
-                      <label className="flex items-center gap-1">
-                        <input
-                          type="radio"
-                          name={`option-${opt.id}`}
-                          value="no"
-                          checked={!selectedOptions.some((i) => i.id === opt.id)}
-                          onChange={() => toggleOption(opt)}
-                        />
-                        No
-                      </label>
-
-                      {email === "kopotitore@gmail.com" && (
-                        <div className="flex gap-2 mt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleEditOptionQuestion(opt.id)}
-                            className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
-                          >
-                            Edit Question
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditOptionPrice(opt.id)}
-                            className="px-2 py-1 bg-orange-500 text-white rounded text-xs"
-                          >
-                            Edit Price
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleEditOptionComment(opt.id)}
-                            className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
-                          >
-                            Edit Comment
-                          </button>
-
-                          {/* Delete Option */}
-                          <button
-                            onClick={() => handleDeleteOption(opt.id)}
-                            className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
-                            title="Delete Option"
-                          >
-                            Delete
-                          </button>
+                          {email === "kopotitore@gmail.com" && (
+                            <button
+                              onClick={() => handleAddIngredient(ingCat.id)}
+                              className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
+                            >
+                              + Add Ingredient
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
-                  ))}
+                  );
+                })}
+
+                {fullProduct.options
+                  ?.filter((opt) => !opt.delete) // hide deleted options
+                  .map((opt) => {
+                    const open = openOptions[opt.id] ?? false;
+
+                    return (
+                      <div
+                        key={opt.id}
+                        id={`opt-${opt.id}`}
+                        className="mb-4 border rounded-lg shadow-sm bg-white"
+                      >
+                        {/* Header with toggle */}
+                        <div
+                          onClick={() =>
+                            setOpenOptions((prev) => ({
+                              ...prev,
+                              [opt.id]: !prev[opt.id],
+                            }))
+                          }
+                          className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                        >
+                          <div className="flex items-center gap-2">
+                            {open ? (
+                              <ChevronDown className="w-5 h-5 text-gray-600" />
+                            ) : (
+                              <ChevronRight className="w-5 h-5 text-gray-600" />
+                            )}
+                            <h3 className="font-bold text-lg text-gray-800">{opt.question}</h3>
+                          </div>
+
+                          {email === "kopotitore@gmail.com" && (
+                            <div className="flex gap-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOptionQuestion(opt.id);
+                                }}
+                                className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+                              >
+                                Edit Question
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOptionPrice(opt.id);
+                                }}
+                                className="px-2 py-1 bg-orange-500 text-white rounded text-xs"
+                              >
+                                Edit Price
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditOptionComment(opt.id);
+                                }}
+                                className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                              >
+                                Edit Comment
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteOption(opt.id);
+                                }}
+                                className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
+                                title="Delete Option"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Collapsible content */}
+                        {open && (
+                          <div className="p-3 space-y-2">
+                            <label className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name={`option-${opt.id}`}
+                                value="yes"
+                                checked={selectedOptions.some((i) => i.id === opt.id)}
+                                onChange={() => toggleOption(opt)}
+                              />
+                              Yes
+                            </label>
+                            <label className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name={`option-${opt.id}`}
+                                value="no"
+                                checked={!selectedOptions.some((i) => i.id === opt.id)}
+                                onChange={() => toggleOption(opt)}
+                              />
+                              No
+                            </label>
+                            {opt.price > 0 && (
+                              <p className="text-sm text-gray-600">Price: €{opt.price}</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                })}
 
                 {email === "kopotitore@gmail.com" && (
                   <>
@@ -720,14 +842,39 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
           {/* Add to cart button */}
           <button
             onClick={() => {
-              if (product) {
-                for (let i = 0; i < quantity; i++) {
-                  addToCart(product, selectedIngredients, ingCategories ?? [], selectedOptions, options);
+              if (!product) return;
+
+              // Find the first required category missing selection
+              const missingCat = (ingCategories ?? []).find(
+                (cat) =>
+                  cat.isRequired &&
+                  !selectedIngredients.some((ing) => cat.ingredients.some((i) => i.id === ing.id))
+              );
+
+              if (missingCat) {
+                // Open that category
+                setOpenCategories((prev) => ({
+                  ...prev,
+                  [missingCat.id]: true,
+                }));
+
+                // Scroll into view smoothly
+                const element = document.getElementById(`ing-cat-${missingCat.id}`);
+                if (element) {
+                  element.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
-                setSelectedIngredients([]);
-                setQuantity(1);
-                onClose();
+
+                return;
               }
+
+              // Add to cart if all required ingredients selected
+              for (let i = 0; i < quantity; i++) {
+                addToCart(product, selectedIngredients, ingCategories ?? [], selectedOptions, options);
+              }
+
+              setSelectedIngredients([]);
+              setQuantity(1);
+              onClose();
             }}
             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
           >

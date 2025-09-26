@@ -14,6 +14,7 @@ interface CategoryInput {
   name: string;
   ingredients: IngredientInput[];
   delete?: boolean; // flag to delete category
+  isRequired?: boolean;
 }
 
 type Option = {
@@ -109,91 +110,92 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     for (const submittedCat of ingCategories) {
-      let categoryId: number;
+    let categoryId: number;
 
-      // Handle category creation/updating
-      if (submittedCat.id) {
-        const existingCat = await prisma.ingCategory.findUnique({
-          where: { id: submittedCat.id },
-        });
+    // Handle category creation/updating
+    if (submittedCat.id) {
+      const existingCat = await prisma.ingCategory.findUnique({
+        where: { id: submittedCat.id },
+      });
 
-        if (existingCat) {
-          if (submittedCat.delete) {
-            // Delete all ingredients first
-            await prisma.ingredient.deleteMany({
-              where: { ingCategoryId: existingCat.id },
-            });
-            // Delete category
-            await prisma.ingCategory.delete({
-              where: { id: existingCat.id },
-            });
-            continue; // skip to next category
-          } else {
-            await prisma.ingCategory.update({
-              where: { id: submittedCat.id },
-              data: { name: submittedCat.name },
-            });
-            categoryId = submittedCat.id;
-          }
-        } else {
-          // Category not found, create it
-          const newCat = await prisma.ingCategory.create({
-            data: { name: submittedCat.name, productId },
+      if (existingCat) {
+        if (submittedCat.delete) {
+          // Delete all ingredients first
+          await prisma.ingredient.deleteMany({
+            where: { ingCategoryId: existingCat.id },
           });
-          categoryId = newCat.id;
+          // Delete category
+          await prisma.ingCategory.delete({
+            where: { id: existingCat.id },
+          });
+          continue; // skip to next category
+        } else {
+          await prisma.ingCategory.update({
+            where: { id: submittedCat.id },
+            data: { 
+              name: submittedCat.name,
+              isRequired: submittedCat.isRequired ?? existingCat.isRequired, // ✅ update required
+            },
+          });
+          categoryId = submittedCat.id;
         }
       } else {
-        // New category
+        // Category not found, create it
         const newCat = await prisma.ingCategory.create({
-          data: { name: submittedCat.name, productId },
+          data: { 
+            name: submittedCat.name, 
+            productId,
+            isRequired: submittedCat.isRequired ?? false, // ✅ set default if missing
+          },
         });
         categoryId = newCat.id;
       }
+    } else {
+      // New category
+      const newCat = await prisma.ingCategory.create({
+        data: { 
+          name: submittedCat.name, 
+          productId,
+          isRequired: submittedCat.isRequired ?? false, // ✅ set default
+        },
+      });
+      categoryId = newCat.id;
+    }
 
-      if (submittedCat.delete) {
-        // If it's a newly created category but marked for deletion
-        await prisma.ingCategory.delete({ where: { id: categoryId } });
-        continue;
-      }
+    if (submittedCat.delete) {
+      // If it's a newly created category but marked for deletion
+      await prisma.ingCategory.delete({ where: { id: categoryId } });
+      continue;
+    }
 
-      const submittedIngredientIds = submittedCat.ingredients
-        .filter((ing) => ing.id)
-        .map((ing) => ing.id!) as number[];
+    const submittedIngredientIds = submittedCat.ingredients
+      .filter((ing) => ing.id)
+      .map((ing) => ing.id!) as number[];
 
-      // Delete ingredients that were removed on frontend
-      if (submittedIngredientIds.length) {
-        await prisma.ingredient.deleteMany({
-          where: {
-            ingCategoryId: categoryId,
-            id: { notIn: submittedIngredientIds },
-          },
+    // Delete ingredients that were removed on frontend
+    if (submittedIngredientIds.length) {
+      await prisma.ingredient.deleteMany({
+        where: {
+          ingCategoryId: categoryId,
+          id: { notIn: submittedIngredientIds },
+        },
+      });
+    } else {
+      // delete all if no ingredients submitted
+      await prisma.ingredient.deleteMany({ where: { ingCategoryId: categoryId } });
+    }
+
+    // Create/update ingredients
+    for (const ing of submittedCat.ingredients) {
+      if (ing.id) {
+        const existingIng = await prisma.ingredient.findUnique({
+          where: { id: ing.id },
         });
-      } else {
-        // delete all if no ingredients submitted
-        await prisma.ingredient.deleteMany({ where: { ingCategoryId: categoryId } });
-      }
-
-      // Create/update ingredients
-      for (const ing of submittedCat.ingredients) {
-        if (ing.id) {
-          const existingIng = await prisma.ingredient.findUnique({
+        if (existingIng) {
+          await prisma.ingredient.update({
             where: { id: ing.id },
+            data: { name: ing.name, price: ing.price, image: ing.image || null },
           });
-          if (existingIng) {
-            await prisma.ingredient.update({
-              where: { id: ing.id },
-              data: { name: ing.name, price: ing.price, image: ing.image || null },
-            });
-          } else {
-            await prisma.ingredient.create({
-              data: {
-                name: ing.name,
-                price: ing.price,
-                image: ing.image || null,
-                ingCategoryId: categoryId,
-              },
-            });
-          }
         } else {
           await prisma.ingredient.create({
             data: {
@@ -204,7 +206,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             },
           });
         }
+      } else {
+        await prisma.ingredient.create({
+          data: {
+            name: ing.name,
+            price: ing.price,
+            image: ing.image || null,
+            ingCategoryId: categoryId,
+          },
+        });
       }
+    }
     }
 
     res.status(200).json({ message: "Product updated successfully" });

@@ -20,6 +20,7 @@ type IngCategory = {
   id: number;
   name: string;
   ingredients: Ingredient[];
+  isRequired?: boolean;
 };
 
 type Option = {

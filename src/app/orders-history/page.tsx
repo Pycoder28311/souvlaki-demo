@@ -44,6 +44,7 @@ type IngCategory = {
   id: number;
   name: string;
   ingredients: Ingredient[];
+  isRequired?: boolean;
 };
 
 type ImageType = {
@@ -266,7 +267,7 @@ export default function MyOrdersPage() {
             {/* Header */}
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
               <p className="text-gray-700">
-                <strong>Σύνολο:</strong> €{order.total}
+                <strong>Σύνολο:</strong> {order.total}€
               </p>
               <p className="text-gray-500 text-sm">
                 <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString()}
@@ -321,26 +322,24 @@ export default function MyOrdersPage() {
                         </div>
 
                         {/* Ingredients */}
-                        {item.selectedIngredients && item.selectedIngredients.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {item.selectedIngredients.map((ing) => (
-                              <span
-                                key={ing.id}
-                                className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                              >
-                                {ing.name}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {item.selectedOptions?.map((opt) => (
-                          <span
-                            key={opt.id}
-                            className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                          >
-                            {opt.comment}
-                          </span>
-                        ))}
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {item.selectedIngredients?.map((ing) => (
+                            <span
+                              key={ing.id}
+                              className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                            >
+                              {ing.name}
+                            </span>
+                          ))}
+                          {item.selectedOptions?.map((opt) => (
+                            <span
+                              key={opt.id}
+                              className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                            >
+                              {opt.comment}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Repeat Order Button */}

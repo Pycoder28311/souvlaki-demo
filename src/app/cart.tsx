@@ -18,6 +18,7 @@ type IngCategory = {
   id: number;
   name: string;
   ingredients: Ingredient[];
+  isRequired?: boolean;
 };
 
 type Option = {
@@ -295,7 +296,7 @@ export default function OrderSidebar({
                     </div>
                     <div className="flex gap-2 justify-end">
                       <span className="text-yellow-500 font-semibold px-3 py-1 ">
-                        €{(item.price * item.quantity).toFixed(2)}
+                        {(item.price * item.quantity).toFixed(2)}€
                       </span>
                       <button
                         className=" p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400"
@@ -384,7 +385,7 @@ export default function OrderSidebar({
             onClick={() => setShowPaymentModal(true)}
             className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
           >
-            Πλήρωμή €{total.toFixed(2)}
+            Πλήρωμή {total.toFixed(2)}€
           </button>
         </div>
       )}
@@ -477,7 +478,7 @@ export default function OrderSidebar({
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">
               <p className="mt-4 font-bold text-gray-900 text-lg">
-                Σύνολο: €{total.toFixed(2)}
+                Σύνολο: {total.toFixed(2)}€
               </p>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
@@ -508,7 +509,7 @@ export default function OrderSidebar({
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">
               <p className="mt-4 font-bold text-gray-900 text-lg">
-                Σύνολο: €{total.toFixed(2)}
+                Σύνολο: {total.toFixed(2)}€
               </p>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"

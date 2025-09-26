@@ -11,6 +11,7 @@ export default async function MyOrdersPage() {
         include: {
           product: true,
           ingredients: { include: { ingredient: true } },
+          selectedOptions: true,
         },
       },
     },
@@ -49,35 +50,66 @@ export default async function MyOrdersPage() {
             {/* Order Details */}
             <div className="p-4 space-y-3">
               <p className="text-gray-700">
-                <strong>Total:</strong> €{order.total.toFixed(2)}
+                <strong>Total:</strong> {order.total.toFixed(2)}€
               </p>
               <p className="text-gray-500 text-sm">
                 <strong>Created:</strong> {order.createdAt.toLocaleString()}
               </p>
 
               {/* Items */}
-              <div className="bg-gray-100 p-3 rounded-lg">
-                <h2 className="text-gray-800 font-medium mb-2">Items</h2>
-                <ul className="space-y-2">
-                  {order.items.map((item) => (
-                    <li key={item.id} className="text-gray-700">
-                      <span className="font-medium">
-                        {item.quantity} × {item.product.name}
-                      </span>{" "}
-                      (€{item.price.toFixed(2)})
+              <ul className="space-y-3">
+                {order.items.map((item) => {
+                  // Calculate extras
+                  const optionsTotal = item.selectedOptions.reduce(
+                    (acc, opt) => acc + Number(opt.price || 0),
+                    0
+                  );
+                  const ingredientsTotal = item.ingredients.reduce(
+                    (acc, ing) => acc + Number(ing.price || 0),
+                    0
+                  );
+
+                  // Total per item
+                  const itemTotal = (Number(item.price) - (optionsTotal + ingredientsTotal)) * item.quantity;
+
+                  return (
+                    <li
+                      key={item.id}
+                      className="bg-gray-50 border rounded-lg p-3 hover:bg-gray-100 transition"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-gray-800">
+                          {item.quantity} × {item.product.name}
+                        </span>
+                        <span className="text-gray-700">{itemTotal.toFixed(2)}€</span>
+                      </div>
+
                       {item.ingredients.length > 0 && (
-                        <ul className="ml-5 mt-1 text-sm text-gray-600 list-disc">
+                        <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
                           {item.ingredients.map((ing) => (
                             <li key={ing.id}>
-                              + {ing.ingredient.name} (€{ing.price.toFixed(2)})
+                              {ing.ingredient.name}{" "}
+                              {ing.price ? `(${Number(ing.price).toFixed(2)}€)` : ""}
                             </li>
                           ))}
                         </ul>
                       )}
+
+                      {item.selectedOptions.length > 0 && (
+                        <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
+                          {item.selectedOptions.map((opt) => (
+                            <li key={opt.id}>
+                              {opt.comment}{" "}
+                              {opt.price ? `(${Number(opt.price).toFixed(2)}€)` : ""}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      <span className="mt-2">Σύνολο:</span> {Number(item.price)}€
                     </li>
-                  ))}
-                </ul>
-              </div>
+                  );
+                })}
+              </ul>
             </div>
           </div>
         ))}
