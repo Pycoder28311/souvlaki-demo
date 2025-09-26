@@ -28,14 +28,84 @@ export async function GET(req) {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                ingCategories: {
+                  include: {
+                    ingredients: true, // includes all ingredients in this category
+                  },
+                },
+              },
+            },
+            options: true,
+            selectedOptions: true,
             ingredients: { include: { ingredient: true } },
           },
         },
       },
     });
 
-    return NextResponse.json({ success: true, orders });
+    // Build a separate product map so we don’t embed full product inside orderItem
+    const productMap = {};
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
+        if (!productMap[item.productId]) {
+          const { id, name, price, imageId, ingCategories } = item.product;
+          console.log(ingCategories,name,item.product)
+          productMap[item.productId] = {
+            id,
+            name,
+            price: Number(price),
+            imageId,
+            ingCategories: ingCategories?.map((cat) => ({
+              id: cat.id,
+              name: cat.name,
+              ingredients: cat.ingredients?.map((ing) => ({
+                id: ing.id,
+                name: ing.name,
+                price: Number(ing.price),
+              })) || [],
+            })) || [],
+          };
+        }
+      });
+    });
+
+    // Format orders with orderItems but no full product inside
+    const formattedOrders = orders.map((order) => ({
+      ...order,
+      items: order.items.map((item) => {
+        const product = productMap[item.productId];
+
+        return {
+          productId: item.productId,
+          price: Number(item.price),
+          quantity: item.quantity,
+          imageId: item.imageId ?? null,
+          selectedIngredients: item.ingredients.map((ing) => ({
+            ...ing.ingredient,
+            price: Number(ing.price),
+          })),
+          selectedIngCategories: product?.ingCategories || [], // <-- use product's categories
+          selectedOptions: item.selectedOptions.map((opt) => ({
+            id: opt.id,
+            question: opt.question,
+            price: Number(opt.price),
+            comment: opt.comment,
+            productId: opt.productId,
+          })),
+          options: item.options.map((opt) => ({
+            id: opt.id,
+            question: opt.question,
+            price: Number(opt.price),
+            comment: opt.comment,
+            productId: opt.productId,
+          })),
+        };
+      }),
+    }));
+
+    return NextResponse.json({ success: true, orders: formattedOrders, products: productMap });
   } catch (err) {
     console.error(err);
     return NextResponse.json(

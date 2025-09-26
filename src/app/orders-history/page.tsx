@@ -12,13 +12,12 @@ type Ingredient = {
   price: number;
 };
 
-type OrderItemList = {
+type Option = {
   id: number;
-  product: Product;
-  quantity: number;
+  question: string;
   price: number;
-  ingredients: Ingredient[];
-  ingCategories: IngCategory[];
+  comment?: string;
+  productId?: number;
 };
 
 type OrderItem = {
@@ -29,6 +28,8 @@ type OrderItem = {
   imageId: number | null;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+  selectedOptions?: Option[];
+  options?: Option[];
 };
 
 type Order = {
@@ -36,7 +37,7 @@ type Order = {
   status: string;
   total: number;
   createdAt: string;
-  items: OrderItemList[];
+  items: OrderItem[];
 };
 
 type IngCategory = {
@@ -52,14 +53,15 @@ type ImageType = {
 }
 
 type Product = {
-  id: number;
-  name: string;
-  price: number;
-  offer: boolean;
+  id: number
+  name: string
+  price: number
+  offer: boolean
   description: string;
-  image?: ImageType | null;
+  image?: ImageType | null
   imageId?: number | null; 
-  ingCategories?: IngCategory[]
+  ingCategories?: IngCategory[];
+  options?: Option[];
 }
 
 type User = {
@@ -76,6 +78,7 @@ export default function MyOrdersPage() {
   const [user, setUser] = useState<User | null>(null);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
 
   const userId = user?.id;
 
@@ -108,6 +111,7 @@ export default function MyOrdersPage() {
         const data = await res.json();
         if (data.success) {
           setOrders(data.orders);
+          setProducts(data.products);
         } else {
           console.error(data.error);
         }
@@ -156,26 +160,33 @@ export default function MyOrdersPage() {
   const addToCart = (
     product: Product,
     selectedIngredients: Ingredient[],
-    selectedIngCategories: IngCategory[] // 👈 add categories too
+    selectedIngCategories: IngCategory[], // categories
+    selectedOptions: Option[], // 👈 options
+    options: Option[]
   ) => {
     setOrderItems((prev) => {
-      // Check if product with same ingredients already exists
+      // Check if product with same ingredients and options already exists
       const existing = prev.find((item) => {
         if (item.productId !== product.id) return false;
 
         const itemIngredients = item.selectedIngredients || [];
         if (itemIngredients.length !== selectedIngredients.length) return false;
-
-        return itemIngredients.every((ing) =>
+        const ingredientsMatch = itemIngredients.every((ing) =>
           selectedIngredients.some((sel) => sel.id === ing.id)
         );
+
+        const itemOptions = item.selectedOptions || [];
+        if (itemOptions.length !== selectedOptions.length) return false;
+        const optionsMatch = itemOptions.every((opt) =>
+          selectedOptions.some((sel) => sel.id === opt.id)
+        );
+
+        return ingredientsMatch && optionsMatch;
       });
 
       if (existing) {
         return prev.map((item) =>
-          item === existing
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item === existing ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
 
@@ -183,9 +194,13 @@ export default function MyOrdersPage() {
         (sum, ing) => sum + Number(ing.price),
         0
       );
-      const totalPrice = Number(product.price) + ingredientsTotal;
+      const optionsTotal = selectedOptions.reduce(
+        (sum, opt) => sum + Number(opt.price),
+        0
+      );
+      console.log(optionsTotal)
+      const totalPrice = product.price + ingredientsTotal + optionsTotal;
 
-      // Otherwise add new item with categories too
       return [
         ...prev,
         {
@@ -195,7 +210,9 @@ export default function MyOrdersPage() {
           price: totalPrice,
           quantity: 1,
           selectedIngredients,
-          selectedIngCategories, // 👈 store them here
+          selectedIngCategories,
+          selectedOptions, // 👈 store Option[] here
+          options,
         },
       ];
     });
@@ -204,6 +221,7 @@ export default function MyOrdersPage() {
   const editItem = (
     orderItemToEdit: OrderItem,
     newIngredients: Ingredient[],
+    selectedOptions?: Option[] | undefined, 
   ) => {
     setOrderItems((prev) =>
       prev.map((item) =>
@@ -212,11 +230,14 @@ export default function MyOrdersPage() {
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
+              selectedOptions: selectedOptions, // προσθήκη options
               // Recalculate price: base price + sum of ingredient prices
               price:
-                orderItemToEdit.price - 
-                (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0) + 
-                newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0),
+              orderItemToEdit.price
+              - (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0)
+              + newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0)
+              - (item.selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0)
+              + (selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0),
             }
           : item
       )
@@ -270,17 +291,17 @@ export default function MyOrdersPage() {
             {/* Details */}
             <div className="p-4 space-y-3 bg-gray-100">
               <ul className="space-y-2">
-                {order.items.map((item: OrderItemList) => (
+                {order.items.map((item: OrderItem, index) => (
                   <li
-                    key={item.id}
+                    key={`${item.productId}-${index}`} 
                     className="flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden"
                   >
                     {/* Product Image */}
-                    {item.product.imageId ? (
+                    {item.imageId ? (
                       <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
                         <Image
-                          src={`/api/images/${item.product.imageId}`}
-                          alt={item.product.name}
+                          src={`/api/images/${item.imageId}`}
+                          alt={item.name}
                           fill
                           style={{ objectFit: "cover", objectPosition: "top" }}
                           className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
@@ -296,13 +317,13 @@ export default function MyOrdersPage() {
                     <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
                       <div>
                         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                          <h3 className="text-lg font-semibold text-gray-800">{item.product.name}</h3>
+                          <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
                         </div>
 
                         {/* Ingredients */}
-                        {item.ingredients.length > 0 && (
+                        {item.selectedIngredients && item.selectedIngredients.length > 0 && (
                           <div className="mt-2 flex flex-wrap gap-2">
-                            {item.ingredients.map((ing) => (
+                            {item.selectedIngredients.map((ing) => (
                               <span
                                 key={ing.id}
                                 className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
@@ -312,14 +333,32 @@ export default function MyOrdersPage() {
                             ))}
                           </div>
                         )}
+                        {item.selectedOptions?.map((opt) => (
+                          <span
+                            key={opt.id}
+                            className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                          >
+                            {opt.comment}
+                          </span>
+                        ))}
                       </div>
 
                       {/* Repeat Order Button */}
                       <button
                         className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                        onClick={() =>
-                          addToCart(item.product, item.ingredients, item.ingCategories)
-                        }
+                        onClick={() => {
+                          // find the product corresponding to this orderItem
+                          const product = products[item.productId];
+                          if (!product) return;
+
+                          addToCart(
+                            product,                        // pass the product object
+                            item.selectedIngredients || [],
+                            item.selectedIngCategories || [],
+                            item.selectedOptions || [],
+                            item.options || []
+                          );
+                        }}
                       >
                         Παράγγειλε ξανά
                       </button>

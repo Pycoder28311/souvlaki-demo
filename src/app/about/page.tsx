@@ -22,14 +22,24 @@ type IngCategory = {
   ingredients: Ingredient[];
 };
 
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  productId?: number;
+};
+
 type OrderItem = {
-  imageId: number | null;
   productId: number;
   name: string;
   price: number;
   quantity: number;
+  imageId: number | null;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+  selectedOptions?: Option[];
+  options?: Option[];
 };
 
 export default function About() {

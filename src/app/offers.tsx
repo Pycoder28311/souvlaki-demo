@@ -9,7 +9,9 @@ interface ProductModalProps {
   addToCart: (
     product: Product,
     selectedIngredients: Ingredient[],
-    selectedIngCategories: IngCategory[]
+    selectedIngCategories: IngCategory[], 
+    selectedOptions: Option[], 
+    options: Option[]
   ) => void;
   selectedProduct: Product | null;
   setSelectedProduct: Dispatch<SetStateAction<Product | null>>;
@@ -21,15 +23,24 @@ type ImageType = {
   createdAt: Date
 }
 
-type Product = {
+type Option = {
   id: number;
-  name: string;
+  question: string;
   price: number;
-  offer: boolean;
+  comment?: string;
+  productId?: number;
+};
+
+type Product = {
+  id: number
+  name: string
+  price: number
+  offer: boolean
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
-  ingCategories?: IngCategory[]
+  ingCategories?: IngCategory[];
+  options?: Option[];
 }
 
 type Ingredient = {

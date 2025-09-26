@@ -15,6 +15,15 @@ type IngCategory = {
   ingredients: Ingredient[];
 };
 
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  delete?: boolean;
+  productId?: number;
+};
+
 type OrderItem = {
   imageId: number | null;
   productId: number;
@@ -23,6 +32,8 @@ type OrderItem = {
   quantity: number;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+  selectedOptions?: Option[];
+  options?: Option[];
 };
 
 // types.ts or inside EditModal.tsx
@@ -33,6 +44,7 @@ interface EditModalProps {
   editItem: (
     orderItemToEdit: OrderItem,
     selectedIngredients: Ingredient[],
+    selectedOptions?: Option[] | undefined,
   ) => void;
   changeQuantity: (newQuantity: number) => void;
   quantity?: number;
@@ -40,11 +52,24 @@ interface EditModalProps {
 
 export default function EditModal({ orderItem,  defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
   
-  const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(
-    defaultSelectedIngredients
-  );
+  const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(defaultSelectedIngredients);
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>(orderItem.selectedOptions || []);
 
-  const toggleIngredient = (ingredient: Ingredient, action: "added" | "removed" ) => {
+  // toggleOption όπως toggleIngredient
+  const toggleOption = (option: Option, isYes: boolean) => {
+    setSelectedOptions((prev) => {
+      if (isYes) {
+        // προσθέτουμε αν δεν υπάρχει
+        return prev.some((o) => o.id === option.id) ? prev : [...prev, option];
+      } else {
+        // αφαιρούμε αν υπάρχει
+        return prev.filter((o) => o.id !== option.id);
+      }
+    });
+  };
+
+  const toggleIngredient = (ingredient: Ingredient) => {
+    console.log(orderItem)
     setSelectedIngredients((prev) =>
         prev.some((i) => i.id === ingredient.id)
         ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected
@@ -123,7 +148,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                 <button
                   onClick={() => {
                     if (orderItem) {
-                        editItem(orderItem, selectedIngredients);
+                        editItem(orderItem, selectedIngredients, selectedOptions);
                         setSelectedIngredients([]);
                         onClose(); // close modal
                     }
@@ -147,8 +172,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                             type="checkbox"
                             checked={selectedIngredients.some((i) => i.id === ing.id)}
                             onChange={() => {
-                              const isSelected = selectedIngredients.some((i) => i.id === ing.id);
-                              toggleIngredient(ing, isSelected ? "removed" : "added");
+                              toggleIngredient(ing);
                             }}
                           />
                           {ing.image && (
@@ -167,6 +191,34 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                       ))}
                       </div>
                   </div>
+              ))}
+
+              {orderItem && orderItem.options && orderItem.options?.map((opt) => (
+                <div key={opt.id} className="mb-4 border p-3 rounded">
+                  <h3 className="font-bold text-lg mb-2">{opt.question}</h3>
+
+                  <div className="flex gap-4 mt-2">
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name={`option-${opt.id}`}
+                        checked={selectedOptions.some((o) => o.id === opt.id)}
+                        onChange={() => toggleOption(opt, true)}
+                      />
+                      Yes
+                    </label>
+
+                    <label className="flex items-center gap-1">
+                      <input
+                        type="radio"
+                        name={`option-${opt.id}`}
+                        checked={!selectedOptions.some((o) => o.id === opt.id)}
+                        onChange={() => toggleOption(opt, false)}
+                      />
+                      No
+                    </label>
+                  </div>
+                </div>
               ))}
             </div>
           </>

@@ -143,7 +143,20 @@ model Product {
   category    Category      @relation(fields: [categoryId], references: [id])
   ingCategories IngCategory[]
   orderItems  OrderItem[]
-  favorites Favorite[]
+  favorites   Favorite[]
+  options     Options[]
+}
+
+model Options {
+  id        Int       @id @default(autoincrement())
+  question  String
+  price     Decimal   @db.Decimal(10,2)
+  comment   String?
+  productId Int
+  product   Product   @relation(fields: [productId], references: [id])
+
+  productOptions   OrderItem[] @relation("ProductOptions")
+  selectedByOrders OrderItem[] @relation("OrderItemSelectedOptions")
 }
 
 model IngCategory {
@@ -187,7 +200,9 @@ model OrderItem {
   order       Order      @relation(fields: [orderId], references: [id])
   product     Product    @relation(fields: [productId], references: [id])
   ingredients OrderItemIngredient[]
-  favorites Favorite[]
+  favorites   Favorite[]
+  options     Options[] @relation("ProductOptions")
+  selectedOptions     Options[] @relation("OrderItemSelectedOptions")
 }
 
 model OrderItemIngredient {

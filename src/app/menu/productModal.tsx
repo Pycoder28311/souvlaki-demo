@@ -22,6 +22,15 @@ type ImageType = {
   createdAt: Date
 }
 
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  delete?: boolean;
+  productId?: number;
+};
+
 type Product = {
   id: number
   name: string
@@ -30,20 +39,22 @@ type Product = {
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
-  ingCategories?: IngCategory[]
+  ingCategories?: IngCategory[];
+  options?: Option[];
 }
 
 type ModalProps = {
   email?: string;
   product: Product | null;
   onClose: () => void;
-  addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[]) => void;
+  addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[], selectedOptions: Option[], options: Option[]) => void;
 };
 
 export default function ProductModal({ email, product, onClose, addToCart }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
+  const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
   const [quantity, setQuantity] = useState(1);
 
   const [file, setFile] = useState<File | null>(null)
@@ -94,7 +105,16 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     );
   };
 
+  const toggleOption = (option: Option) => {
+    setSelectedOptions((prev) =>
+      prev.some((i) => i.id === option.id)
+        ? prev.filter((i) => i.id !== option.id) // remove if already selected
+        : [...prev, option] // add αν δεν υπάρχει
+    );
+  };
+
   const [ingCategories, setIngCategories] = useState<IngCategory[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
 
   useEffect(() => {
     if (!product) return;
@@ -109,6 +129,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
         // ✅ directly store ingCategories in its own state
         setIngCategories(data.ingCategories ?? []);
+        setOptions(data.options ?? [])
       } catch (err) {
         console.error("Failed to fetch product details:", err);
       } finally {
@@ -193,6 +214,98 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
       return { ...prev, ingCategories: [...(prev.ingCategories || []), newCategory] };
     });
   };
+
+  const handleAddOption = () => {
+    const question = prompt("Enter new question of option");
+    if (!question) return;
+
+    const price = prompt("Enter new option price");
+    if (!price) return;
+
+    const comment = prompt("Enter the comment of the option");
+    if (!comment) return;
+
+    setFullProduct((prev) => {
+      if (!prev) return prev;
+      const newOption: Option = {
+        id: Date.now(),       // temporary ID
+        question: question,     // το πεδίο είναι 'answer', όχι 'question'
+        price: Number(price), // σωστή μετατροπή σε number
+        comment: comment,     // optional
+        productId: product?.id
+      };
+      return { ...prev, options: [...(prev.options || []), newOption] };
+    });
+  };
+
+  const handleEditOptionQuestion = (optionId: number) => {
+    if (!fullProduct?.options) return;
+
+    const option = fullProduct.options.find((o) => o.id === optionId);
+    if (!option) return;
+
+    const newQuestion = prompt("Edit option question", option.question);
+    if (!newQuestion) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.options) return prev;
+
+      const newOptions = prev.options.map((o) =>
+        o.id === optionId ? { ...o, question: newQuestion } : o
+      );
+
+      return { ...prev, options: newOptions };
+    });
+  };
+
+  const handleEditOptionPrice = (optionId: number) => {
+    if (!fullProduct?.options) return;
+
+    const option = fullProduct.options.find((o) => o.id === optionId);
+    if (!option) return;
+
+    const newPrice = prompt("Edit option price", option.price.toString());
+    if (newPrice === null) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.options) return prev;
+
+      const newOptions = prev.options.map((o) =>
+        o.id === optionId ? { ...o, price: Number(newPrice) } : o
+      );
+
+      return { ...prev, options: newOptions };
+    });
+  };
+
+  const handleEditOptionComment = (optionId: number) => {
+    if (!fullProduct?.options) return;
+
+    const option = fullProduct.options.find((o) => o.id === optionId);
+    if (!option) return;
+
+    const newComment = prompt("Edit option comment", option.comment || "");
+    if (newComment === null) return;
+
+    setFullProduct((prev) => {
+      if (!prev || !prev.options) return prev;
+
+      const newOptions = prev.options.map((o) =>
+        o.id === optionId ? { ...o, comment: newComment } : o
+      );
+
+      return { ...prev, options: newOptions };
+    });
+  };
+
+  const handleDeleteOption = (id: number) => {
+    setFullProduct((prev) => {
+      if (!prev) return prev;
+      const updatedOptions = prev.options?.filter((opt) => opt.id !== id);
+      return { ...prev, options: updatedOptions };
+    });
+  };
+
 
   const handleDeleteCategory = (catId: number) => {
     if (!confirm("Are you sure you want to delete this category?")) return;
@@ -466,13 +579,88 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                         </div>
                     </div>
                 ))}
+
+                {fullProduct.options
+                  ?.filter((opt) => !opt.delete) // κρύψε τα options που έχουν flag delete
+                  .map((opt) => (
+                    <div key={opt.id} className="mb-4 border p-3 rounded">
+                      <h3 className="font-bold text-lg mb-2">{opt.question}</h3>
+                      <p className="text-sm">Price: {opt.price}</p>
+
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name={`option-${opt.id}`}
+                          value="yes"
+                          checked={selectedOptions.some((i) => i.id === opt.id)}
+                          onChange={() => toggleOption(opt)}
+                        />
+                        Yes
+                      </label>
+
+                      <label className="flex items-center gap-1">
+                        <input
+                          type="radio"
+                          name={`option-${opt.id}`}
+                          value="no"
+                          checked={!selectedOptions.some((i) => i.id === opt.id)}
+                          onChange={() => toggleOption(opt)}
+                        />
+                        No
+                      </label>
+
+                      {email === "kopotitore@gmail.com" && (
+                        <div className="flex gap-2 mt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditOptionQuestion(opt.id)}
+                            className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+                          >
+                            Edit Question
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditOptionPrice(opt.id)}
+                            className="px-2 py-1 bg-orange-500 text-white rounded text-xs"
+                          >
+                            Edit Price
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleEditOptionComment(opt.id)}
+                            className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                          >
+                            Edit Comment
+                          </button>
+
+                          {/* Delete Option */}
+                          <button
+                            onClick={() => handleDeleteOption(opt.id)}
+                            className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
+                            title="Delete Option"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
                 {email === "kopotitore@gmail.com" && (
-                  <button
-                    onClick={handleAddCategory}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
-                  >
-                    + Add Category
-                  </button>
+                  <>
+                    <button
+                      onClick={handleAddCategory}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                    >
+                      + Add Category
+                    </button>
+                    <button
+                      onClick={handleAddOption}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                    >
+                      + Add Option
+                    </button>
+                  </>
                 )}
               </div>
             </>
@@ -534,7 +722,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
             onClick={() => {
               if (product) {
                 for (let i = 0; i < quantity; i++) {
-                  addToCart(product, selectedIngredients, ingCategories ?? []);
+                  addToCart(product, selectedIngredients, ingCategories ?? [], selectedOptions, options);
                 }
                 setSelectedIngredients([]);
                 setQuantity(1);

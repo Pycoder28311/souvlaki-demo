@@ -20,14 +20,24 @@ type IngCategory = {
   ingredients: Ingredient[];
 };
 
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  productId?: number;
+};
+
 type OrderItem = {
-  imageId: number | null;
   productId: number;
   name: string;
   price: number;
   quantity: number;
+  imageId: number | null;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+  selectedOptions?: Option[];
+  options?: Option[];
 };
 
 interface OrderSidebarProps {
@@ -95,7 +105,9 @@ export default function OrderSidebar({
           productId: item.productId,
           quantity: item.quantity,
           price: item.price,
-          selectedIngredients: item.selectedIngredients || [],
+          ingredients: item.selectedIngredients || [],
+          options: item.options,
+          selectedOptions: item.selectedOptions,
         })),
       };
 
@@ -266,7 +278,6 @@ export default function OrderSidebar({
               .join("-");
 
             const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
-            const isExpanded = !!expandedItems[item.productId];
 
             return (
               <div
@@ -303,7 +314,7 @@ export default function OrderSidebar({
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                    {item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                    {((item.selectedIngredients && item.selectedIngredients.length > 0) || (item.selectedOptions && item.selectedOptions.length > 0)) && (
                       <div className="mt-1">
                         <button
                           onClick={(e) => {
@@ -340,14 +351,22 @@ export default function OrderSidebar({
                     </div>
                   )}
                 </div>
-                {expandedItems[item.productId] && item.selectedIngredients && item.selectedIngredients.length > 0 && (
+                {expandedItems[item.productId] && ((item.selectedIngredients && item.selectedIngredients.length > 0) || (item.selectedOptions && item.selectedOptions.length > 0)) && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {item.selectedIngredients.map((ing) => (
+                    {item.selectedIngredients?.map((ing) => (
                       <span
                         key={ing.id}
                         className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
                       >
                         {ing.name}
+                      </span>
+                    ))}
+                    {item.selectedOptions?.map((opt) => (
+                      <span
+                        key={opt.id}
+                        className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                      >
+                        {opt.comment}
                       </span>
                     ))}
                   </div>

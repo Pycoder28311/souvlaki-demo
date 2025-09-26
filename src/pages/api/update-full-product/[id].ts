@@ -16,6 +16,14 @@ interface CategoryInput {
   delete?: boolean; // flag to delete category
 }
 
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  delete?: boolean;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
 
@@ -26,11 +34,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const productId = parseInt(id, 10);
-    const { name, price, ingCategories } = req.body as {
+    const { name, price, ingCategories, options } = req.body as {
       name: string;
       price: number;
-      offer: number;
       ingCategories: CategoryInput[];
+      options: Option[];
     };
 
     // Update product fields
@@ -39,27 +47,82 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       data: { name, price: new Prisma.Decimal(price) },
     });
 
-    console.log(ingCategories)
+    for (const submittedOpt of options) {
+      let optionId: number;
+
+      // Αν υπάρχει ήδη optionId, κάνουμε update/delete αλλιώς create
+      if (submittedOpt.id) {
+        const existingOpt = await prisma.options.findUnique({
+          where: { id: submittedOpt.id },
+        });
+
+        if (existingOpt) {
+          if (submittedOpt.delete) {
+            // Διαγραφή option
+            await prisma.options.delete({
+              where: { id: existingOpt.id },
+            });
+            continue;
+          } else {
+            // Update option
+            await prisma.options.update({
+              where: { id: submittedOpt.id },
+              data: {
+                question: submittedOpt.question,
+                price: submittedOpt.price,
+                comment: submittedOpt.comment || null,
+                productId, // να κρατήσει σύνδεση με το προϊόν
+              },
+            });
+            optionId = submittedOpt.id;
+          }
+        } else {
+          // Δεν υπάρχει στη DB, create
+          const newOpt = await prisma.options.create({
+            data: {
+              question: submittedOpt.question,
+              price: submittedOpt.price,
+              comment: submittedOpt.comment || null,
+              productId,
+            },
+          });
+          optionId = newOpt.id;
+        }
+      } else {
+        // Καινούργιο option
+        const newOpt = await prisma.options.create({
+          data: {
+            question: submittedOpt.question,
+            price: submittedOpt.price,
+            comment: submittedOpt.comment || null,
+            productId,
+          },
+        });
+        optionId = newOpt.id;
+      }
+
+      // Αν μαρκαρίστηκε για διαγραφή ενώ μόλις δημιουργήθηκε
+      if (submittedOpt.delete) {
+        await prisma.options.delete({ where: { id: optionId } });
+        continue;
+      }
+    }
 
     for (const submittedCat of ingCategories) {
       let categoryId: number;
-      console.log("inside 1")
 
       // Handle category creation/updating
       if (submittedCat.id) {
-        console.log("inside 2")
         const existingCat = await prisma.ingCategory.findUnique({
           where: { id: submittedCat.id },
         });
 
         if (existingCat) {
-            console.log("inside 3",existingCat)
           if (submittedCat.delete) {
             // Delete all ingredients first
             await prisma.ingredient.deleteMany({
               where: { ingCategoryId: existingCat.id },
             });
-            console.log("inside 4")
             // Delete category
             await prisma.ingCategory.delete({
               where: { id: existingCat.id },

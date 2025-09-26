@@ -34,13 +34,15 @@ type IngCategory = {
 };
 
 type OrderItem = {
-  imageId: number | null;
   productId: number;
   name: string;
   price: number;
   quantity: number;
+  imageId: number | null;
   selectedIngredients?: Ingredient[]; // optional array of selected ingredients
   selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
+  selectedOptions?: Option[];
+  options?: Option[];
 };
 
 type ImageType = {
@@ -48,6 +50,14 @@ type ImageType = {
   data: Uint8Array
   createdAt: Date
 }
+
+type Option = {
+  id: number;
+  question: string;
+  price: number;
+  comment?: string;
+  productId?: number;
+};
 
 type Product = {
   id: number
@@ -57,7 +67,8 @@ type Product = {
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
-  ingCategories?: IngCategory[]
+  ingCategories?: IngCategory[];
+  options?: Option[];
 }
 
 export default function Home() {
@@ -156,26 +167,33 @@ export default function Home() {
   const addToCart = (
     product: Product,
     selectedIngredients: Ingredient[],
-    selectedIngCategories: IngCategory[] // 👈 add categories too
+    selectedIngCategories: IngCategory[], // categories
+    selectedOptions: Option[], // 👈 options
+    options: Option[]
   ) => {
     setOrderItems((prev) => {
-      // Check if product with same ingredients already exists
+      // Check if product with same ingredients and options already exists
       const existing = prev.find((item) => {
         if (item.productId !== product.id) return false;
 
         const itemIngredients = item.selectedIngredients || [];
         if (itemIngredients.length !== selectedIngredients.length) return false;
-
-        return itemIngredients.every((ing) =>
+        const ingredientsMatch = itemIngredients.every((ing) =>
           selectedIngredients.some((sel) => sel.id === ing.id)
         );
+
+        const itemOptions = item.selectedOptions || [];
+        if (itemOptions.length !== selectedOptions.length) return false;
+        const optionsMatch = itemOptions.every((opt) =>
+          selectedOptions.some((sel) => sel.id === opt.id)
+        );
+
+        return ingredientsMatch && optionsMatch;
       });
 
       if (existing) {
         return prev.map((item) =>
-          item === existing
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
+          item === existing ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
 
@@ -183,9 +201,13 @@ export default function Home() {
         (sum, ing) => sum + Number(ing.price),
         0
       );
-      const totalPrice = product.price + ingredientsTotal;
+      const optionsTotal = selectedOptions.reduce(
+        (sum, opt) => sum + Number(opt.price),
+        0
+      );
+      console.log(optionsTotal)
+      const totalPrice = product.price + ingredientsTotal + optionsTotal;
 
-      // Otherwise add new item with categories too
       return [
         ...prev,
         {
@@ -195,7 +217,9 @@ export default function Home() {
           price: totalPrice,
           quantity: 1,
           selectedIngredients,
-          selectedIngCategories, // 👈 store them here
+          selectedIngCategories,
+          selectedOptions, // 👈 store Option[] here
+          options,
         },
       ];
     });
@@ -206,6 +230,7 @@ export default function Home() {
   const editItem = (
     orderItemToEdit: OrderItem,
     newIngredients: Ingredient[],
+    selectedOptions?: Option[] | undefined, // εδώ χρησιμοποιούμε τον τύπο SelectedOption { id, value: "yes" | "no" }
   ) => {
     setOrderItems((prev) =>
       prev.map((item) =>
@@ -214,12 +239,15 @@ export default function Home() {
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
+              selectedOptions: selectedOptions, // προσθήκη options
               // Recalculate price: base price + sum of ingredient prices
               price:
-                orderItemToEdit.price - 
-                (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0) + 
-                newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0),
-            }
+              orderItemToEdit.price
+              - (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0)
+              + newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0)
+              - (item.selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0)
+              + (selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0),
+          }
           : item
       )
     );
