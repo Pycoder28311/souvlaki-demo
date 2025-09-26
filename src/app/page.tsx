@@ -206,8 +206,8 @@ export default function Home() {
         (sum, opt) => sum + Number(opt.price),
         0
       );
-      console.log(optionsTotal)
-      const totalPrice = product.price + ingredientsTotal + optionsTotal;
+
+      const totalPrice = Number(product.price) + ingredientsTotal + optionsTotal;
 
       return [
         ...prev,

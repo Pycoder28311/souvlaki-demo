@@ -199,8 +199,8 @@ export default function MyOrdersPage() {
         (sum, opt) => sum + Number(opt.price),
         0
       );
-      console.log(optionsTotal)
-      const totalPrice = product.price + ingredientsTotal + optionsTotal;
+
+      const totalPrice = Number(product.price) + ingredientsTotal + optionsTotal;
 
       return [
         ...prev,
@@ -265,13 +265,16 @@ export default function MyOrdersPage() {
             className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden"
           >
             {/* Header */}
-            <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
+            <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
               <p className="text-gray-700">
                 <strong>Σύνολο:</strong> {order.total}€
               </p>
+
               <p className="text-gray-500 text-sm">
-                <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString()}
+                <strong>Δημιουργήθηκε:</strong>{" "}
+                {new Date(order.createdAt).toLocaleString()}
               </p>
+
               <span
                 className={`px-3 py-1 text-sm font-medium rounded-full ${
                   order.status === "completed"
@@ -317,9 +320,7 @@ export default function MyOrdersPage() {
                     {/* Order Details */}
                     <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
                       <div>
-                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center">
-                          <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-                        </div>
+                        <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
 
                         {/* Ingredients */}
                         <div className="mt-2 flex flex-wrap gap-2">

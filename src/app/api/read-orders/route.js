@@ -51,7 +51,7 @@ export async function GET(req) {
       order.items.forEach((item) => {
         if (!productMap[item.productId]) {
           const { id, name, price, imageId, ingCategories } = item.product;
-          console.log(ingCategories,name,item.product)
+
           productMap[item.productId] = {
             id,
             name,
@@ -78,10 +78,11 @@ export async function GET(req) {
         const product = productMap[item.productId];
 
         return {
+          name: product.name,
           productId: item.productId,
           price: Number(item.price),
           quantity: item.quantity,
-          imageId: item.imageId ?? null,
+          imageId: product.imageId ?? null,
           selectedIngredients: item.ingredients.map((ing) => ({
             ...ing.ingredient,
             price: Number(ing.price),
