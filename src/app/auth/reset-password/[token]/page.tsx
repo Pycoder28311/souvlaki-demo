@@ -20,20 +20,21 @@ const ResetPassword = () => {
 
   useEffect(() => {
     if (!token) {
-      setMessage('Invalid or expired reset token.');
+      setMessage('Άκυρο ή ληγμένο token επαναφοράς.');
     }
   }, [token]);
 
   const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     if (newPassword !== confirmPassword) {
-      setMessage('Passwords do not match.');
+      setMessage('Οι κωδικοί δεν ταιριάζουν.');
       return;
     }
 
     if (!validatePassword(newPassword)) {
       setError(
-        "Password must be at least 8 characters long, contain at least one number and one special character."
+        "Ο κωδικός πρέπει να έχει τουλάχιστον 8 χαρακτήρες, να περιέχει τουλάχιστον έναν αριθμό και έναν ειδικό χαρακτήρα."
       );
       return;
     } else {
@@ -51,17 +52,17 @@ const ResetPassword = () => {
         },
         body: JSON.stringify({ token, password: newPassword }),
       });
-      setEmailSent(true)
+      setEmailSent(true);
 
       if (res.ok) {
-        setMessage('Password successfully reset. You can now log in.');
+        setMessage('Ο κωδικός επαναφέρθηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
       } else {
         const data = await res.json();
-        setMessage(`Error: ${data.message || 'Failed to reset password'}`);
+        setMessage(`Σφάλμα: ${data.message || 'Αποτυχία επαναφοράς κωδικού'}`);
       }
     } catch (error) {
       console.error(error);
-      setMessage('An unexpected error occurred.');
+      setMessage('Παρουσιάστηκε απροσδόκητο σφάλμα.');
     }
 
     setLoading(false);
@@ -69,13 +70,13 @@ const ResetPassword = () => {
 
   // Show a loading state if the token is not yet available
   if (!token) {
-    return <p>Loading...</p>;
+    return <p>Φόρτωση...</p>;
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
       <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-8 space-y-6">
-        <h2 className="text-2xl font-bold text-gray-800 text-center">Reset Password</h2>
+        <h2 className="text-2xl font-bold text-gray-800 text-center">Επανάληψη Κωδικού</h2>
 
         {message && (
           <p className="text-center text-green-600 font-medium">{message}</p>
@@ -85,7 +86,7 @@ const ResetPassword = () => {
           {/* New Password */}
           <div>
             <label htmlFor="newPassword" className="block text-gray-700 font-medium mb-1">
-              New Password
+              Νέος Κωδικός
             </label>
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
               <input
@@ -95,14 +96,14 @@ const ResetPassword = () => {
                 onChange={(e) => setNewPassword(e.target.value)}
                 required
                 className="flex-1 px-4 py-2 focus:outline-none"
-                placeholder="Enter new password"
+                placeholder="Νέος Κωδικός"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
               >
-                {showNewPassword ? 'Hide' : 'Show'}
+                {showNewPassword ? 'Απόκρυψη' : 'Εμφάνιση'}
               </button>
             </div>
           </div>
@@ -110,7 +111,7 @@ const ResetPassword = () => {
           {/* Confirm Password */}
           <div>
             <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-1">
-              Confirm Password
+              Επιβεβαίωση Νέου Κωδικού
             </label>
             <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
               <input
@@ -120,14 +121,14 @@ const ResetPassword = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="flex-1 px-4 py-2 focus:outline-none"
-                placeholder="Confirm new password"
+                placeholder="Επιβεβαίωση Νέου Κωδικού"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium"
               >
-                {showConfirmPassword ? 'Hide' : 'Show'}
+                {showConfirmPassword ? 'Απόκρυψη' : 'Εμφάνιση'}
               </button>
             </div>
           </div>
@@ -135,7 +136,7 @@ const ResetPassword = () => {
           {/* Info message */}
           {!emailSent && !message.includes('Password successfully reset') && (
             <div className="text-sm text-gray-500">
-              If you did not receive the reset email, you can click the Reset Password button again.
+              Αν δεν λάβατε το email επαναφοράς, μπορείτε να πατήσετε ξανά το κουμπί Επαναφορά Κωδικού.
             </div>
           )}
 
@@ -145,7 +146,7 @@ const ResetPassword = () => {
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2 rounded-lg transition-colors duration-200"
           >
-            {loading ? 'Resetting...' : 'Reset Password'}
+            {loading ? 'Γίνεται επαναφορά...' : 'Επαναφορά Κωδικού'}
           </button>
 
           {/* Error message */}

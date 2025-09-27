@@ -13,15 +13,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { offer } = req.body as { offer: boolean };
+    const { offer, offerPrice, price } = req.body as { offer: boolean; offerPrice?: number, price: number };
 
     if (typeof offer !== "boolean") {
       return res.status(400).json({ message: "Invalid offer value" });
     }
+    console.log(offerPrice)
 
+    // Αν ενεργοποιείται η προσφορά, η τιμή γίνεται η offerPrice
     const updatedProduct = await prisma.product.update({
       where: { id: Number(id) },
-      data: { offer }, // use the value from request body
+      data: { 
+        offer, 
+        price: offer ? offerPrice ?? 0 : undefined, // μόνο αν είναι ενεργό
+        offerPrice: price ?? 0,              // πάντα αποθηκεύεται
+      },
     });
 
     return res.status(200).json(updatedProduct);

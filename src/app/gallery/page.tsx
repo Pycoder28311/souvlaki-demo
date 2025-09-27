@@ -19,7 +19,7 @@ export default function GalleryPage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-4">Gallery</h1>
+      <h1 className="text-xl font-bold mb-4">Γκαλερή</h1>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {images.map((img) => (
           <div key={img.id} className="relative w-full aspect-square">

@@ -24,7 +24,7 @@ export default async function DataPage() {
   return (
     <div className="min-h-screen bg-gray-100 pt-12">
       <div className="p-8 max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Messages</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Μηνύματα</h1>
 
         {messages.length > 0 ? (
           <ul className="space-y-4">
@@ -44,7 +44,7 @@ export default async function DataPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No messages found</p>
+          <p className="text-gray-500">Δεν υπάρουν μηνύματα</p>
         )}
       </div>
     </div>

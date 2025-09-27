@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Image from 'next/image';
-import { Minus, Plus } from "lucide-react"
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react"
 
 type Ingredient = {
   id: number;
@@ -120,14 +119,14 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
               </div>
             ) : (
               <div className="w-full h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
-                No Image
+                Χωρίς Εικόνα
               </div>
             )}
             <button
-              className="absolute top-0 right-0 bg-white rounded-full px-3 py-0.5 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+              className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
               onClick={onClose}
             >
-              ×
+              <X className="w-7 h-7" />
             </button>
             <div className="p-6">
               <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
@@ -215,7 +214,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                         <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
                         {ingCat.isRequired && (
                           <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
-                            Required
+                            Υποχρωτικό
                           </span>
                         )}
                       </div>
@@ -248,7 +247,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                             <div className="flex-1">
                               <p className="font-semibold text-gray-800">{ing.name}</p>
                               {ing.price > 0 && (
-                                <p className="text-sm text-gray-600">+€{ing.price}</p>
+                                <p className="text-sm text-gray-600">+{ing.price}€</p>
                               )}
                             </div>
                           </label>
@@ -299,7 +298,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                             checked={selectedOptions.some((i) => i.id === opt.id)}
                             onChange={() => toggleOption(opt,true)}
                           />
-                          Yes
+                          Ναι
                         </label>
                         <label className="flex items-center gap-3">
                           <input
@@ -309,10 +308,10 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                             checked={!selectedOptions.some((i) => i.id === opt.id)}
                             onChange={() => toggleOption(opt,false)}
                           />
-                          No
+                          Όχι
                         </label>
                         {opt.price > 0 && (
-                          <p className="text-sm text-gray-600">Price: €{opt.price}</p>
+                          <p className="text-sm text-gray-600">Τιμή: {opt.price}€</p>
                         )}
                       </div>
                     )}

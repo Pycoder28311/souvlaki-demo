@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Minus, Plus } from "lucide-react"
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, X } from "lucide-react";
 
 type Ingredient = {
   id: number;
@@ -40,6 +40,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  offerPrice?: number;
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
@@ -94,7 +95,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("productId", String(productId)); // <-- send product ID
+    formData.append("productId", String(productId)); // <-- στέλνουμε το ID του προϊόντος
 
     const res = await fetch("/api/upload", {
       method: "POST",
@@ -103,9 +104,9 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
     const data = await res.json();
     if (res.ok) {
-      setMessage("✅ Uploaded successfully! Image ID: " + data.id);
+      setMessage("✅ Το αρχείο ανέβηκε επιτυχώς! ID εικόνας: " + data.id);
     } else {
-      setMessage("❌ Error: " + data.error);
+      setMessage("❌ Σφάλμα: " + data.error);
     }
 
     setUploading(false);
@@ -141,11 +142,11 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
         setFullProduct(data);
 
-        // ✅ directly store ingCategories in its own state
+        // ✅ Αποθηκεύουμε απευθείας τις κατηγορίες υλικών σε ξεχωρισμένο state
         setIngCategories(data.ingCategories ?? []);
-        setOptions(data.options ?? [])
+        setOptions(data.options ?? []);
       } catch (err) {
-        console.error("Failed to fetch product details:", err);
+        console.error("Αποτυχία ανάκτησης λεπτομερειών προϊόντος:", err);
       } finally {
         setLoading(false);
       }
@@ -176,7 +177,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     const ing = cat?.ingredients.find((i) => i.id === ingId);
     if (!ing) return;
 
-    const newName = prompt("Edit ingredient name", ing.name);
+    const newName = prompt("Επεξεργασία ονόματος συστατικού", ing.name);
     if (!newName) return;
 
     setFullProduct((prev) => {
@@ -200,7 +201,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     const cat = fullProduct?.ingCategories?.find((c) => c.id === catId);
     if (!cat) return;
 
-    const newName = prompt("Edit category name", cat.name);
+    const newName = prompt("Επεξεργασία ονόματος κατηγορίας", cat.name);
     if (!newName) return;
 
     setFullProduct((prev) => {
@@ -227,7 +228,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddCategory = () => {
-    const name = prompt("Enter new category name");
+    const name = prompt("Εισάγετε το νέο όνομα της κατηγορίας");
     if (!name) return;
 
     setFullProduct((prev) => {
@@ -242,13 +243,13 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddOption = () => {
-    const question = prompt("Enter new question of option");
+    const question = prompt("Εισάγετε τη νέα ερώτηση της επιλογής");
     if (!question) return;
 
-    const price = prompt("Enter new option price");
+    const price = prompt("Εισάγετε την τιμή της επιλογής");
     if (!price) return;
 
-    const comment = prompt("Enter the comment of the option");
+    const comment = prompt("Εισάγετε το σχόλιο για την επιλογή");
     if (!comment) return;
 
     setFullProduct((prev) => {
@@ -270,7 +271,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     const option = fullProduct.options.find((o) => o.id === optionId);
     if (!option) return;
 
-    const newQuestion = prompt("Edit option question", option.question);
+    const newQuestion = prompt("Επεξεργασία ερώτησης επιλογής", option.question);
     if (!newQuestion) return;
 
     setFullProduct((prev) => {
@@ -290,7 +291,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     const option = fullProduct.options.find((o) => o.id === optionId);
     if (!option) return;
 
-    const newPrice = prompt("Edit option price", option.price.toString());
+    const newPrice = prompt("Επεξεργασία τιμής επιλογής", option.price.toString());
     if (newPrice === null) return;
 
     setFullProduct((prev) => {
@@ -310,7 +311,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     const option = fullProduct.options.find((o) => o.id === optionId);
     if (!option) return;
 
-    const newComment = prompt("Edit option comment", option.comment || "");
+    const newComment = prompt("Επεξεργασία σχολίου επιλογής", option.comment || "");
     if (newComment === null) return;
 
     setFullProduct((prev) => {
@@ -334,7 +335,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
 
   const handleDeleteCategory = (catId: number) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
+    if (!confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την κατηγορία;")) return;
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
@@ -348,13 +349,14 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddIngredient = (catId: number) => {
-    const name = prompt("Enter ingredient name");
+    const name = prompt("Εισάγετε το όνομα του συστατικού");
     if (!name) return;
 
-    const priceStr = prompt("Enter ingredient price");
+    const priceStr = prompt("Εισάγετε την τιμή του συστατικού");
     if (!priceStr) return;
+
     const price = parseFloat(priceStr);
-    if (isNaN(price)) return alert("Price must be a number");
+    if (isNaN(price)) return alert("Η τιμή πρέπει να είναι αριθμός");
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
@@ -370,7 +372,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleDeleteIngredient = (catId: number, ingId: number) => {
-    if (!confirm("Are you sure you want to delete this ingredient?")) return;
+    if (!confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το συστατικού;")) return;
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
@@ -385,11 +387,11 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleEditIngredientPrice = (catId: number, ingId: number, currentPrice: number) => {
-    const newPriceStr = prompt("Enter new ingredient price", currentPrice.toString());
+    const newPriceStr = prompt("Εισάγετε τη νέα τιμή του συστατικού", currentPrice.toString());
     if (!newPriceStr) return;
 
     const newPrice = parseFloat(newPriceStr);
-    if (isNaN(newPrice)) return alert("Price must be a number");
+    if (isNaN(newPrice)) return alert("Η τιμή πρέπει να είναι αριθμός");
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
@@ -432,7 +434,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
           scrollbarWidth: 'none', // Firefox
         }}>
           {/* Loading state */}
-          {loading && <p className="text-center py-6">Loading...</p>}
+          {loading && <p className="text-center py-6">Φόρτωση...</p>}
 
           {!loading && fullProduct && (
             <>
@@ -448,20 +450,20 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 </div>
               ) : (
                 <div className="w-full h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
-                  No Image
+                  Χωρίς Εικόνα
                 </div>
               )}
 
               <button
-                className="absolute top-0 right-0 bg-white rounded-full px-3 py-0.5 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+                className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
                 onClick={onClose}
               >
-                ×
+                <X className="w-7 h-7" />
               </button>
 
               {email === "kopotitore@gmail.com" && (
                 <div className="p-6 max-w-lg mx-auto">
-                  <h1 className="text-xl font-bold mb-4">Upload an Image</h1>
+                  <h1 className="text-xl font-bold mb-4">Ανέβασε Εικόνα</h1>
             
                   <form onSubmit={(e) => handleSubmit(e, product.id)} className="space-y-4">
                     <input
@@ -476,7 +478,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                       disabled={uploading || !file}
                       className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
                     >
-                      {uploading ? "Uploading..." : "Upload"}
+                      {uploading ? "Μεταφόρτωση..." : "Μεταφόρτωση"}
                     </button>
             
                     {/* Preview below button */}
@@ -528,7 +530,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                           <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
                           {ingCat.isRequired && (
                             <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
-                              Required
+                              Υποχρεωτικό
                             </span>
                           )}
                         </div>
@@ -541,25 +543,26 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 e.stopPropagation();
                                 handleEditCategoryName(ingCat.id);
                               }}
-                              className="px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-sm font-medium"
-                              title="Edit Category"
+                              className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                              title="Επεξεργασία Κατηγορίας"
                             >
-                              Edit
+                              ✏️
                             </button>
 
+                            {/* Make Required / Optional */}
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleMakeRequiredCat(ingCat.id);
                               }}
-                              className={`px-3 py-1 rounded-md text-white transition text-sm font-medium ${
+                              className={`px-2 py-1 rounded text-xs font-semibold text-white transition-shadow shadow-sm ${
                                 ingCat.isRequired
                                   ? "bg-orange-600 hover:bg-orange-700"
                                   : "bg-orange-500 hover:bg-orange-600"
                               }`}
-                              title={ingCat.isRequired ? "Make Optional" : "Make Required"}
+                              title={ingCat.isRequired ? "Κάνε Προαιρετική" : "Κάνε Υποχρεωτική"}
                             >
-                              {ingCat.isRequired ? "Make Optional" : "Make Required"}
+                              {ingCat.isRequired ? "Προαιρετική" : "Υποχρεωτική"}
                             </button>
 
                             {/* Delete Category */}
@@ -568,10 +571,10 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 e.stopPropagation();
                                 handleDeleteCategory(ingCat.id);
                               }}
-                              className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
-                              title="Delete Category"
+                              className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                              title="Διαγραφή Κατηγορίας"
                             >
-                              Delete
+                              🗑️
                             </button>
                           </div>
                         )}
@@ -605,7 +608,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               <div className="flex-1">
                                 <p className="font-semibold text-gray-800">{ing.name}</p>
                                 {ing.price > 0 && (
-                                  <p className="text-sm text-gray-600">+€{ing.price}</p>
+                                  <p className="text-sm text-gray-600">+{ing.price}€</p>
                                 )}
                               </div>
 
@@ -620,7 +623,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                     className="px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-xs font-medium"
                                     title="Edit Ingredient Name"
                                   >
-                                    Edit
+                                    Επεξεργασία
                                   </button>
 
                                   <button
@@ -632,7 +635,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                     className="px-2 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-xs font-medium"
                                     title="Edit Price"
                                   >
-                                    Price
+                                    Τιμή
                                   </button>
 
                                   <button
@@ -644,7 +647,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                     className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-xs font-medium"
                                     title="Delete Ingredient"
                                   >
-                                    Delete
+                                    Διαγραφή
                                   </button>
                                 </div>
                               )}
@@ -656,7 +659,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               onClick={() => handleAddIngredient(ingCat.id)}
                               className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
                             >
-                              + Add Ingredient
+                              + Προσθήκη Συστατικού
                             </button>
                           )}
                         </div>
@@ -697,42 +700,52 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
                           {email === "kopotitore@gmail.com" && (
                             <div className="flex gap-2">
+                              {/* Edit Question */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditOptionQuestion(opt.id);
                                 }}
-                                className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+                                className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                title="Επεξεργασία Ερώτησης"
                               >
-                                Edit Question
+                                ✏️
                               </button>
+
+                              {/* Edit Price */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditOptionPrice(opt.id);
                                 }}
-                                className="px-2 py-1 bg-orange-500 text-white rounded text-xs"
+                                className="px-2 py-1 bg-orange-400 hover:bg-orange-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                title="Επεξεργασία Τιμής"
                               >
-                                Edit Price
+                                💰
                               </button>
+
+                              {/* Edit Comment */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleEditOptionComment(opt.id);
                                 }}
-                                className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                                className="px-2 py-1 bg-blue-400 hover:bg-blue-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                title="Επεξεργασία Σχολίου"
                               >
-                                Edit Comment
+                                Σχόλιο
                               </button>
+
+                              {/* Delete Option */}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteOption(opt.id);
                                 }}
-                                className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-sm font-medium"
-                                title="Delete Option"
+                                className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                title="Διαγραφή Επιλογής"
                               >
-                                Delete
+                                🗑️
                               </button>
                             </div>
                           )}
@@ -749,7 +762,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 checked={selectedOptions.some((i) => i.id === opt.id)}
                                 onChange={() => toggleOption(opt)}
                               />
-                              Yes
+                              Ναι
                             </label>
                             <label className="flex items-center gap-3">
                               <input
@@ -759,10 +772,10 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 checked={!selectedOptions.some((i) => i.id === opt.id)}
                                 onChange={() => toggleOption(opt)}
                               />
-                              No
+                              Όχι
                             </label>
                             {opt.price > 0 && (
-                              <p className="text-sm text-gray-600">Price: €{opt.price}</p>
+                              <p className="text-sm text-gray-600">Τιμή: {opt.price}€</p>
                             )}
                           </div>
                         )}
@@ -771,20 +784,20 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 })}
 
                 {email === "kopotitore@gmail.com" && (
-                  <>
+                  <div className="flex">
                     <button
                       onClick={handleAddCategory}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
+                      className="px-4 py-2 mr-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                     >
-                      + Add Category
+                      + Προσθήκη Κατηγορίας
                     </button>
                     <button
                       onClick={handleAddOption}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
                     >
-                      + Add Option
+                      + Προσθήκη Επιλογής
                     </button>
-                  </>
+                  </div>
                 )}
               </div>
             </>
@@ -804,7 +817,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
                   if (!res.ok) throw new Error("Failed to save changes");
 
-                  alert("Changes saved successfully!");
+                  alert("Οι αλλαγές αποθηκεύτηκαν επιτυχώς!");
                   window.location.reload(); // 🔄 reload the page
                 } catch (err) {
                   console.error(err);
@@ -816,7 +829,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               className="h-12 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-12"
               disabled={loading}
             >
-            {loading ? "Saving..." : "Save Changes"}
+            {loading ? "Αποθήκευση..." : "Αποθήκευση Αλλαγών"}
           </button>
           )}
         </div>

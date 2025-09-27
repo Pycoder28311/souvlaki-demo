@@ -22,6 +22,7 @@ export default async function DataPage() {
           id: true,
           name: true,
           price: true,
+          offerPrice: true,
           offer: true,
           description: true,
           image: {
@@ -40,6 +41,7 @@ export default async function DataPage() {
     products: category.products.map((p) => ({
       ...p,
       price: Number(p.price),
+      offerPrice: Number(p.offerPrice),
       imageId: p.image?.id ?? null, // only store the ID
       image: undefined, // remove full image data
       description: p.description ?? "",

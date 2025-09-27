@@ -44,6 +44,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  offerPrice?: number;
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
@@ -223,7 +224,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
         (sum, opt) => sum + Number(opt.price),
         0
       );
-      console.log(optionsTotal)
+
       const totalPrice = product.price + ingredientsTotal + optionsTotal;
 
       return [
@@ -305,18 +306,18 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
 
   const handleCreateProduct = async (categoryId: number) => {
-    const name = prompt("Enter product name");
+    const name = prompt("Εισάγετε το όνομα του προϊόντος");
     if (!name) return;
 
-    const description = prompt("Enter product description");
+    const description = prompt("Εισάγετε την περιγραφή του προϊόντος");
     if (!description) return;
 
-    const priceStr = prompt("Enter product price");
+    const priceStr = prompt("Εισάγετε την τιμή του προϊόντος");
     if (!priceStr) return;
 
     const price = parseFloat(priceStr);
     if (isNaN(price)) {
-      alert("Price must be a number");
+      alert("Η τιμή πρέπει να είναι αριθμός");
       return;
     }
 
@@ -327,18 +328,18 @@ export default function Menu({ categories: initialCategories, email }: { categor
         body: JSON.stringify({ name, price, categoryId, description }),
       });
 
-      if (!res.ok) throw new Error("Failed to create product");
+      if (!res.ok) throw new Error("Απέτυχε η δημιουργία του προϊόντος");
 
-      // Refresh page to show the new product
-      window.location.reload(); 
+      // Ανανέωση της σελίδας για να εμφανιστεί το νέο προϊόν
+      window.location.reload();
     } catch (err) {
       console.error(err);
-      alert("Error creating product");
+      alert("Σφάλμα κατά τη δημιουργία του προϊόντος");
     }
   };
 
   const handleCreateCategory = async () => {
-    const name = prompt("Enter new category name");
+    const name = prompt("Εισάγετε το όνομα της νέας κατηγορίας");
     if (!name) return;
 
     try {
@@ -348,51 +349,54 @@ export default function Menu({ categories: initialCategories, email }: { categor
         body: JSON.stringify({ name }),
       });
 
-      if (!res.ok) throw new Error("Failed to create category");
-      // Refresh page to show the new category
+      if (!res.ok) throw new Error("Απέτυχε η δημιουργία της κατηγορίας");
+
+      // Ανανέωση της σελίδας για να εμφανιστεί η νέα κατηγορία
       window.location.reload(); 
     } catch (err) {
       console.error(err);
-      alert("Error creating category");
+      alert("Σφάλμα κατά τη δημιουργία της κατηγορίας");
     }
   };
 
   const handleDeleteProduct = async (productId: number, productName: string) => {
-    if (!confirm(`Are you sure you want to delete product "${productName}"?`)) return;
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${productName}"?`)) return;
 
     try {
       const res = await fetch(`/api/delete-product/${productId}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed to delete product");
+      if (!res.ok) throw new Error("Απέτυχε η διαγραφή του προϊόντος");
 
+      // Ανανέωση της σελίδας για να ενημερωθεί η λίστα προϊόντων
       window.location.reload(); 
     } catch (err) {
       console.error(err);
-      alert("Error deleting product");
+      alert("Σφάλμα κατά τη διαγραφή του προϊόντος");
     }
   };
 
   const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
-    if (!confirm(`Are you sure you want to delete category "${categoryName}"?`)) return;
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την κατηγορία "${categoryName}"?`)) return;
 
     try {
       const res = await fetch(`/api/delete-category/${categoryId}`, {
         method: "DELETE",
       });
 
-      if (!res.ok) throw new Error("Failed to delete category");
+      if (!res.ok) throw new Error("Απέτυχε η διαγραφή της κατηγορίας");
 
+      // Ανανέωση της σελίδας για να ενημερωθεί η λίστα κατηγοριών
       window.location.reload(); 
     } catch (err) {
       console.error(err);
-      alert("Error deleting category");
+      alert("Σφάλμα κατά τη διαγραφή της κατηγορίας");
     }
   };
 
   const handleEditCategory = async (categoryId: number, currentName: string) => {
-    const newName = prompt("Enter new category name", currentName);
+    const newName = prompt("Εισάγετε το νέο όνομα της κατηγορίας", currentName);
     if (!newName || newName === currentName) return;
 
     try {
@@ -402,16 +406,18 @@ export default function Menu({ categories: initialCategories, email }: { categor
         body: JSON.stringify({ name: newName }),
       });
 
-      if (!res.ok) throw new Error("Failed to update category");
+      if (!res.ok) throw new Error("Απέτυχε η ενημέρωση της κατηγορίας");
+
+      // Ανανέωση της σελίδας για να εμφανιστεί το νέο όνομα
       window.location.reload(); 
     } catch (err) {
       console.error(err);
-      alert("Error updating category");
+      alert("Σφάλμα κατά την ενημέρωση της κατηγορίας");
     }
   };
 
   const handleEditProduct = async (productId: number, currentName: string) => {
-    const newName = prompt("Enter new product name", currentName);
+    const newName = prompt("Εισάγετε το νέο όνομα του προϊόντος", currentName);
     if (!newName || newName === currentName) return;
 
     try {
@@ -421,12 +427,13 @@ export default function Menu({ categories: initialCategories, email }: { categor
         body: JSON.stringify({ name: newName }),
       });
 
-      if (!res.ok) throw new Error("Failed to update product");
+      if (!res.ok) throw new Error("Απέτυχε η ενημέρωση του προϊόντος");
 
+      // Ανανέωση της σελίδας για να εμφανιστεί το νέο όνομα
       window.location.reload(); 
     } catch (err) {
       console.error(err);
-      alert("Error updating product");
+      alert("Σφάλμα κατά την ενημέρωση του προϊόντος");
     }
   };
 
@@ -456,10 +463,10 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
   const saveCategoryPositions = async () => {
     try {
-      // Send an array of { id, position } to the backend
+      // Στέλνουμε έναν πίνακα { id, position } στο backend
       const body = categories.map((c, index) => ({
         id: c.id,
-        position: index + 1, // or use c.position if already updated
+        position: index + 1, // ή χρησιμοποιήστε c.position αν έχει ήδη ενημερωθεί
       }));
 
       const res = await fetch("/api/position-categories", {
@@ -468,39 +475,50 @@ export default function Menu({ categories: initialCategories, email }: { categor
         body: JSON.stringify(body),
       });
 
-      if (!res.ok) throw new Error("Failed to save positions");
+      if (!res.ok) throw new Error("Απέτυχε η αποθήκευση των θέσεων");
 
-      alert("Positions saved successfully!");
+      alert("Οι θέσεις αποθηκεύτηκαν επιτυχώς!");
     } catch (err) {
       console.error(err);
-      alert("Error saving positions");
+      alert("Σφάλμα κατά την αποθήκευση των θέσεων");
     }
   };
 
-  const toggleProductOffer = async (productId: number, currentOffer: boolean) => {
+  const toggleProductOffer = async (productId: number, currentOffer: boolean, price: number, currentOfferPrice?: number) => {
     try {
+      let offerPrice = currentOfferPrice || 0;
+
+      // Αν η προσφορά ενεργοποιείται, ρώτα τον χρήστη για την τιμή προσφοράς
+      if (!currentOffer) {
+        const newPriceStr = prompt("Υποβολή νέας τιμής", offerPrice.toString());
+        if (!newPriceStr) return;
+        const newPrice = parseFloat(newPriceStr);
+        if (isNaN(newPrice)) return alert("Η τιμή προσφοράς πρέπει να είναι αριθμός");
+        offerPrice = newPrice;
+      } else {
+        // Αν απενεργοποιείται, μηδενίζουμε ή αφήνουμε τιμή
+        offerPrice = 0;
+      }
+
       const res = await fetch(`/api/products-offer/${productId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ offer: !currentOffer }), // toggle
+        body: JSON.stringify({ offer: !currentOffer, offerPrice, price }),
       });
 
-      if (!res.ok) throw new Error("Failed to toggle offer");
+      if (!res.ok) throw new Error("Απέτυχε η αλλαγή της προσφοράς");
 
-      alert(`Product offer is now ${!currentOffer ? "active" : "inactive"}!`);
+      alert(`Η προσφορά του προϊόντος είναι πλέον ${!currentOffer ? "ενεργή" : "ανενεργή"}!`);
 
-      // Optionally update state instead of reloading
-      // setProducts(prev => prev.map(p => p.id === productId ? { ...p, offer: !currentOffer } : p));
-
-      window.location.reload(); // remove this if using state update above
+      window.location.reload();
     } catch (error) {
       console.error(error);
-      alert("Failed to toggle offer");
+      alert("Απέτυχε η αλλαγή της προσφοράς");
     }
   };
 
   const setEditDescription = async (productId: number) => {
-    const newDescription = prompt("Enter new product description");
+    const newDescription = prompt("Εισάγετε τη νέα περιγραφή του προϊόντος");
     if (!newDescription) return;
 
     await fetch(`/api/products-description/${productId}`, {
@@ -508,9 +526,10 @@ export default function Menu({ categories: initialCategories, email }: { categor
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ description: newDescription }),
     });
-    alert("Description is updated!");
+
+    alert("Η περιγραφή ενημερώθηκε!");
     window.location.reload();
-    // refresh product list or revalidate
+    // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
   };
 
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -537,7 +556,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
       <section className="bg-gray-900 py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-100 mb-4">Menu</h1>
+          <h1 className="text-4xl font-bold text-gray-100 mb-4">Μενού</h1>
           <p className="text-xl text-gray-100 max-w-3xl mx-auto">
             Από το 1985, δημιουργούμε αυθεντικά ελληνικά σουβλάκια με πάθος και αγάπη για την παραδοσιακή γεύση
           </p>
@@ -552,7 +571,9 @@ export default function Menu({ categories: initialCategories, email }: { categor
 
             {/* Categories Buttons */}
             <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
-              <div className="flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center" ref={containerRef}>
+              <div className={`flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center 
+                transition-all duration-300 ease-in-out
+                ${(categories.length <= 4 && !isMobile) ? (isSidebarOpen ? "ml-0" : "ml-40") : ""}`} ref={containerRef}>
                 {(isMobile ? categories : visibleCategories).map((cat) => (
                   <button
                     key={cat.id}
@@ -655,43 +676,43 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     <h2 className="text-2xl font-bold">{category.name}</h2>
 
                     {email === "kopotitore@gmail.com" && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
 
                         {/* Move Up/Down */}
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-row gap-2">
                           <button
                             onClick={() => moveCategory(category.id, "up")}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition"
-                            title="Move Up"
+                            className="w-11 h-11 flex items-center justify-center bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+                            title="Μετακίνηση Πάνω"
                           >
-                            ↑
+                            ▲
                           </button>
                           <button
                             onClick={() => moveCategory(category.id, "down")}
-                            className="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition"
-                            title="Move Down"
+                            className="w-11 h-11 flex items-center justify-center bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+                            title="Μετακίνηση Κάτω"
                           >
-                            ↓
+                            ▼
                           </button>
                         </div>
 
                         {/* Save Positions */}
                         <button
                           onClick={saveCategoryPositions}
-                          className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                          className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 font-medium"
                         >
-                          Save Positions
+                          Ενημέρωση θέσεων
                         </button>
 
                         {/* Action Icons */}
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                           {/* Create Product */}
                           <button
                             onClick={() => handleCreateProduct(category.id)}
-                            className="p-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-                            title="Create Product"
+                            className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-110"
+                            title="Δημιουργία Προϊόντος"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
                           </button>
@@ -699,21 +720,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
                           {/* Edit Category */}
                           <button
                             onClick={() => handleEditCategory(category.id, category.name)}
-                            className="p-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition"
-                            title="Edit Category"
+                            className="p-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-transform transform hover:scale-110"
+                            title="Επεξεργασία Κατηγορίας"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5h2m-1 0v2m6 6l-6 6H5v-6l6-6h6z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6 6H3v-6l6-6h6z" />
                             </svg>
                           </button>
 
                           {/* Delete Category */}
                           <button
                             onClick={() => handleDeleteCategory(category.id, category.name)}
-                            className="p-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                            title="Delete Category"
+                            className="p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform transform hover:scale-110"
+                            title="Διαγραφή Κατηγορίας"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
@@ -734,11 +755,20 @@ export default function Menu({ categories: initialCategories, email }: { categor
                         {/* Product Info */}
                         <div className="flex-1 p-2 pr-12">
                           <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{product.name}</h3>
+
                           {product.offer && (
-                            <p className="text-sm text-red-500 font-semibold mb-2">Προσφορά!</p>
+                            <p className="text-sm text-red-500 font-semibold mb-1">Προσφορά!</p>
                           )}
-                          <p className="font-bold text-yellow-600 text-lg mb-2">
-                            ${product.price.toFixed(2)}
+
+                          <p className="font-bold text-yellow-600 text-lg mb-2 flex items-center gap-2">
+                            {product.offer ? (
+                              <>
+                                <span>{(product.price).toFixed(2)}€</span>
+                                <span className="line-through text-gray-400">{product.offerPrice?.toFixed(2)}€</span>
+                              </>
+                            ) : (
+                              <span>{product.price.toFixed(2)}€</span>
+                            )}
                           </p>
                         </div>
 
@@ -752,20 +782,20 @@ export default function Menu({ categories: initialCategories, email }: { categor
                               fill
                               style={{ objectFit: "cover" }}
                             />
+
+                            {/* + Button (absolute positioned) */}
+                            <button
+                              className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 
+                                        shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
+                            >
+                              <Plus size={20} />
+                            </button>
                           </div>
                         ) : (
                           <div className="w-28 h-full bg-gray-200 flex items-center justify-center text-gray-500 rounded-r-xl flex-shrink-0">
-                            No Image
+                            Χωρίς Εικόνα
                           </div>
                         )}
-
-                        {/* + Button (absolute positioned) */}
-                        <button
-                          className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 
-                                    shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
-                        >
-                          <Plus size={20} />
-                        </button>
 
                         {/* Admin Buttons */}
                         {email === "kopotitore@gmail.com" && (
@@ -775,10 +805,10 @@ export default function Menu({ categories: initialCategories, email }: { categor
                                 e.stopPropagation();
                                 handleEditProduct(product.id, product.name);
                               }}
-                              className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 transition text-sm font-medium"
+                              className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium"
                               title="Edit Product"
                             >
-                              Edit Name
+                              Επεξεργασία Ονόματος
                             </button>
 
                             <button
@@ -786,21 +816,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
                                 e.stopPropagation();
                                 handleDeleteProduct(product.id, product.name);
                               }}
-                              className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition text-sm font-medium"
+                              className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
                               title="Delete Product"
                             >
-                              Delete Product
+                              Διαγραφή Προϊόντος
                             </button>
 
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
-                                toggleProductOffer(product.id, product.offer);
+                                toggleProductOffer(product.id, product.offer, product.price);
                               }}
-                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition text-sm font-medium"
-                              title="Toggle Offer"
+                              className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
+                              title="Εναλλαγή Προσφοράς"
                             >
-                              {product.offer ? "Remove Offer" : "Set Offer"}
+                              {product.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
                             </button>
 
                             <button
@@ -808,15 +838,14 @@ export default function Menu({ categories: initialCategories, email }: { categor
                                 e.stopPropagation();
                                 setEditDescription(product.id);
                               }}
-                              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm font-medium"
-                              title="Edit Description"
+                              className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium"
+                              title="Επεξεργασία Περιγραφής"
                             >
-                              Edit Description
+                              Επεξεργασία Περιγραφής
                             </button>
                           </div>
                         )}
                       </div>
-
                     ))}
                   </div>
                 </section>
@@ -826,12 +855,14 @@ export default function Menu({ categories: initialCategories, email }: { categor
       </div>
 
       {email === "kopotitore@gmail.com" && (
-        <button
-          onClick={handleCreateCategory}
-          className="inline-block px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all flex-shrink-0"
-        >
-          + Create Category
-        </button>
+        <div className="w-100 flex justify-center mt-4 mb-4">
+          <button
+            onClick={handleCreateCategory}
+            className="rounded-lg px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+          >
+            + Δημιουργία Κατηγορίας
+          </button>
+        </div>
       )}
 
       {selectedProduct && (

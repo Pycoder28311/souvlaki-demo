@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/authOptions"; // Import the authOptions (NextAuth configuration)
+import { authOptions } from "../api/auth/authOptions"; 
 import Link from "next/link";
 
 export default async function HomePage() {
@@ -8,42 +8,42 @@ export default async function HomePage() {
   if (!session) {
     return (
       <div>
-        <h1>Welcome to the Authentication Page</h1>
-        <p>You need to sign in to access the content.</p>
+        <h1>Καλώς ήρθατε στη Σελίδα Σύνδεσης</h1>
+        <p>Πρέπει να συνδεθείτε για να έχετε πρόσβαση στο περιεχόμενο.</p>
 
         <div>
-          {/* Link to the sign-in page */}
+          {/* Link στη σελίδα σύνδεσης */}
           <Link href="/auth/signin">
-            <button>Sign In</button>
+            <button>Σύνδεση</button>
           </Link>
         </div>
 
         <div>
-          {/* Link to the sign-up page (assuming you have a custom sign-up page) */}
+          {/* Link στη σελίδα εγγραφής */}
           <Link href="/auth/signup">
-            <button>Sign Up</button>
+            <button>Εγγραφή</button>
           </Link>
         </div>
 
         <div>
-          {/* Link to the error page */}
+          {/* Link στη σελίδα σφάλματος */}
           <Link href="/auth/error">
-            <button>Error Page</button>
+            <button>Σελίδα Σφάλματος</button>
           </Link>
         </div>
       </div>
     );
   }
 
-  // If session exists, display welcome message
+  // Αν υπάρχει session, εμφανίζεται μήνυμα καλωσορίσματος
   return (
     <div>
-      <h1>Welcome, {session.user?.email}</h1>
+      <h1>Καλώς ήρθατε, {session.user?.email}</h1>
       <div>
-        <p>You are successfully signed in!</p>
-        {/* Link to the sign-out page */}
+        <p>Η σύνδεση ολοκληρώθηκε με επιτυχία!</p>
+        {/* Link στη σελίδα αποσύνδεσης */}
         <Link href="/api/auth/signout">
-          <button>Sign Out</button>
+          <button>Αποσύνδεση</button>
         </Link>
       </div>
     </div>

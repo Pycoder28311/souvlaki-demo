@@ -120,25 +120,25 @@ export default function About() {
           <div className="flex flex-wrap justify-center gap-4">
             <button 
               onClick={() => setActiveTab('history')}
-              className={`px-6 py-3 font-bold transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeTab === 'history' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               Ιστορία
             </button>
             <button 
               onClick={() => setActiveTab('philosophy')}
-              className={`px-6 py-3 font-bold transition-all ${activeTab === 'philosophy' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeTab === 'philosophy' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               Φιλοσοφία
             </button>
             <button 
               onClick={() => setActiveTab('team')}
-              className={`px-6 py-3 font-bold transition-all ${activeTab === 'team' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeTab === 'team' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               Ομάδα
             </button>
             <button 
               onClick={() => setActiveTab('values')}
-              className={`px-6 py-3 font-bold transition-all ${activeTab === 'values' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+              className={`px-6 py-3 rounded-lg font-bold transition-all ${activeTab === 'values' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
             >
               Αξίες
             </button>
@@ -173,7 +173,7 @@ export default function About() {
                   src="/oldphoto.jpg" 
                   alt="Ιστορική Φωτογραφία" 
                   fill
-                  className="object-cover rounded" />
+                  className="object-cover rounded-lg" />
                 </div>
               </div>
             </div>
@@ -181,8 +181,14 @@ export default function About() {
 
           {activeTab === 'philosophy' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-              <div className="bg-gray-200 h-96 flex items-center justify-center">
-                <span className="text-gray-600">Φωτογραφία Κουζίνας</span>
+              <div className="h-96 flex items-center justify-center">
+                <div className="relative h-full w-full">
+                <Image 
+                  src="/oldphoto.jpg" 
+                  alt="Ιστορική Φωτογραφία" 
+                  fill
+                  className="object-cover rounded-lg" />
+                </div>
               </div>
               
               <div>
@@ -214,29 +220,29 @@ export default function About() {
               <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Η Ομάδα Μας</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div className="text-center bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="text-center rounded-lg bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-48 w-48 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <span className="text-gray-600">Φώτο Νίκου</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Νίκος Παπadόπουλος</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Νίκος Παπαδόπουλος</h3>
                   <p className="text-yellow-600 font-semibold mb-3">Ιδρυτής & Executive Chef</p>
                   <p className="text-gray-600">
                     40 χρόνια εμπειρίας στην παραδοσιακή ελληνική κουζίνα. Δημιουργός όλων των συνταγών.
                   </p>
                 </div>
                 
-                <div className="text-center bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="text-center rounded-lg bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-48 w-48 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <span className="text-gray-600">Φώτο Μαρίας</span>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Μαρία Παπadοπούλου</h3>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Μαρία Παπαδοπούλου</h3>
                   <p className="text-yellow-600 font-semibold mb-3">Διευθύνων Σύμβουλος</p>
                   <p className="text-gray-600">
                     Η θυγατέρα του Νίκου, συνεχίζει την παράδοση με νέες ιδέες και σύγχρονες μεθόδους.
                   </p>
                 </div>
                 
-                <div className="text-center bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="text-center rounded-lg bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-48 w-48 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
                     <span className="text-gray-600">Φώτο Δημήτρη</span>
                   </div>
@@ -255,7 +261,7 @@ export default function About() {
               <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">Οι Αξίες Μας</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">
                     <span className="text-white text-2xl">🌿</span>
                   </div>
@@ -266,7 +272,7 @@ export default function About() {
                   </p>
                 </div>
                 
-                <div className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">
                     <span className="text-white text-2xl">👨‍👩‍👧‍👦</span>
                   </div>
@@ -277,7 +283,7 @@ export default function About() {
                   </p>
                 </div>
                 
-                <div className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">
                     <span className="text-white text-2xl">🏛️</span>
                   </div>
@@ -288,7 +294,7 @@ export default function About() {
                   </p>
                 </div>
                 
-                <div className="bg-white border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
+                <div className="bg-white rounded-lg border border-gray-200 p-6 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                   <div className="h-16 w-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">
                     <span className="text-white text-2xl">❤️</span>
                   </div>

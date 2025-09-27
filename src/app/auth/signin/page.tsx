@@ -27,7 +27,7 @@ export default function SignIn() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Sign In</h1>
+        <h1 className={styles.title}>Σύνδεση</h1>
         
         <form onSubmit={handleLogin} className={styles.form}>
           <div className={styles.inputGroup}>
@@ -37,41 +37,91 @@ export default function SignIn() {
               id="email"
               name="email"
               className={styles.input}
-              placeholder="Enter your email"
+              placeholder="Email"
               required
             />
           </div>
           
           <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.label}>Password</label>
+            <label htmlFor="password" className={styles.label}>Κωδικός</label>
             <input
               type="password"
               id="password"
               name="password"
               className={styles.input}
-              placeholder="Enter your password"
+              placeholder="Κωδικός"
               required
             />
           </div>
           
-          <button type="submit" className={styles.submitButton}>
-            Log In
+          <button
+            type="submit"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              padding: '10px 16px',
+              backgroundColor: '#646cff', // main color
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: 500,
+              borderRadius: '6px',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s, transform 0.1s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4f55e1';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#646cff';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+            }}
+          >
+            Σύνδεση
           </button>
         </form>
 
         <div className={styles.links}>
-          <Link href="/auth/signup" className={styles.link}>
-            Dont have an account? <span>Sign Up</span>
-          </Link>
           <button
             onClick={() => signIn("google", { callbackUrl: "/" })}
-              className={styles.link}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              gap: '6px',
+              padding: '10px 16px',
+              backgroundColor: '#646cff', // main color
+              color: 'white',
+              fontSize: '14px',
+              fontWeight: 500,
+              borderRadius: '6px',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s, transform 0.1s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4f55e1';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#646cff';
+              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
+            }}
           >
             <FcGoogle className="w-5 h-5" />
-            Sign in with Google
+            Σύνδεση με Google
           </button>
+
+          <Link href="/auth/signup" className={styles.link}>
+            Δεν έχετε λογαριασμό; <span>Εγγραφή</span>
+          </Link>
+
           <Link href="/auth/email-reset-input" className={styles.link}>
-            Forgot Password?
+            Ξεχάσατε τον κωδικό;
           </Link>
         </div>
       </div>

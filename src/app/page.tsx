@@ -65,6 +65,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  offerPrice?: number;
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
@@ -300,24 +301,6 @@ export default function Home() {
     });
   };
 
-  const [amountStripe, setAmountStripe] = useState(10); // default 10 USD
-
-  const handlePaymentStripe = async () => {
-    try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ amount: amountStripe * 100 }), // Stripe expects cents
-      });
-      const data = await res.json();
-      window.location.href = data.url;
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       <Head>
@@ -332,7 +315,7 @@ export default function Home() {
           {/* Background Image */}
           <Image
             src={homepage}
-            alt="Delicious Turkish kebabs"
+            alt="Ελληνικά σουβλάκια"
             layout="fill"
             objectFit="cover"
             quality={90}
@@ -382,28 +365,6 @@ export default function Home() {
           {loading ? 'Φόρτωση...' : 'Πλήρωσε τώρα'}
         </button>
       </div>
-
-      <input
-        type="number"
-        min="1"
-        value={amountStripe}
-        onChange={(e) => setAmountStripe(Number(e.target.value))}
-        placeholder="Enter amount"
-        style={{ padding: "5px", marginRight: "10px" }}
-      />
-      <button
-        onClick={handlePaymentStripe}
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#6772E5",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-        }}
-      >
-        Pay with Stripe
-      </button>
 
       {/* Menu Section */}
       <section id="menu" className="py-16 bg-white">

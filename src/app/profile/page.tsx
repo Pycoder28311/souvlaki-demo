@@ -175,7 +175,7 @@ export default function ProfilePage() {
                 </ul>
                 )}
 
-                {selected && <p className="mt-2 text-gray-700">Selected: {selected}</p>}
+                {selected && <p className="mt-2 text-gray-700">Επιλεγμένη Διεύθυνση: {selected}</p>}
             </div>
             ) : (
             <div className="flex items-center justify-center gap-2 max-w-full mb-4">

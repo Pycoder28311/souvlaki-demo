@@ -12,7 +12,9 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/auth/signin",
     "/auth/signup",
     "/auth/login-options",
-    "/auth/error"
+    "/auth/error",
+    "/success",
+    "/cancel",
   ];
 
   const showNavbar = !noNavbarPaths.includes(pathname);

@@ -90,7 +90,7 @@ export default function SignUp() {
   return (
     <div className={styles.authContainer}>
       <div className={styles.authCard}>
-        <h1 className={styles.authTitle}>Sign Up</h1>
+        <h1 className={styles.authTitle}>Εγγραφή</h1>
         
         <form onSubmit={handleSubmit} className={styles.authForm}>
           <div className={styles.inputGroup}>
@@ -107,7 +107,7 @@ export default function SignUp() {
           </div>
           
           <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.inputLabel}>Password</label>
+            <label htmlFor="password" className={styles.inputLabel}>Κωδικός</label>
             <div className={styles.passwordInput}>
               <input
                 type={showPassword ? "text" : "password"}
@@ -115,7 +115,7 @@ export default function SignUp() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={styles.inputField}
-                placeholder="Enter your password"
+                placeholder="Εισάγετε τον κωδικό σας"
                 required
               />
               <button
@@ -129,7 +129,7 @@ export default function SignUp() {
           </div>
           
           <div className={styles.inputGroup}>
-            <label htmlFor="confirmPassword" className={styles.inputLabel}>Confirm Password</label>
+            <label htmlFor="confirmPassword" className={styles.inputLabel}>Επιβεβαίωση Κωδικού</label>
             <div className={styles.passwordInput}>
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -137,7 +137,7 @@ export default function SignUp() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={styles.inputField}
-                placeholder="Confirm your password"
+                placeholder="Επιβεβαίωση Κωδικού"
                 required
               />
               <button
@@ -151,14 +151,14 @@ export default function SignUp() {
           </div>
           
           <div className={styles.inputGroup}>
-            <label htmlFor="name" className={styles.inputLabel}>Name</label>
+            <label htmlFor="name" className={styles.inputLabel}>Όνομα</label>
             <input
               type="text"
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className={styles.inputField}
-              placeholder="Enter your name"
+              placeholder="Όνομα"
               required
             />
           </div>
@@ -166,15 +166,15 @@ export default function SignUp() {
           {error && <div className={styles.errorMessage}>{error}</div>}
           
           <button type="submit" className={styles.primaryButton}>
-            Sign Up
+            Εγγραφή
           </button>
         </form>
         
         <div className={styles.authLinks}>
           <div className={styles.signinPrompt}>
-            Already have an account?{' '}
+            Έχετε ήδη λογαριασμό?{' '}
             <Link href="/auth/signin" className={styles.signinLink}>
-              Sign In
+              Συνδεθείτε
             </Link>
           </div>
         </div>

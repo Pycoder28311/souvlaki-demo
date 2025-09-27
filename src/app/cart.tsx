@@ -72,8 +72,6 @@ export default function OrderSidebar({
   const [user, setUser] = useState<User | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentWayModal, setPaymentWayModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
@@ -88,6 +86,7 @@ export default function OrderSidebar({
         const session = await response.json();
         if (session?.user) {
           setUser(session.user);
+          setSelected("");
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -121,61 +120,52 @@ export default function OrderSidebar({
       const data = await res.json();
 
       if (data.success) {
-        alert("Order created successfully!");
+        alert("Η παραγγελία δημιουργήθηκε με επιτυχία!");
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
         setShowPaymentModal(false);
       } else {
-        alert("Error creating order: " + data.error);
+        alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
       }
     } catch (err) {
       console.error(err);
-      alert("Something went wrong.");
+      alert("Κάτι πήγε στραβά.");
     }
   };
 
   const router = useRouter();
 
-  const handleClick = () => {
+  const handlePaymentStripe = async () => {
+    try {
+      const res = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: total * 100 }), // Stripe expects cents
+      });
+      const data = await res.json();
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+    }
+  };
+
+  const handleClickOnline = () => {
+    if (!user) {
+      router.push("/auth/login-options");
+      return;
+    }
+    handlePaymentStripe();
+  };
+
+  const handleClickDoor = () => {
     if (!user) {
       router.push("/auth/login-options");
       return;
     }
     handlePayment();
-  };
-
-  const handleOnlinePayment = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const res = await fetch('/api/createPayment', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: total,
-          customerEmail: user?.email
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.OrderCode) {
-        // Αν είσαι σε sandbox
-        window.location.href = `https://demo.vivapayments.com/web/checkout?ref=${data.OrderCode}`;
-
-        // Για production
-        // window.location.href = `https://www.vivapayments.com/web/checkout?ref=${data.OrderCode}`;
-      } else {
-        setError('Αποτυχία δημιουργίας πληρωμής');
-      }
-    } catch (err) {
-      console.error(err);
-      setError('Σφάλμα κατά την επικοινωνία με το server');
-    } finally {
-      setLoading(false);
-    }
   };
 
   const [editingAddress, setEditingAddress] = useState(false);
@@ -196,25 +186,6 @@ export default function OrderSidebar({
     const data = await res.json();
     setResults(data.suggestions || []);
   };
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-          setSelected("");
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
-  }, []);
 
   const handleUpdate = async () => {
     try {
@@ -348,7 +319,7 @@ export default function OrderSidebar({
                     </div>
                   ) : (
                     <div className="w-22 h-22 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg ">
-                      No Image
+                      Χωρίς Εικόνα
                     </div>
                   )}
                 </div>
@@ -513,13 +484,13 @@ export default function OrderSidebar({
               </p>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
-                onClick={handleClick}
+                onClick={handleClickDoor}
               >
                 Πληρωμή από κοντά
               </button>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
-                onClick={handleOnlinePayment}
+                onClick={handleClickOnline}
               >
                 Πληρωμή Online
               </button>

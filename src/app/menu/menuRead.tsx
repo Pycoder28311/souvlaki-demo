@@ -26,7 +26,7 @@ export default async function DataPage({ isScrolled, activeCategory, setActiveCa
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
                 >
-                {cat.name} {cat.id === activeCategory && "(active)"}
+                {cat.name} {cat.id === activeCategory && "(ενεργό)"}
                 </button>
             ))}
             </div>

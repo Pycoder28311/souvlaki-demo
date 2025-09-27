@@ -36,6 +36,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  offerPrice?: number;
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
@@ -132,7 +133,7 @@ export default function MenuGrid({
               />
             ) : (
               <div className="h-full w-full flex items-center justify-center bg-gray-200 text-gray-600 rounded-t-xl">
-                No Image
+                Χωρίς Εικόνα
               </div>
             )}
           </div>

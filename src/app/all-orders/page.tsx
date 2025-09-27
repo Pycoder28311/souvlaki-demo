@@ -18,13 +18,13 @@ export default async function MyOrdersPage() {
   });
 
   if (!orders || orders.length === 0) {
-    return <p className="p-8">No orders exist yet</p>;
+    return <p className="p-8">Δεν υπάρχουν παραγγελίες ακόμα</p>;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-3xl mx-auto pt-24">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Orders List</h1>
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">Λίστα Παραγγελιών</h1>
 
         {orders.map((order) => (
           <div
@@ -33,7 +33,7 @@ export default async function MyOrdersPage() {
           >
             {/* Order Header */}
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
-              <p className="font-semibold text-gray-900">Order #{order.id}</p>
+              <p className="font-semibold text-gray-900">Παραγγελίες #{order.id}</p>
               <span
                 className={`px-3 py-1 text-sm font-medium rounded-full ${
                   order.status === "completed"
@@ -50,10 +50,10 @@ export default async function MyOrdersPage() {
             {/* Order Details */}
             <div className="p-4 space-y-3">
               <p className="text-gray-700">
-                <strong>Total:</strong> {order.total.toFixed(2)}€
+                <strong>Σύνολο:</strong> {order.total.toFixed(2)}€
               </p>
               <p className="text-gray-500 text-sm">
-                <strong>Created:</strong> {order.createdAt.toLocaleString()}
+                <strong>Δημιουργήθηκε:</strong> {order.createdAt.toLocaleString()}
               </p>
 
               {/* Items */}

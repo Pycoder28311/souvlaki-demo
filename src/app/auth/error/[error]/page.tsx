@@ -7,15 +7,15 @@ export default function ErrorPage() {
   const router = useRouter();
   const { error } = useParams() ?? {};
 
-  // Default message if error is undefined or unknown
-  let message = "There was an issue with your authentication. Please try again.";
+  // Προεπιλεγμένο μήνυμα αν το error είναι undefined ή άγνωστο
+  let message = "Υπήρξε πρόβλημα με την αυθεντικοποίηση. Παρακαλώ δοκιμάστε ξανά.";
 
   if (error === "ExistingUser") {
-    message = "An account with this email already exists. Please use your original sign-in method.";
+    message = "Υπάρχει ήδη λογαριασμός με αυτό το email. Παρακαλώ χρησιμοποιήστε τη μέθοδο σύνδεσης που χρησιμοποιήσατε αρχικά.";
   } else if (error === "OAuthCreateAccount") {
-    message = "We couldn't create an account for you. Please try again.";
+    message = "Δεν μπορέσαμε να δημιουργήσουμε λογαριασμό για εσάς. Παρακαλώ δοκιμάστε ξανά.";
   } else if (error === "OAuthCallback") {
-    message = "Authentication failed during the OAuth process. Please try again.";
+    message = "Η αυθεντικοποίηση απέτυχε κατά τη διαδικασία OAuth. Παρακαλώ δοκιμάστε ξανά.";
   }
 
   const [hover, setHover] = useState(false);
@@ -44,7 +44,7 @@ export default function ErrorPage() {
           marginBottom: '16px',
           color: '#dc3545'
         }}>
-          Something went wrong!
+          Κάτι πήγε στραβά!
         </h1>
         
         <p style={{
@@ -76,7 +76,7 @@ export default function ErrorPage() {
             display: 'block'
           }}
         >
-          Go to Sign In
+          Μετάβαση στη Σύνδεση
         </button>
       </div>
     </div>

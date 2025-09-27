@@ -35,7 +35,7 @@ export default function UploadPage() {
 
     const data = await res.json()
     if (res.ok) {
-      setMessage("✅ Uploaded successfully! Image ID: " + data.id)
+      setMessage("✅ Η φωτογραφία ανέβηκε επιτυχώς! ID φωτογραφίας: " + data.id)
     } else {
       setMessage("❌ Error: " + data.error)
     }
@@ -45,7 +45,7 @@ export default function UploadPage() {
 
   return (
     <div className="p-6 max-w-lg mx-auto">
-      <h1 className="text-xl font-bold mb-4">Upload an Image</h1>
+      <h1 className="text-xl font-bold mb-4">Ανεβάστε φωτογραφία</h1>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
@@ -60,7 +60,7 @@ export default function UploadPage() {
           disabled={uploading || !file}
           className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         >
-          {uploading ? "Uploading..." : "Upload"}
+          {uploading ? "Ανέβασμα..." : "Ανέβηκε"}
         </button>
 
         {/* Preview below button */}

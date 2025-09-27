@@ -26,12 +26,12 @@ export default function SignOutPage() {
           fontWeight: '600',
           marginBottom: '24px',
           color: '#333'
-        }}>Sign Out</h1>
+        }}>Αποσύνδεση</h1>
         
         <p style={{
           marginBottom: '24px',
           color: '#555'
-        }}>Are you sure you want to sign out?</p>
+        }}>Είστε σίγουροι ότι θέλετε να αποσυνδεθείτε;</p>
         
         <div style={{
           display: 'flex',
@@ -53,7 +53,7 @@ export default function SignOutPage() {
               flex: 1
             }}
           >
-            Yes, Sign Out
+            Ναι
           </button>
           
           <button
@@ -71,7 +71,7 @@ export default function SignOutPage() {
               flex: 1
             }}
           >
-            Cancel
+            Ακύρωση
           </button>
         </div>
       </div>

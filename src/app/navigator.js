@@ -98,7 +98,7 @@ export default function Navbar({scrolled = false}) {
             </span>
           </Link>
 
-          <div className="flex-1 flex justify-center hidden md:flex space-x-8">
+          <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex space-x-8">
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>

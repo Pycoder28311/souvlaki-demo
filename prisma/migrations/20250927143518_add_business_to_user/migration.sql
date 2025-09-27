@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Product` ADD COLUMN `offerPrice` DECIMAL(10, 2) NOT NULL DEFAULT 0;

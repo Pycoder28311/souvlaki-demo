@@ -58,6 +58,7 @@ type Product = {
   name: string
   price: number
   offer: boolean
+  offerPrice?: number;
   description: string;
   image?: ImageType | null
   imageId?: number | null; 
@@ -253,8 +254,8 @@ export default function MyOrdersPage() {
       <div
         className={`p-8 pt-24 transition-all duration-300 flex flex-col ${
           isSidebarOpen
-            ? "lg:mr-80 lg:max-w-[calc(100%-20rem)] justify-start" // shift right when sidebar open on desktop
-            : "lg:ml-40 lg:max-w-[calc(100%-20rem)]"                 // desktop only, full width on mobile
+            ? "lg:mr-80 ml-40 lg:max-w-[calc(100%-40rem)] justify-start" // shift right when sidebar open on desktop
+            : "lg:ml-80 lg:max-w-[calc(100%-40rem)]"                 // desktop only, full width on mobile
         }`}
       >
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
@@ -313,7 +314,7 @@ export default function MyOrdersPage() {
                       </div>
                     ) : (
                       <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
-                        No Image
+                        Χωρίς Εικόνα
                       </div>
                     )}
 

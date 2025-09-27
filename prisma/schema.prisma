@@ -136,6 +136,7 @@ model Product {
   categoryId  Int
   name        String
   offer       Boolean       @default(false)
+  offerPrice  Decimal       @default(0) @db.Decimal(10,2)
   price       Decimal       @db.Decimal(10,2)
   image       Image?        @relation(fields: [imageId], references: [id])
   imageId     Int?          @unique

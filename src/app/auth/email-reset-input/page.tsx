@@ -18,21 +18,21 @@ export default function ResetPassword() {
       });
 
       if (res.ok) {
-        setMessage('Password reset email sent. Check your inbox.');
+        setMessage('Το email επαναφοράς κωδικού στάλθηκε. Ελέγξτε τα εισερχόμενά σας.');
       } else {
         const data = await res.json();
-        setMessage(`Error: ${data.message || 'Failed to send reset email'}`);
+        setMessage(`Σφάλμα: ${data.message || 'Αποτυχία αποστολής email επαναφοράς'}`);
       }
     } catch (error) {
       console.error(error);
-      setMessage('An unexpected error occurred.');
+      setMessage('Παρουσιάστηκε απροσδόκητο σφάλμα.');
     }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <h1 className={styles.title}>Reset Password</h1>
+        <h1 className={styles.title}>Επαναφορά Κωδικού</h1>
         
         {message && (
           <div className={`${styles.message}`}>
@@ -42,20 +42,20 @@ export default function ResetPassword() {
 
         <form onSubmit={handleResetPassword} className={styles.form}>
           <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>Email Address</label>
+            <label htmlFor="email" className={styles.label}>Διεύθυνση Email</label>
             <input
               type="email"
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className={styles.input}
-              placeholder="Enter your email"
+              placeholder="Εισάγετε το email σας"
               required
             />
           </div>
           
           <button type="submit" className={styles.submitButton}>
-            Send Reset Link
+            Αποστολή Συνδέσμου Επαναφοράς
           </button>
         </form>
       </div>
