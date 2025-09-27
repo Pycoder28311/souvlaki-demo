@@ -146,6 +146,14 @@ export default function OrderSidebar({
         body: JSON.stringify({ amount: total * 100 }), // Stripe expects cents
       });
       const data = await res.json();
+      if (data.success) {
+        orderItems.forEach((item) => removeItem(item));
+
+        setIsSidebarOpen(false);
+        setShowPaymentModal(false);
+      } else {
+        alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
+      }
       window.location.href = data.url;
     } catch (error) {
       console.error("Error creating checkout session:", error);

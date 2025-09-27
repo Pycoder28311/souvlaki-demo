@@ -499,8 +499,19 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               )}
 
               <div className="p-6">
-                <h2 className="text-2xl font-bold mb-2">{fullProduct.name}</h2>
-
+                <div className="flex gap-4 mb-2">
+                  <h2 className="text-2xl font-bold">{fullProduct.name}</h2>
+                  <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
+                    {product.offer && product.offerPrice ? (
+                      <>
+                        <span>{product.price.toFixed(2)}€</span>
+                        <span className="line-through text-gray-400">{product.offerPrice.toFixed(2)}€</span>
+                      </>
+                    ) : (
+                      <span>{product.price.toFixed(2)}€</span>
+                    )}
+                  </p>
+                </div>
                 <p className="text-gray-700 text-base leading-relaxed mb-4">
                   {fullProduct.description}
                 </p>
