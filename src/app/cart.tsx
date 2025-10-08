@@ -145,8 +145,30 @@ export default function OrderSidebar({
         },
         body: JSON.stringify({ amount: total * 100 }), // Stripe expects cents
       });
-      const data = await res.json();
+      //const data = await res.json();
+
+      const userId = user?.id; // Replace with current logged-in user id
+      const payload = {
+        userId,
+        items: orderItems.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          price: item.price,
+          ingredients: item.selectedIngredients || [],
+          options: item.options,
+          selectedOptions: item.selectedOptions,
+        })),
+      };
+
+      const resOrder = await fetch("/api/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await resOrder.json();
       if (data.success) {
+        alert("Η παραγγελία δημιουργήθηκε με επιτυχία!");
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
