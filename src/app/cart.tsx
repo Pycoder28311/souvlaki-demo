@@ -262,7 +262,7 @@ export default function OrderSidebar({
       {/* Order Items */}
       <div
         className="flex-1 space-y-4 overflow-y-auto"
-        style={{ maxHeight: "calc(100% - 80px)" }}
+        style={{ maxHeight: "calc(100% - 120px)" }}
       >
         {orderItems.length === 0 ? (
           <p className="text-gray-500 text-center mt-4">Το καλάθι είναι άδειο.</p>
