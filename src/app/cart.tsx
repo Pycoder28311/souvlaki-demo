@@ -138,16 +138,7 @@ export default function OrderSidebar({
 
   const handlePaymentStripe = async () => {
     try {
-      const res = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ amount: total * 100 }), // Stripe expects cents
-      });
-      //const data = await res.json();
-
-      const userId = user?.id; // Replace with current logged-in user id
+      const userId = user?.id;
       const payload = {
         userId,
         items: orderItems.map((item) => ({
@@ -158,17 +149,20 @@ export default function OrderSidebar({
           options: item.options,
           selectedOptions: item.selectedOptions,
         })),
+        amount: total * 100, // Stripe expects cents
       };
 
-      const resOrder = await fetch("/api/create-order", {
+      const res = await fetch("/api/create-checkout-session", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
-
-      const data = await resOrder.json();
-      if (data.success) {
-        alert("Η παραγγελία δημιουργήθηκε με επιτυχία!");
+      const data = await res.json();
+      if (data.url) {
+        
+        window.location.href = data.url;
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
@@ -176,7 +170,6 @@ export default function OrderSidebar({
       } else {
         alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
       }
-      window.location.href = data.url;
     } catch (error) {
       console.error("Error creating checkout session:", error);
     }

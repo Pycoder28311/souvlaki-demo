@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 export async function POST(req) {
   try {
     const { userId, items } = await req.json();
-    console.log(items)
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });

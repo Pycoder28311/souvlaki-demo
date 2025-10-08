@@ -7,7 +7,48 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const { amount } = req.body; // amount σε cents
+      const { userId, items, amount } = req.body;
+
+      if (!items || !userId) {
+        return res.status(400).json({ error: "Missing order data" });
+      }
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ error: "Invalid amount" });
+      }
+
+      const order = await prisma.order.create({
+        data: {
+          userId,
+          status: "pending",
+          total: amount / 100, // convert cents -> euros
+          items: {
+            create: items.map((item) => ({
+              productId: item.productId,
+              quantity: Number(item.quantity),
+              price: Number(item.price),
+              ingredients: {
+                create: item.ingredients
+                  ? item.ingredients.map((ing) => ({
+                      ingredientId: ing.id,
+                      price: Number(ing.price),
+                      name: ing.name,
+                    }))
+                  : [],
+              },
+              options: {
+                connect: item.options
+                  ? item.options.map((opt) => ({ id: opt.id }))
+                  : [],
+              },
+              selectedOptions: {
+                connect: item.selectedOptions
+                  ? item.selectedOptions.map((opt) => ({ id: opt.id }))
+                  : [],
+              },
+            })),
+          },
+        },
+      });
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -28,7 +69,7 @@ export default async function handler(req, res) {
         cancel_url: `${req.headers.origin}/cancel`,
       });
 
-      res.status(200).json({ url: session.url });
+      res.status(200).json({ url: session.url, order });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
