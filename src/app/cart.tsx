@@ -161,12 +161,13 @@ export default function OrderSidebar({
       });
       const data = await res.json();
       if (data.url) {
-        
-        window.location.href = data.url;
+        sessionStorage.setItem("lastOrder", JSON.stringify(payload));
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
         setShowPaymentModal(false);
+
+        window.location.href = data.url;
       } else {
         alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
       }
