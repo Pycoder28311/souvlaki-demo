@@ -246,6 +246,22 @@ export default function MyOrdersPage() {
     );
   };
 
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isSidebarOpen && isMobile) {
+      // Disable background scroll
+      document.body.style.overflow = "hidden";
+    } else {
+      // Re-enable when closed
+      document.body.style.overflow = "";
+    }
+
+    // Cleanup when component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
+
   if (loading) return <p>Φόρτωση...</p>;
   if (!orders.length) return <p>Δεν βρέθηκαν παραγγελίες.</p>;
 

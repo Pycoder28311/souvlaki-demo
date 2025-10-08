@@ -96,6 +96,22 @@ export default function About() {
     setQuantity((prev) => Math.max(1, prev + delta)); // min 1
   };
 
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    if (isSidebarOpen && isMobile) {
+      // Disable background scroll
+      document.body.style.overflow = "hidden";
+    } else {
+      // Re-enable when closed
+      document.body.style.overflow = "";
+    }
+
+    // Cleanup when component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div className="min-h-screen bg-white">
       <Head>

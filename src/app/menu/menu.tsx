@@ -304,7 +304,6 @@ export default function Menu({ categories: initialCategories, email }: { categor
     });
   };
 
-
   const handleCreateProduct = async (categoryId: number) => {
     const name = prompt("Εισάγετε το όνομα του προϊόντος");
     if (!name) return;
@@ -544,7 +543,22 @@ export default function Menu({ categories: initialCategories, email }: { categor
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    if (isSidebarOpen && isMobile) {
+      // Disable background scroll
+      document.body.style.overflow = "hidden";
+    } else {
+      // Re-enable when closed
+      document.body.style.overflow = "";
+    }
+
+    // Cleanup when component unmounts
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isSidebarOpen, isMobile]);
 
   return (
     <div className="min-h-screen bg-white">

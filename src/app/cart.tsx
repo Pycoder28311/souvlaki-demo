@@ -262,7 +262,7 @@ export default function OrderSidebar({
       {/* Order Items */}
       <div
         className="flex-1 space-y-4 overflow-y-auto"
-        style={{ maxHeight: "calc(100% - 120px)" }}
+        style={{ maxHeight: "calc(100% - 80px)" }}
       >
         {orderItems.length === 0 ? (
           <p className="text-gray-500 text-center mt-4">Το καλάθι είναι άδειο.</p>
@@ -375,7 +375,7 @@ export default function OrderSidebar({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="border-t border-gray-400 pt-4 px-2 sm:px-0">
+        <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
             className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
@@ -386,7 +386,7 @@ export default function OrderSidebar({
       )}
 
       {orderItems.length === 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="border-t border-gray-400 pt-4 px-2 sm:px-0">
+        <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
             <button
               className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base font-bold rounded-lg hover:bg-yellow-500 transition"
