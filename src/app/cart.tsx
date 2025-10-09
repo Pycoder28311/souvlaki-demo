@@ -375,7 +375,7 @@ export default function OrderSidebar({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="mb-10 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
+        <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
             className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
@@ -386,7 +386,7 @@ export default function OrderSidebar({
       )}
 
       {orderItems.length === 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="mb-10 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
+        <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
             <button
               className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base font-bold rounded-lg hover:bg-yellow-500 transition"
@@ -398,7 +398,7 @@ export default function OrderSidebar({
       )}
 
       {showPaymentModal && (
-        <div className="fixed inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+        <div className="mb-14 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           
           <div className="bg-gray-100 shadow-lg w-full h-full max-w-md max-h-full flex flex-col">
             
@@ -493,7 +493,7 @@ export default function OrderSidebar({
       )}
 
       {paymentWayModal && (
-        <div className="fixed inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+        <div className="mb-14 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           <div className="bg-gray-100 shadow-lg w-full h-full max-w-md max-h-full flex flex-col">
             
             {/* Modal Header */}
