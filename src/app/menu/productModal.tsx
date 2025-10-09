@@ -504,11 +504,11 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                   <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
                     {product.offer && product.offerPrice ? (
                       <>
-                        <span>{product.price.toFixed(2)}€</span>
-                        <span className="line-through text-gray-400">{product.offerPrice.toFixed(2)}€</span>
+                        <span>{product.price}€</span>
+                        <span className="line-through text-gray-400">{product.offerPrice}€</span>
                       </>
                     ) : (
-                      <span>{product.price.toFixed(2)}€</span>
+                      <span>{product.price}€</span>
                     )}
                   </p>
                 </div>
