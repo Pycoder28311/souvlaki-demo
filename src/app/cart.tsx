@@ -386,7 +386,7 @@ export default function OrderSidebar({
       )}
 
       {orderItems.length === 0 && user?.email !== "kopotitore@gmail.com" && (
-        <div className="mt-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
+        <div className="mb-4 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
             <button
               className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base font-bold rounded-lg hover:bg-yellow-500 transition"
