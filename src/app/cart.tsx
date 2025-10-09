@@ -398,7 +398,7 @@ export default function OrderSidebar({
       )}
 
       {showPaymentModal && (
-        <div className="fixed mb-14 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+        <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           
           <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
             
@@ -493,7 +493,7 @@ export default function OrderSidebar({
       )}
 
       {paymentWayModal && (
-        <div className="fixed mb-14 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
+        <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
             
             {/* Modal Header */}
