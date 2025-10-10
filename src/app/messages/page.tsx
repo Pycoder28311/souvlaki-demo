@@ -44,7 +44,7 @@ export default async function DataPage() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">Δεν υπάρουν μηνύματα</p>
+          <p className="text-gray-500">Δεν υπάρχουν μηνύματα.</p>
         )}
       </div>
     </div>

@@ -5,6 +5,7 @@ import OrderSidebar from "../cart";
 import { ShoppingCart } from "lucide-react";
 import EditModal from '../menu/editModal';
 import Image from "next/image";
+import Link from "next/link";
 
 type Ingredient = {
   id: number;
@@ -263,7 +264,6 @@ export default function MyOrdersPage() {
   }, [isSidebarOpen]);
 
   if (loading) return <p>Φόρτωση...</p>;
-  if (!orders.length) return <p>Δεν βρέθηκαν παραγγελίες.</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -274,9 +274,13 @@ export default function MyOrdersPage() {
             : "lg:ml-80 lg:max-w-[calc(100%-40rem)]"                 // desktop only, full width on mobile
         }`}
       >
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
+        {orders.length > 0 && (
+          <>
+            <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
+          </>
+        )}
 
-        {orders.map((order) => (
+        {orders.length > 0 ? (orders.map((order) => (
           <div
             key={order.id}
             className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden"
@@ -385,7 +389,17 @@ export default function MyOrdersPage() {
               </ul>
             </div>
           </div>
-        ))}
+        ))) : (
+          <div className="text-center py-10">
+            <p className="mb-4 text-xl">Δεν έχετε κάνει ακόμα παραγγελίες.</p>
+            <Link
+              href="/menu"
+              className="border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white px-8 py-3 font-bold transition-colors inline-block"
+            >
+              Δες το Μενού
+            </Link>
+          </div>
+        )}
       </div>
 
       <OrderSidebar

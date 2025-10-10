@@ -104,7 +104,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
 
     const data = await res.json();
     if (res.ok) {
-      setMessage("✅ Το αρχείο ανέβηκε επιτυχώς! ID εικόνας: " + data.id);
+      setMessage("✅ Το αρχείο ανέβηκε επιτυχώς! Πατήστε το κουμπί Αποθήκευσης Αλλαγών για να αποθηκεύσετε τις αλλαγές.");
     } else {
       setMessage("❌ Σφάλμα: " + data.error);
     }
