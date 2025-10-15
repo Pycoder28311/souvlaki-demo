@@ -826,7 +826,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
       </div>
 
       {email === "kopotitore@gmail.com" && (
-        <div className="w-100 flex justify-center mt-4 mb-4">
+        <div className="w-full flex justify-center mt-4 mb-4">
           <button
             onClick={handleCreateCategory}
             className="rounded-lg px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
