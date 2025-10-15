@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Minus, Plus } from "lucide-react"
+import { Minus, Plus, Trash2, Edit2 } from "lucide-react"
 import { ChevronDown, ChevronRight, X } from "lucide-react";
 
 type Ingredient = {
@@ -557,7 +557,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                               title="Επεξεργασία Κατηγορίας"
                             >
-                              ✏️
+                              <Edit2 className="w-4 h-4" />
                             </button>
 
                             {/* Make Required / Optional */}
@@ -585,7 +585,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                               title="Διαγραφή Κατηγορίας"
                             >
-                              🗑️
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         )}
@@ -720,7 +720,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                                 title="Επεξεργασία Ερώτησης"
                               >
-                                ✏️
+                                <Edit2 className="w-4 h-4" />
                               </button>
 
                               {/* Edit Price */}
@@ -756,7 +756,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                                 title="Διαγραφή Επιλογής"
                               >
-                                🗑️
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           )}
@@ -795,7 +795,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 })}
 
                 {email === "kopotitore@gmail.com" && (
-                  <div className="flex">
+                  <div className="flex justify-between">
                     <button
                       onClick={handleAddCategory}
                       className="px-4 py-2 mr-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
@@ -814,34 +814,36 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
             </>
           )}
           {email === "kopotitore@gmail.com" && (
-            <button
-              onClick={async () => {
-                if (!fullProduct) return;
-                setLoading(true);
+            <div className="w-full flex justify-center">
+              <button
+                onClick={async () => {
+                  if (!fullProduct) return;
+                  setLoading(true);
 
-                try {
-                  const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
-                    method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(fullProduct),
-                  });
+                  try {
+                    const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(fullProduct),
+                    });
 
-                  if (!res.ok) throw new Error("Failed to save changes");
+                    if (!res.ok) throw new Error("Failed to save changes");
 
-                  alert("Οι αλλαγές αποθηκεύτηκαν επιτυχώς!");
-                  window.location.reload(); // 🔄 reload the page
-                } catch (err) {
-                  console.error(err);
-                  alert("Error saving changes");
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="h-12 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-12"
-              disabled={loading}
-            >
-            {loading ? "Αποθήκευση..." : "Αποθήκευση Αλλαγών"}
-          </button>
+                    alert("Οι αλλαγές αποθηκεύτηκαν επιτυχώς!");
+                    window.location.reload(); // 🔄 reload the page
+                  } catch (err) {
+                    console.error(err);
+                    alert("Error saving changes");
+                  } finally {
+                    setLoading(false);
+                  }
+                }}
+                className="h-12 w-[90%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-12"
+                disabled={loading}
+              >
+              {loading ? "Αποθήκευση..." : "Αποθήκευση Αλλαγών"}
+            </button>
+            </div>
           )}
         </div>
         <div className="fixed inset-x-0 bottom-0 bg-white p-4 border-t border-gray-300 shadow-md flex gap-4 z-50 rounded-b-lg">

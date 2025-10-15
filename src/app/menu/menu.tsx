@@ -7,7 +7,7 @@ import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
 import Image from "next/image";
-import { Search, X } from "lucide-react";
+import { Search, X, Edit2, Trash2 } from "lucide-react";
 import { ShoppingCart } from "lucide-react";
 import { Plus } from "lucide-react";
 
@@ -560,6 +560,52 @@ export default function Menu({ categories: initialCategories, email }: { categor
     };
   }, [isSidebarOpen, isMobile]);
 
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Close modal on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setSelectedCategory(null);
+      }
+    }
+
+    if (selectedCategory) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedCategory]);
+
+  const [selectedAdminProduct, setSelectedAdminProduct] = useState<Product | null>(null);
+  const modalProdRef = useRef<HTMLDivElement>(null);
+
+  // Close modal on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalProdRef.current &&
+        !modalProdRef.current.contains(event.target as Node)
+      ) {
+        setSelectedAdminProduct(null);
+      }
+    }
+
+    if (selectedAdminProduct) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedAdminProduct]);
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -652,7 +698,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
             </section>
 
             {showSearch && (
-              <div className=" w-screen bg-white z-50 flex justify-start p-2 shadow-md">
+              <div className=" w-full bg-white z-50 flex justify-start p-2 shadow-md">
                 <input
                   type="text"
                   placeholder="Search products..."
@@ -690,70 +736,17 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     <h2 className="text-2xl font-bold">{category.name}</h2>
 
                     {email === "kopotitore@gmail.com" && (
-                      <div className="flex flex-col sm:flex-row items-center gap-3">
-
-                        {/* Move Up/Down */}
-                        <div className="flex flex-row gap-2">
-                          <button
-                            onClick={() => moveCategory(category.id, "up")}
-                            className="w-11 h-11 flex items-center justify-center bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
-                            title="Μετακίνηση Πάνω"
-                          >
-                            ▲
-                          </button>
-                          <button
-                            onClick={() => moveCategory(category.id, "down")}
-                            className="w-11 h-11 flex items-center justify-center bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
-                            title="Μετακίνηση Κάτω"
-                          >
-                            ▼
-                          </button>
-                        </div>
-
-                        {/* Save Positions */}
-                        <button
-                          onClick={saveCategoryPositions}
-                          className="px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 font-medium"
-                        >
-                          Ενημέρωση θέσεων
-                        </button>
-
-                        {/* Action Icons */}
-                        <div className="flex items-center gap-2">
-                          {/* Create Product */}
-                          <button
-                            onClick={() => handleCreateProduct(category.id)}
-                            className="p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-110"
-                            title="Δημιουργία Προϊόντος"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </button>
-
-                          {/* Edit Category */}
-                          <button
-                            onClick={() => handleEditCategory(category.id, category.name)}
-                            className="p-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-transform transform hover:scale-110"
-                            title="Επεξεργασία Κατηγορίας"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536M9 11l6 6H3v-6l6-6h6z" />
-                            </svg>
-                          </button>
-
-                          {/* Delete Category */}
-                          <button
-                            onClick={() => handleDeleteCategory(category.id, category.name)}
-                            className="p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform transform hover:scale-110"
-                            title="Διαγραφή Κατηγορίας"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
+                      <button
+                        onClick={() =>
+                          setSelectedCategory(
+                            selectedCategory?.id === category.id ? null : category
+                          )
+                        }
+                        className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                        title="Επεξεργασία Κατηγορίας"
+                      >
+                        <Edit2 size={20} />
+                      </button>
                     )}
                   </div>
 
@@ -761,9 +754,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
                     {filteredProducts.map((product) => (
                       <div
                         key={product.id}
-                        className={`relative flex items-start justify-between border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white ${
-                          email === "kopotitore@gmail.com" ? "h-44" : "h-28"
-                        }`}
+                        className="relative flex items-start justify-between border border-gray-200 rounded-xl h-28 shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
                         onClick={() => setSelectedProduct(product)}
                       >
                         {/* Product Info */}
@@ -810,55 +801,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
                             Χωρίς Εικόνα
                           </div>
                         )}
-
-                        {/* Admin Buttons */}
                         {email === "kopotitore@gmail.com" && (
-                          <div className="absolute bottom-2 flex gap-1 z-10">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditProduct(product.id, product.name);
-                              }}
-                              className="px-3 py-1 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition text-sm font-medium"
-                              title="Edit Product"
-                            >
-                              Επεξεργασία Ονόματος
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteProduct(product.id, product.name);
-                              }}
-                              className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm font-medium"
-                              title="Delete Product"
-                            >
-                              Διαγραφή Προϊόντος
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleProductOffer(product.id, product.offer, product.price);
-                              }}
-                              className="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600 transition text-sm font-medium"
-                              title="Εναλλαγή Προσφοράς"
-                            >
-                              {product.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditDescription(product.id);
-                              }}
-                              className="px-3 py-1 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-medium"
-                              title="Επεξεργασία Περιγραφής"
-                            >
-                              Επεξεργασία Περιγραφής
-                            </button>
-                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedAdminProduct(
+                                selectedAdminProduct?.id === product.id ? null : product
+                              )
+                            }}
+                            className="absolute top-2 right-2 p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                            title="Επεξεργασία Προϊόντος"
+                          >
+                            <Edit2 size={20} /> {/* You can replace with Edit2 icon from lucide-react */}
+                          </button>
                         )}
+
                       </div>
                     ))}
                   </div>
@@ -876,6 +833,135 @@ export default function Menu({ categories: initialCategories, email }: { categor
           >
             + Δημιουργία Κατηγορίας
           </button>
+        </div>
+      )}
+
+      {email === "kopotitore@gmail.com" && selectedCategory && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-40">
+          <div
+            ref={modalRef}
+            className="bg-white p-6 rounded-2xl shadow-xl w-[90%] sm:w-[500px] relative"
+          >
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
+            >
+              <X size={22} />
+            </button>
+
+            <h3 className="text-xl font-semibold mb-4 text-center">
+              Επεξεργασία Κατηγορίας: {selectedCategory.name}
+            </h3>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => moveCategory(selectedCategory.id, "up")}
+                  className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+                >
+                  ▲ Πάνω
+                </button>
+                <button
+                  onClick={() => moveCategory(selectedCategory.id, "down")}
+                  className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+                >
+                  ▼ Κάτω
+                </button>
+              </div>
+
+              <button
+                onClick={saveCategoryPositions}
+                className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform transform hover:scale-105 font-medium"
+              >
+                Ενημέρωση Θέσεων
+              </button>
+
+              <button
+                onClick={() => handleCreateProduct(selectedCategory.id)}
+                className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 font-medium"
+              >
+                <Plus size={18} className="inline mr-2" />
+                Δημιουργία Προϊόντος
+              </button>
+
+              <button
+                onClick={() =>
+                  handleEditCategory(
+                    selectedCategory.id,
+                    selectedCategory.name
+                  )
+                }
+                className="w-full py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-transform transform hover:scale-105 font-medium"
+              >
+                <Edit2 size={18} className="inline mr-2" />
+                Επεξεργασία Ονόματος
+              </button>
+
+              <button
+                onClick={() =>
+                  handleDeleteCategory(
+                    selectedCategory.id,
+                    selectedCategory.name
+                  )
+                }
+                className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform transform hover:scale-105 font-medium"
+              >
+                <Trash2 size={18} className="inline mr-2" />
+                Διαγραφή Κατηγορίας
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {email === "kopotitore@gmail.com" && selectedAdminProduct && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-40">
+          <div
+            ref={modalProdRef}
+            className="bg-white p-6 rounded-2xl shadow-xl w-[90%] sm:w-[400px] relative"
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedAdminProduct(null)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
+            >
+              ✕
+            </button>
+
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Ενέργειες Προϊόντος: {selectedAdminProduct.name}
+            </h3>
+
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handleEditProduct(selectedAdminProduct.id, selectedAdminProduct.name)}
+                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+              >
+                Επεξεργασία Ονόματος
+              </button>
+
+              <button
+                onClick={() => handleDeleteProduct(selectedAdminProduct.id, selectedAdminProduct.name)}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Διαγραφή Προϊόντος
+              </button>
+
+              <button
+                onClick={() => toggleProductOffer(selectedAdminProduct.id, selectedAdminProduct.offer, selectedAdminProduct.price)}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+              >
+                {selectedAdminProduct.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
+              </button>
+
+              <button
+                onClick={() => setEditDescription(selectedAdminProduct.id)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                Επεξεργασία Περιγραφής
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
