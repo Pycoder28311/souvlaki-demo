@@ -349,14 +349,16 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddIngredient = (catId: number) => {
-    const name = prompt("Εισάγετε το όνομα του συστατικού");
+    const name = prompt("Εισάγετε το όνομα της επιλογής");
     if (!name) return;
 
-    const priceStr = prompt("Εισάγετε την τιμή του συστατικού");
+    const priceStr = prompt("Εισάγετε την τιμή της επιλογής");
     if (!priceStr) return;
 
     const price = parseFloat(priceStr);
-    if (isNaN(price)) return alert("Η τιμή πρέπει να είναι αριθμός");
+    if (isNaN(price) || price <= 0) {
+      return alert("Η τιμή πρέπει να είναι θετικός αριθμός μεγαλύτερος του 0");
+    }
 
     setFullProduct((prev) => {
       if (!prev || !prev.ingCategories) return prev;
@@ -444,7 +446,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                     src={`/api/images/${fullProduct.imageId}`}
                     alt={fullProduct.name}
                     fill
-                    style={{ objectFit: "cover", objectPosition: "top" }}
+                    style={{ objectFit: "cover", objectPosition: "center" }}
                     className="rounded-t-lg"
                   />
                 </div>
@@ -547,7 +549,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                         </div>
 
                         {email === "kopotitore@gmail.com" && (
-                          <div className="flex gap-2">
+                          <div className="flex gap-1">
                             {/* Edit Category */}
                             <button
                               onClick={(e) => {
@@ -557,7 +559,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                               title="Επεξεργασία Κατηγορίας"
                             >
-                              <Edit2 className="w-4 h-4" />
+                              Όνομα
                             </button>
 
                             {/* Make Required / Optional */}
@@ -631,10 +633,10 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                       e.stopPropagation();
                                       handleEditIngredientName(ingCat.id, ing.id);
                                     }}
-                                    className="px-2 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition text-xs font-medium"
-                                    title="Edit Ingredient Name"
+                                    className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                    title="Επεξεργασία Ερώτησης"
                                   >
-                                    Επεξεργασία
+                                    Όνομα
                                   </button>
 
                                   <button
@@ -643,7 +645,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                       e.stopPropagation();
                                       handleEditIngredientPrice(ingCat.id, ing.id, ing.price);
                                     }}
-                                    className="px-2 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600 transition text-xs font-medium"
+                                    className="px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition text-xs font-medium"
                                     title="Edit Price"
                                   >
                                     Τιμή
@@ -655,10 +657,10 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                       e.stopPropagation();
                                       handleDeleteIngredient(ingCat.id, ing.id);
                                     }}
-                                    className="px-2 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition text-xs font-medium"
-                                    title="Delete Ingredient"
+                                    className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                    title="Διαγραφή Κατηγορίας"
                                   >
-                                    Διαγραφή
+                                    <Trash2 className="w-4 h-4" />
                                   </button>
                                 </div>
                               )}
@@ -710,7 +712,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                           </div>
 
                           {email === "kopotitore@gmail.com" && (
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               {/* Edit Question */}
                               <button
                                 onClick={(e) => {
@@ -720,7 +722,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                                 title="Επεξεργασία Ερώτησης"
                               >
-                                <Edit2 className="w-4 h-4" />
+                                Όνομα
                               </button>
 
                               {/* Edit Price */}
@@ -729,10 +731,10 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                   e.stopPropagation();
                                   handleEditOptionPrice(opt.id);
                                 }}
-                                className="px-2 py-1 bg-orange-400 hover:bg-orange-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
-                                title="Επεξεργασία Τιμής"
+                                className="px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition text-xs font-medium"
+                                title="Edit Price"
                               >
-                                💰
+                                Τιμή
                               </button>
 
                               {/* Edit Comment */}
@@ -741,7 +743,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                   e.stopPropagation();
                                   handleEditOptionComment(opt.id);
                                 }}
-                                className="px-2 py-1 bg-blue-400 hover:bg-blue-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
+                                className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                                 title="Επεξεργασία Σχολίου"
                               >
                                 Σχόλιο

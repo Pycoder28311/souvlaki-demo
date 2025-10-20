@@ -120,11 +120,12 @@ export default function OrderSidebar({
       const data = await res.json();
 
       if (data.success) {
-        alert("Η παραγγελία δημιουργήθηκε με επιτυχία!");
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
         setShowPaymentModal(false);
+
+        window.location.href = "/success";
       } else {
         alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
       }

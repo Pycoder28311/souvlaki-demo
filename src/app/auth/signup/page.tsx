@@ -31,7 +31,7 @@ export default function SignUp() {
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
         );
         const data = await res.json();
-        resolve(data.results[0].formatted_address); // full address string
+        resolve(data.results[0].formatted_address); 
       }, (err) => {
         console.error(err);
         resolve(null);

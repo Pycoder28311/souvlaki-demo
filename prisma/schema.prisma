@@ -73,7 +73,7 @@ model PasswordReset {
   id        Int      @id @default(autoincrement())
   token     String   @unique
   userId    Int
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id])
@@ -88,7 +88,7 @@ model Message {
   senderName  String
   senderEmail String
   senderPhone String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
   read        Boolean  @default(false)
 
   sender   User? @relation("SentMessages", fields: [senderId], references: [id])
@@ -98,7 +98,7 @@ model Message {
 model Image {
   id        Int      @id @default(autoincrement())
   data      Bytes
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
   product   Product? // optional back relation
 }
 
@@ -110,7 +110,7 @@ model Transaction {
   receiverIban String
   amount     Float
   status     String   @default("pending") // pending, completed
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
 }
 
 model Review {
@@ -119,7 +119,7 @@ model Review {
   reviewedId Int      // ποιος δέχεται την κριτική
   rating     Int      // 1-5 αστεράκια
   comment    String?  // προαιρετικό κείμενο
-  createdAt  DateTime @default(now())
+  createdAt  DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
 
   reviewer   User     @relation("UserReviewsGiven", fields: [reviewerId], references: [id])
   reviewed   User     @relation("UserReviewsReceived", fields: [reviewedId], references: [id])
@@ -186,7 +186,7 @@ model Order {
   id        Int         @id @default(autoincrement())
   userId    Int
   status    String      @default("pending") // pending, preparing, delivered, cancelled
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
   updatedAt DateTime    @updatedAt
   total     Decimal     @db.Decimal(10,2)
   user      User        @relation(fields: [userId], references: [id])
@@ -224,7 +224,7 @@ model Favorite {
   userId     Int
   productId  Int
   orderItemId Int? // optional link to original order item snapshot
-  createdAt  DateTime   @default(now())
+  createdAt  DateTime   @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
 
   user       User       @relation(fields: [userId], references: [id])
   product    Product    @relation(fields: [productId], references: [id])

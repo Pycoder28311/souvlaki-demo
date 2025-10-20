@@ -517,7 +517,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
   };
 
   const setEditDescription = async (productId: number) => {
-    const newDescription = prompt("Εισάγετε τη νέα περιγραφή του προϊόντος");
+    const newDescription = prompt("Εισάγετε τη νέα περιγραφή του προϊόντος", selectedAdminProduct?.description);
     if (!newDescription) return;
 
     await fetch(`/api/products-description/${productId}`, {
