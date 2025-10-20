@@ -6,7 +6,7 @@ export default async function handler(req, res) {
   const response = await fetch(
     `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
       query
-    )}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}&types=address`
+    )}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}&types=address`
   );
   const data = await response.json();
 

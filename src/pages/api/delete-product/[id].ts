@@ -15,6 +15,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const productId = parseInt(id, 10);
 
+    await prisma.options.deleteMany({ where: { productId } });
+    await prisma.favorite.deleteMany({ where: { productId } });
+    await prisma.orderItem.deleteMany({ where: { productId } });
+    const ingCategories = await prisma.ingCategory.findMany({ where: { productId } });
+
+    // Διαγραφή όλων των Ingredient που ανήκουν στα ingCategories
+    for (const ingCat of ingCategories) {
+      await prisma.ingredient.deleteMany({ where: { ingCategoryId: ingCat.id } });
+    }
+
+    // Τώρα μπορείς να σβήσεις τα ingCategories
+    await prisma.ingCategory.deleteMany({ where: { productId } });
+
     // Delete the product
     await prisma.product.delete({
       where: { id: productId },

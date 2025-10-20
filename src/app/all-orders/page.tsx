@@ -1,8 +1,17 @@
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/authOptions";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
 export default async function MyOrdersPage() {
+
+  const session = await getServerSession(authOptions);
+  if (!session || session?.user?.email !== "kopotitore@gmail.com") {
+    // Redirect σε error page
+    redirect("/error"); // ή οποιοδήποτε route για σφάλμα
+  }
 
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },

@@ -1,5 +1,8 @@
 // src/app/data/page.tsx
 import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/authOptions";
+import { redirect } from "next/navigation";
 
 export const revalidate = 0;
 
@@ -12,6 +15,13 @@ type MessageItem = {
 };
 
 export default async function DataPage() {
+
+  const session = await getServerSession(authOptions);
+  if (!session || session?.user?.email !== "kopotitore@gmail.com") {
+    // Redirect σε error page
+    redirect("/error"); // ή οποιοδήποτε route για σφάλμα
+  }
+
   const messages: MessageItem[] = await prisma.message.findMany({
     select: {
       id: true,
@@ -28,7 +38,7 @@ export default async function DataPage() {
 
         {messages.length > 0 ? (
           <ul className="space-y-4">
-            {messages.map((m: MessageItem) => (
+            {messages.slice().reverse().map((m: MessageItem) => (
               <li
                 key={m.id}
                 className="bg-white shadow-sm rounded-lg p-4 hover:shadow-md transition"

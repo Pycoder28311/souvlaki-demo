@@ -28,7 +28,7 @@ export default function SignUp() {
   
         // Reverse geocode to get address
         const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
+          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
         );
         const data = await res.json();
         resolve(data.results[0].formatted_address); // full address string
