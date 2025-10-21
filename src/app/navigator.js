@@ -301,14 +301,14 @@ export default function Navbar({scrolled = false}) {
           {/* Header with Close Button */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm">
-                <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold text-lg">
-                  {user?.name?.charAt(0) || "U"}
-                </span>
+              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-gray-300 text-white font-bold text-lg">
+                {user?.name?.charAt(0) || "U"}
               </div>
-              <div className="flex flex-col">
-                <h2 className="text-lg font-semibold text-gray-800 truncate max-w-xs">{user?.name}</h2>
-                <p className="text-sm text-gray-500 truncate max-w-xs">
+              <div className="flex flex-col max-w-[200px]">
+                <h2 className="text-lg font-semibold text-gray-800 break-words">
+                  {user?.name}
+                </h2>
+                <p className="text-sm text-gray-500 break-words">
                   {address}
                 </p>
               </div>

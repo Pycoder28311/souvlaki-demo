@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // useParams hook for accessing dynamic route params
 import { validatePassword } from "../../../utils/validatePassword";
+import { signIn } from 'next-auth/react';
 
 const ResetPassword = () => {
   const { token } = useParams() ?? {};// Access the token directly from the params
@@ -56,6 +57,13 @@ const ResetPassword = () => {
 
       if (res.ok) {
         setMessage('Ο κωδικός επαναφέρθηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
+        const data = await res.json(); // assuming you return the email in the response
+        await signIn("credentials", {
+          redirect: true,
+          email: data.email,
+          password: newPassword,
+          callbackUrl: "/",
+        });
       } else {
         const data = await res.json();
         setMessage(`Σφάλμα: ${data.message || 'Αποτυχία επαναφοράς κωδικού'}`);

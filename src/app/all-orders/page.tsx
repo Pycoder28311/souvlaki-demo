@@ -13,7 +13,7 @@ export default async function MyOrdersPage() {
     redirect("/error"); // ή οποιοδήποτε route για σφάλμα
   }
 
-  const orders = await prisma.order.findMany({
+  const orders = await prisma.productOrder.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       items: {

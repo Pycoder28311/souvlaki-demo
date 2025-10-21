@@ -531,6 +531,21 @@ export default function Menu({ categories: initialCategories, email }: { categor
     // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
   };
 
+  const setEditPrice = async (productId: number) => {
+    const newPrice = prompt("Εισάγετε τη νέα τιμή του προϊόντος", selectedAdminProduct?.price.toString());
+    if (!newPrice) return;
+
+    await fetch(`/api/products-price/${productId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ price: Number(newPrice) }),
+    });
+
+    alert("Η τιμή ενημερώθηκε!");
+    window.location.reload();
+    // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
+  };
+
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -959,6 +974,13 @@ export default function Menu({ categories: initialCategories, email }: { categor
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
                 Επεξεργασία Περιγραφής
+              </button>
+
+              <button
+                onClick={() => setEditPrice(selectedAdminProduct.id)}
+                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+              >
+                Επεξεργασία Τιμής
               </button>
             </div>
           </div>

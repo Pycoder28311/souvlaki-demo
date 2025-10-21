@@ -7,7 +7,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw ?? ""; // default to empty string
 
-  const noNavbarPaths = [
+  const noNavbarExactPaths = [
     "/auth/signout",
     "/auth/signin",
     "/auth/signup",
@@ -15,9 +15,21 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/auth/error",
     "/success",
     "/cancel",
+    "/auth/email-reset-input",
+    "/auth/reset-password",
+  ];
+  
+  const noNavbarPrefixPaths = [
+    "/auth/error",
+    "/auth/reset-password",
   ];
 
-  const showNavbar = !noNavbarPaths.includes(pathname);
+  const hideNavbarExact = noNavbarExactPaths.includes(pathname);
+
+  // check prefix matches
+  const hideNavbarPrefix = noNavbarPrefixPaths.some(prefix => pathname.startsWith(prefix));
+
+  const showNavbar = !(hideNavbarExact || hideNavbarPrefix);
 
   const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages"];
   const scrolled = scrolledPaths.includes(pathname);
