@@ -6,7 +6,6 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { FcPaid } from "react-icons/fc";
 
 type Ingredient = {
   id: number;

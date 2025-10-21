@@ -61,6 +61,11 @@ export async function POST(req) {
       },
     });
 
+    const io = globalThis.io || req?.socket?.server?.io;
+    if (io) {
+      io.emit("orderUpdated", newOrder);
+    }
+
     return NextResponse.json({ success: true, order: newOrder });
   } catch (err) {
     console.error(err);

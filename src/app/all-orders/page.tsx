@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/authOptions";
 import { redirect } from "next/navigation";
+import OrdersSocket from "./OrdersSocket";
 
 export const revalidate = 0;
 
@@ -35,6 +36,8 @@ export default async function MyOrdersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-3xl mx-auto pt-24">
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Λίστα Παραγγελιών</h1>
+
+        <OrdersSocket initialOrders={orders} />
 
         {orders.map((order) => (
           <div
