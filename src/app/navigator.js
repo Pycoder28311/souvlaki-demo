@@ -14,6 +14,7 @@ export default function Navbar({scrolled = false}) {
   const [user, setUser] = useState(null); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
+  const [address, setAddress] = useState("");
 
   // derive business from user
   const business = user?.business ?? false;
@@ -48,6 +49,36 @@ export default function Navbar({scrolled = false}) {
     };
   }, [scrolled]);
 
+  // navigator.js
+  const getUserAddress = async () => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      console.log("Geolocation not supported");
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const res = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
+            );
+            const data = await res.json();
+            resolve(data.results?.[0]?.formatted_address || null);
+          } catch (err) {
+            console.error("Failed to fetch address:", err);
+            resolve(null);
+          }
+        },
+        (err) => {
+          console.error("Geolocation error:", err);
+          resolve(null);
+        }
+      );
+    });
+  };
+
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -57,6 +88,19 @@ export default function Navbar({scrolled = false}) {
         const session = await response.json();
         if (session?.user) {
           setUser(session.user);
+          setAddress(session.user.address ? session.user.address.split(",")[0] : "");
+          if (!session.user.address) {
+            const address = await getUserAddress();
+            if (address) {
+              await fetch("/api/update-address", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: session.user.email, address }),
+              });
+              setAddress(address ? address.split(",")[0] : "");
+              console.log("✅ Address stored:", address);
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -266,7 +310,7 @@ export default function Navbar({scrolled = false}) {
                 <h2 className="text-lg font-semibold text-gray-800 truncate max-w-xs">{user?.name}</h2>
                 {user?.address && (
                   <p className="text-sm text-gray-500 truncate max-w-xs">
-                    {user.address ? user.address.split(",")[0] : ""}
+                    {address}
                   </p>
                 )}
               </div>
