@@ -308,11 +308,9 @@ export default function Navbar({scrolled = false}) {
               </div>
               <div className="flex flex-col">
                 <h2 className="text-lg font-semibold text-gray-800 truncate max-w-xs">{user?.name}</h2>
-                {user?.address && (
-                  <p className="text-sm text-gray-500 truncate max-w-xs">
-                    {address}
-                  </p>
-                )}
+                <p className="text-sm text-gray-500 truncate max-w-xs">
+                  {address}
+                </p>
               </div>
             </div>
           </div>
