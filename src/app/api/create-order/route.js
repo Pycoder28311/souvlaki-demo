@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req) {
   try {
-    const { userId, items } = await req.json();
+    const { userId, items, paid } = await req.json();
 
     if (!items || items.length === 0) {
       return NextResponse.json({ error: "No items provided" }, { status: 400 });
@@ -21,6 +21,7 @@ export async function POST(req) {
         userId,
         status: "pending",
         total: total,
+        paid: paid || false,
         items: {
           create: items.map((item) => ({
             productId: item.productId,

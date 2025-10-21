@@ -186,6 +186,7 @@ model ProductOrder {
   id        Int         @id @default(autoincrement())
   userId    Int
   status    String      @default("pending") // pending, preparing, delivered, cancelled
+  paid      Boolean     @default(false)
   createdAt DateTime @default(dbgenerated("(UTC_TIMESTAMP() + INTERVAL 3 HOUR)"))
   updatedAt DateTime    @updatedAt
   total     Decimal     @db.Decimal(10,2)
@@ -197,7 +198,7 @@ model OrderItem {
   id          Int        @id @default(autoincrement())
   orderId     Int
   productId   Int
-  imageId     Int?    @unique
+  imageId     Int?       @unique
   quantity    Int        @default(1)
   price       Decimal    @db.Decimal(10,2) // snapshot of product price
   comment     String?    // <-- user comment about this product in the order

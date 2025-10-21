@@ -16,6 +16,7 @@ export default async function MyOrdersPage() {
   const orders = await prisma.productOrder.findMany({
     orderBy: { createdAt: "desc" },
     include: {
+      user: true,
       items: {
         include: {
           product: true,
@@ -42,9 +43,9 @@ export default async function MyOrdersPage() {
           >
             {/* Order Header */}
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
-              <p className="font-semibold text-gray-900">Παραγγελίες #{order.id}</p>
+              <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
               <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${
+                className={`px-3 py-1 font-medium rounded-full ${
                   order.status === "completed"
                     ? "bg-green-500 text-white"
                     : order.status === "pending"
@@ -52,16 +53,32 @@ export default async function MyOrdersPage() {
                     : "bg-gray-400 text-white"
                 }`}
               >
-                {order.status}
+                {order.status === "completed"
+                  ? "Ολοκληρώθηκε"
+                  : order.status === "pending"
+                  ? "Σε εκκρεμότητα"
+                  : "Ακυρώθηκε"}
               </span>
+              <div
+                className={`px-3 py-1 rounded-full text-white ${
+                  order?.paid ? "bg-green-500" : "bg-red-500"
+                }`}
+              >
+                {order?.paid ? "Πληρωμή Online" : "Πληρωμή Κατά την Παραλαβή"}
+              </div>
             </div>
 
             {/* Order Details */}
             <div className="p-4 space-y-3">
               <p className="text-gray-700">
-                <strong>Σύνολο:</strong> {order.total.toFixed(2)}€
+                <strong>Όνομα:</strong> {order.user.name}
               </p>
-              <p className="text-gray-500 text-sm">
+
+              <p className="text-gray-700">
+                <strong>Διεύθυνση:</strong> {order.user.address}
+              </p>
+
+              <p className="text-gray-700">
                 <strong>Δημιουργήθηκε:</strong> {order.createdAt.toLocaleString()}
               </p>
 
@@ -119,6 +136,10 @@ export default async function MyOrdersPage() {
                   );
                 })}
               </ul>
+
+              <p className="text-gray-700 text-xl">
+                <strong>Σύνολο:</strong> {order.total.toFixed(2)}€
+              </p>
             </div>
           </div>
         ))}

@@ -6,6 +6,7 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { FcPaid } from "react-icons/fc";
 
 type Ingredient = {
   id: number;
@@ -109,6 +110,7 @@ export default function OrderSidebar({
           options: item.options,
           selectedOptions: item.selectedOptions,
         })),
+        paid: false,
       };
 
       const res = await fetch("/api/create-order", {
@@ -151,6 +153,7 @@ export default function OrderSidebar({
           selectedOptions: item.selectedOptions,
         })),
         amount: total * 100, // Stripe expects cents
+        paid: true,
       };
 
       const res = await fetch("/api/create-checkout-session", {

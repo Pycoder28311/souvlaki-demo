@@ -111,8 +111,8 @@ export default function MenuGrid({
     fetchSession();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
-  if (menuItems.length === 0) return <p>No products on offer.</p>;
+  if (loading) return <p>Φόρτωση...</p>;
+  if (menuItems.length === 0) return <></>;
 
   return (
     <div className="grid md:grid-cols-3 gap-24 pr-6 pl-6 md:pr-12 md:pl-12">
