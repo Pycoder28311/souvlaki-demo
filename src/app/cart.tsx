@@ -339,7 +339,7 @@ export default function OrderSidebar({
                         src={`/api/images/${item.imageId}`}
                         alt={item.name}
                         fill
-                        style={{ objectFit: "cover", objectPosition: "top" }}
+                        style={{ objectFit: "cover", objectPosition: "center" }}
                       />
                     </div>
                   ) : (

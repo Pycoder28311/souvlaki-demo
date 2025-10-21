@@ -143,7 +143,12 @@ export default function MenuGrid({
             {/* Title & Price */}
             <div className="flex justify-between items-start mb-2">
               <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-              <span className="text-lg font-bold text-yellow-600">{item.price}€</span>
+              <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
+                <>
+                  <span>{item.price}€</span>
+                  <span className="line-through text-gray-400">{item.offerPrice}€</span>
+                </>
+              </p>
             </div>
 
             {/* Description */}

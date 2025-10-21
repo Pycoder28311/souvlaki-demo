@@ -113,7 +113,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                   src={`/api/images/${orderItem.imageId}`}
                   alt={"image of product"}
                   fill
-                  style={{ objectFit: "cover", objectPosition: "top" }}
+                  style={{ objectFit: "cover", objectPosition: "center" }}
                   className="rounded-t-lg"
                 />
               </div>
@@ -129,7 +129,9 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
               <X className="w-7 h-7" />
             </button>
             <div className="p-6">
-              <h2 className="text-2xl font-bold mb-2">{orderItem.name}</h2>
+              <div className="flex gap-4 mb-2">
+                <h2 className="text-2xl font-bold">{orderItem.name}</h2>
+              </div>
 
               <div className="bg-white mb-4 flex gap-4 z-50">
                 {/* Quantity controls */}
