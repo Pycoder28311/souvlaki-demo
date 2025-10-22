@@ -144,7 +144,8 @@ export default function Orders() {
               </p>
 
               <p className="text-gray-700">
-                <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString("el-GR", {
+                <strong>Δημιουργήθηκε: </strong> 
+                {new Date(order.createdAt).toLocaleString("el-GR", {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
