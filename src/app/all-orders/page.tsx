@@ -144,7 +144,10 @@ export default function Orders() {
               </p>
 
               <p className="text-gray-700">
-                <strong>Δημιουργήθηκε:</strong> {order.createdAt.toLocaleString()}
+                <strong>Δημιουργήθηκε:</strong> {new Date(order.createdAt).toLocaleString("el-GR", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
               </p>
 
               {/* Items */}
@@ -172,7 +175,7 @@ export default function Orders() {
                         <span className="font-medium text-gray-800">
                           {item.quantity} × {item.product.name}
                         </span>
-                        <span className="text-gray-700">{itemTotal}€</span>
+                        <span className="text-gray-700">{itemTotal.toFixed(2)}€</span>
                       </div>
 
                       {item.ingredients.length > 0 && (
@@ -180,7 +183,7 @@ export default function Orders() {
                           {item.ingredients.map((ing) => (
                             <li key={ing.id}>
                               {ing.ingredient.name}{" "}
-                              {ing.price ? `(${Number(ing.price)}€)` : ""}
+                              {ing.price ? `(${Number(ing.price).toFixed(2)}€)` : ""}
                             </li>
                           ))}
                         </ul>
@@ -191,19 +194,19 @@ export default function Orders() {
                           {item.selectedOptions.map((opt) => (
                             <li key={opt.id}>
                               {opt.comment}{" "}
-                              {opt.price ? `(${Number(opt.price)}€)` : ""}
+                              {opt.price ? `(${Number(opt.price).toFixed(2)}€)` : ""}
                             </li>
                           ))}
                         </ul>
                       )}
-                      <span className="mt-2">Σύνολο:</span> {Number(item.price)}€
+                      <span className="mt-2">Σύνολο:</span> {Number(item.price).toFixed(2)}€
                     </li>
                   );
                 })}
               </ul>
 
               <p className="text-gray-700 text-xl">
-                <strong>Σύνολο:</strong> {order.total}€
+                <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
               </p>
             </div>
           </div>

@@ -53,17 +53,17 @@ export default function PaymentModal({
                 {item.ingredients && item.ingredients.length > 0 && (
                   <ul className="ml-2 text-sm text-gray-600">
                     {item.ingredients.map((ing) => (
-                      <li key={ing.id}>+ {ing.name} - {ing.price}€</li>
+                      <li key={ing.id}>+ {ing.name} - {Number(ing.price).toFixed(2)}€</li>
                     ))}
                   </ul>
                 )}
               </div>
-              <span>{item.price * item.quantity}€</span>
+              <span>{Number(item.price * item.quantity).toFixed(2)}€</span>
             </div>
           ))}
         </div>
 
-        <p className="font-bold mb-4">Σύνολο: {total}€</p>
+        <p className="font-bold mb-4">Σύνολο: {Number(total).toFixed(2)}€</p>
 
         <div className="flex justify-end space-x-2">
           <button

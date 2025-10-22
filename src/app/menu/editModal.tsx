@@ -249,7 +249,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                             <div className="flex-1">
                               <p className="font-semibold text-gray-800">{ing.name}</p>
                               {ing.price > 0 && (
-                                <p className="text-sm text-gray-600">+{ing.price}€</p>
+                                <p className="text-sm text-gray-600">+{Number(ing.price).toFixed(2)}€</p>
                               )}
                             </div>
                           </label>
@@ -313,7 +313,7 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                           Όχι
                         </label>
                         {opt.price > 0 && (
-                          <p className="text-sm text-gray-600">Τιμή: {opt.price}€</p>
+                          <p className="text-sm text-gray-600">Τιμή: {Number(opt.price).toFixed(2)}€</p>
                         )}
                       </div>
                     )}

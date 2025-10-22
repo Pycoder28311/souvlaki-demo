@@ -501,16 +501,16 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               )}
 
               <div className="p-6">
-                <div className="flex gap-4 mb-2">
-                  <h2 className="text-2xl font-bold">{fullProduct.name}</h2>
+                <div className="flex justify-between mb-2 items-center">
+                  <h2 className="text-4xl font-bold">{fullProduct.name}</h2>
                   <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
                     {product.offer && product.offerPrice ? (
                       <>
-                        <span>{product.price}€</span>
-                        <span className="line-through text-gray-400">{product.offerPrice}€</span>
+                        <span>{Number(product.price).toFixed(2)}€</span>
+                        <span className="line-through text-gray-400">{Number(product.offerPrice).toFixed(2)}€</span>
                       </>
                     ) : (
-                      <span>{product.price}€</span>
+                      <span>{Number(product.price).toFixed(2)}€</span>
                     )}
                   </p>
                 </div>
@@ -621,7 +621,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               <div className="flex-1">
                                 <p className="font-semibold text-gray-800">{ing.name}</p>
                                 {ing.price > 0 && (
-                                  <p className="text-sm text-gray-600">+{ing.price}€</p>
+                                  <p className="text-sm text-gray-600">+{Number(ing.price).toFixed(2)}€</p>
                                 )}
                               </div>
 
@@ -788,7 +788,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                               Όχι
                             </label>
                             {opt.price > 0 && (
-                              <p className="text-sm text-gray-600">Τιμή: {opt.price}€</p>
+                              <p className="text-sm text-gray-600">Τιμή: {Number(opt.price).toFixed(2)}€</p>
                             )}
                           </div>
                         )}

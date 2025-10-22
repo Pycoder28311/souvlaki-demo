@@ -15,7 +15,9 @@ export async function GET(req) {
 
       const sendOrders = async () => {
         const orders = await prisma.productOrder.findMany({
-          orderBy: { createdAt: "desc" },
+          orderBy: [
+            { id: "desc" }, // newest first if same timestamp
+          ],
           include: {
             user: true,
             items: {
