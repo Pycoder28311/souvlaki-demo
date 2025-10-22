@@ -262,13 +262,32 @@ export default function Navbar({scrolled = false}) {
           >
             Σχετικά
           </Link>
-          <Link
-            href="/contact"
-            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
-            onClick={() => setMobileOpen(false)}
-          >
-            Επικοινωνία
-          </Link>
+          {business ? (
+            <>
+              <Link 
+                href="/messages" 
+                className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+                onClick={() => setMobileOpen(false)}
+              >
+                Μηνύματα
+              </Link>
+              <Link 
+                href="/all-orders" 
+                className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+                onClick={() => setMobileOpen(false)}
+              >
+                Παραγγελίες
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/contact"
+              className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Επικοινωνία
+            </Link>
+          )}
         </div>
       </div>
 
