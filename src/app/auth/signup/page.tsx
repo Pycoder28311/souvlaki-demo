@@ -18,7 +18,6 @@ export default function SignUp() {
 
   const getUserAddress = async () => {
     if (!navigator.geolocation) {
-      console.log("Geolocation not supported");
       return null;
     }
 

@@ -80,7 +80,6 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
   };
 
   const toggleIngredient = (ingredient: Ingredient) => {
-    console.log(orderItem)
     setSelectedIngredients((prev) =>
         prev.some((i) => i.id === ingredient.id)
         ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected

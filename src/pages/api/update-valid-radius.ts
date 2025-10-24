@@ -12,7 +12,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!userId || validRadius == null) {
     return res.status(400).json({ message: "Missing userId or valiRadius" });
   }
-  console.log(validRadius)
 
   try {
     const updatedUser = await prisma.user.update({

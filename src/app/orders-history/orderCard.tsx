@@ -183,7 +183,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
 
       {order.deliveryTime && order.status === "pending" && (
         <div className="px-4 py-2 bg-white text-gray-700 text-sm font-semibold">
-          ⏱ Παράδοση σε: <span className="text-blue-600">{currentRange} λεπτά</span>
+          Παράδοση σε: <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμο" && "λεπτά"}</span>
         </div>
       )}
 

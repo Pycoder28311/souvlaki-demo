@@ -1,7 +1,7 @@
 // components/OrderCard.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import React from "react";
 
 type Ingredient = {
@@ -129,97 +129,149 @@ const OrderCard: React.FC<Props> = ({ order }) => {
     return () => clearInterval(timer);
   }, [order.deliveryTime, order.createdAt]);
 
+  const [showSelect, setShowSelect] = useState(false);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
+
+  const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const time = e.target.value;
+    setDeliveryTimeEdit(time);
+    setShowSelect(false); // hide after selecting
+
+    if (!time) return;
+
+    try {
+      const res = await fetch("/api/update-delivery-time", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: order.id,
+          deliveryTimeEdit: time,
+          currentRange,
+          deliveryTime: order.deliveryTime,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update delivery time");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    if (showSelect && selectRef.current) {
+      selectRef.current.focus();
+      selectRef.current.size = 8; // opens it visually like a dropdown list
+    } else if (selectRef.current) {
+      selectRef.current.size = 0;
+    }
+  }, [showSelect]);
+
+  // Optional: close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setShowSelect(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">
       {/* Order Header */}
       <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
         <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
         {currentRange !== "Έτοιμο" ? (
-        <span
-          className={`px-3 py-1 font-medium rounded-full ${
-            order.status === "completed"
-              ? "bg-green-500 text-white"
-              : order.status === "pending"
-              ? "bg-yellow-500 text-white"
-              : order.status === "rejected"
-              ? "bg-red-600 text-white"
-              : order.status === "cancelled"
-              ? "bg-gray-400 text-white"
-              : order.status === "requested"
-              ? "bg-green-500 text-white"
-              : "bg-gray-300 text-white"
-          }`}
-        >
-          {order.status === "completed"
-            ? "Ολοκληρώθηκε"
-            : order.status === "pending"
-            ? "Σε εκκρεμότητα"
-            : order.status === "rejected"
-            ? "Απορρίφθηκε"
-            : order.status === "cancelled"
-            ? "Ακυρώθηκε"
-            : order.status === "requested"
-            ? "Αιτήθηκε"
-            : "Άγνωστο"}
-            {order.deliveryTime && order.status === "pending" && (
-                <>
-                    <span> </span>{currentRange}
-                </>
-            )}
-        </span>
+          <>
+            <span
+              className={`px-3 py-1 font-medium rounded-lg ${
+                order.status === "completed"
+                  ? "bg-green-500 text-white"
+                  : order.status === "pending"
+                  ? "bg-yellow-500 text-white"
+                  : order.status === "rejected"
+                  ? "bg-red-600 text-white"
+                  : order.status === "cancelled"
+                  ? "bg-gray-400 text-white"
+                  : order.status === "requested"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-300 text-white"
+              }`}
+            >
+              {order.status === "completed"
+                ? "Ολοκληρώθηκε "
+                : order.status === "pending"
+                ? "Σε εκκρεμότητα "
+                : order.status === "rejected"
+                ? "Απορρίφθηκε "
+                : order.status === "cancelled"
+                ? "Ακυρώθηκε "
+                : order.status === "requested"
+                ? "Αιτήθηκε "
+                : "Άγνωστο "}
+                <div className="relative inline-block">
+                  <span
+                    onClick={() => setShowSelect((prev) => !prev)}
+                    className="cursor-pointer"
+                  >
+                    {" "}
+                    {currentRange || "Επιλέξτε καθυστέρηση (λεπτά)"}
+                  </span>
+
+                  {showSelect && (
+                    <select
+                      ref={selectRef}
+                      value={deliveryTimeEdit}
+                      onChange={handleSelectChange}
+                      className="absolute right-0 top-4 mt-1 w-auto border border-gray-300 rounded-md p-2 bg-white text-gray-800 z-10"
+                      onBlur={() => setShowSelect(false)}
+                      autoFocus
+                    >
+                      <option value="">Επιλέξτε χρόνο καθυστέρησης</option>
+                      {[20, 25, 30, 35, 40, 45, 50, 55].map((min) => (
+                        <option key={min} value={min}>
+                          {min}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+            </span>
+          </>
         ) : (
-            <span className="px-3 py-1 font-medium rounded-full bg-yellow-500 text-white">
-            {order.deliveryTime && order.status === "pending" && (
-                <span>{currentRange} </span>
-            )}
+            <span className="px-3 py-1 font-medium rounded-lg bg-green-500 text-white cursor-pointer">
+              {order.deliveryTime && order.status === "pending" && (
+                <span
+                  onClick={async () => {
+                    const confirmed = window.confirm("Είσαι σίγουρος ότι η παραγγελία είναι έτοιμη;");
+
+                    if (!confirmed) return; // stop if the user cancels
+
+                    try {
+                      const res = await fetch("/api/complete-order", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ orderId: order.id }),
+                      });
+
+                      if (!res.ok) throw new Error("Failed to update order");
+
+                      alert("Η παράδοση επιβεβαιώθηκε!");
+                      // Example: update local UI if needed
+                      // setOrders(prev => prev.map(o => o.id === order.id ? {...o, status: 'completed'} : o))
+                    } catch (err) {
+                      console.error(err);
+                      alert("Κάτι πήγε στραβά. Προσπάθησε ξανά.");
+                    }
+                  }}
+                  className="cursor-pointer text-white font-semibold hover:underline"
+                >
+                  <span>Έτοιμο </span>
+                </span>
+              )}
             </span>
         )}
-
-        <select
-          value={deliveryTimeEdit}
-          onChange={async (e) => {
-            const time = e.target.value;
-            setDeliveryTimeEdit(time);
-
-            if (!time) return;
-
-            try {
-              const res = await fetch("/api/update-delivery-time", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  id: order.id,       // the current order id
-                  deliveryTimeEdit: time, // the selected time
-                  currentRange: currentRange,
-                  deliveryTime: order.deliveryTime,
-                }),
-              });
-
-              if (!res.ok) throw new Error("Failed to accept order");
-            } catch (err) {
-              console.error(err);
-            }
-          }}
-          className="w-20 border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400 bg-white text-gray-800"
-        >
-          <option value="">Επιλέξτε χρόνο καθυστέρησης</option>
-          <option value="20">20 λεπτά</option>
-          <option value="25">25 λεπτά</option>
-          <option value="30">30 λεπτά</option>
-          <option value="35">35 λεπτά</option>
-          <option value="40">40 λεπτά</option>
-          <option value="45">45 λεπτά</option>
-          <option value="50">50 λεπτά</option>
-          <option value="55">55 λεπτά</option>
-        </select>
-
-        <div
-          className={`px-3 py-1 rounded-full text-white ${
-            order?.paid ? "bg-green-500" : "bg-red-500"
-          }`}
-        >
-          {order?.paid ? "Πληρωμή Online" : "Πληρωμή Κατά την Παραλαβή"}
-        </div>
       </div>
 
       {order.status === "requested" && (
@@ -428,35 +480,18 @@ const OrderCard: React.FC<Props> = ({ order }) => {
         </ul>
 
         <div className="flex w-full justify-between">
-            <p className="text-gray-700 text-xl">
+          <p className="text-gray-700 text-xl">
             <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
-            </p>
-            {order.deliveryTime && order.status === "pending" && currentRange === "Έτοιμο" && (
-            <span
-                className="px-3 py-1 font-medium rounded-full bg-green-500 text-white cursor-pointer"
-                onClick={async () => {
-                    try {
-                    const res = await fetch("/api/complete-order", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ orderId: order.id }),
-                    });
-
-                    if (!res.ok) throw new Error("Failed to update order");
-
-                    // Optionally update UI state locally
-                    alert("Η παράδοση επιβεβαιώθηκε!");
-                    // If using state, update order.status to re-render
-                    // setOrders(prev => prev.map(o => o.id === order.id ? {...o, status: 'completed'} : o))
-                    } catch (err) {
-                    console.error(err);
-                    alert("Κάτι πήγε στραβά. Προσπάθησε ξανά.");
-                    }
-                }}
-                >
-                <span>Επιβεβαίωση παράδοσης</span>
-            </span>
-            )}
+          </p>
+          <div
+            className={`inline-block px-2 py-1 rounded-lg text-md font-medium text-white ${
+              order?.paid
+                ? "bg-green-500 shadow-md hover:bg-green-600"
+                : "bg-gray-400 text-gray-900 shadow-inner hover:bg-gray-500"
+            } transition-colors duration-200`}
+          >
+            {order?.paid ? "Πληρωμή Online" : "Κατά την Παραλαβή"}
+          </div>
         </div>
       </div>
     </div>

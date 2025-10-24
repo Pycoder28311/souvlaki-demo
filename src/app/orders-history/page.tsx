@@ -123,24 +123,30 @@ export default function MyOrdersPage() {
   useEffect(() => {
     if (!userId) return;
 
-    const fetchOrders = async () => {
+    // Connect to SSE endpoint
+    const evtSource = new EventSource(`/api/read-live-orders?userId=${userId}`);
+
+    evtSource.onmessage = (event) => {
       try {
-        const res = await fetch(`/api/read-orders?userId=${userId}`);
-        const data = await res.json();
-        if (data.success) {
-          setOrders(data.orders);
-          setProducts(data.products);
-        } else {
-          console.error(data.error);
-        }
+        const data = JSON.parse(event.data);
+        if (data.orders) setOrders(data.orders);
+        if (data.products) setProducts(data.products);
       } catch (err) {
-        console.error(err);
+        console.error("Error parsing SSE data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrders();
+    evtSource.onerror = (err) => {
+      console.error("SSE connection error:", err);
+      evtSource.close();
+    };
+
+    // Cleanup on unmount
+    return () => {
+      evtSource.close();
+    };
   }, [userId]);
 
   const removeItem = (item: OrderItem) => {

@@ -54,7 +54,6 @@ export default function Navbar({scrolled = false, isLive}) {
   // navigator.js
   const getUserAddress = async () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      console.log("Geolocation not supported");
       return null;
     }
 
