@@ -113,16 +113,28 @@ export default function Orders() {
                 className={`px-3 py-1 font-medium rounded-full ${
                   order.status === "completed"
                     ? "bg-green-500 text-white"
+                    : order.status === "accepted"
+                    ? "bg-blue-500 text-white"
                     : order.status === "pending"
                     ? "bg-yellow-500 text-white"
-                    : "bg-gray-400 text-white"
+                    : order.status === "rejected"
+                    ? "bg-red-600 text-white"
+                    : order.status === "cancelled"
+                    ? "bg-gray-400 text-white"
+                    : "bg-gray-300 text-white"
                 }`}
               >
                 {order.status === "completed"
                   ? "Ολοκληρώθηκε"
+                  : order.status === "accepted"
+                  ? "Εγκρίθηκε"
                   : order.status === "pending"
                   ? "Σε εκκρεμότητα"
-                  : "Ακυρώθηκε"}
+                  : order.status === "rejected"
+                  ? "Απορρίφθηκε"
+                  : order.status === "cancelled"
+                  ? "Ακυρώθηκε"
+                  : "Άγνωστο"}
               </span>
               <div
                 className={`px-3 py-1 rounded-full text-white ${

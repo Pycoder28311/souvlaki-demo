@@ -2,7 +2,7 @@ import { prisma } from '../../../../lib/prisma';
 import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
-  const { email, password, name, address } = await req.json();
+  const { email, password, name, address, distanceToDestination } = await req.json();
   const hashedPassword = await bcrypt.hash(password, 10);
 
   // Check if the user already exists
@@ -23,6 +23,7 @@ export async function POST(req) {
         password: hashedPassword,
         name,
         address,
+        distanceToDestination,
       },
     }),
   ]);

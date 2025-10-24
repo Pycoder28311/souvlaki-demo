@@ -31,12 +31,12 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
 
   const showNavbar = !(hideNavbarExact || hideNavbarPrefix);
 
-  const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages"];
+  const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages", "/live-orders"];
   const scrolled = scrolledPaths.includes(pathname);
 
   return (
     <>
-      {showNavbar && <Navbar scrolled={scrolled} />}
+      {showNavbar && <Navbar scrolled={scrolled} isLive={pathname === "/live-orders"} />}
       <main>{children}</main>
     </>
   );

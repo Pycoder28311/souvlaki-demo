@@ -21,22 +21,56 @@ export default function SignUp() {
       console.log("Geolocation not supported");
       return null;
     }
-  
-    return new Promise<string | null>((resolve) => {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const { latitude, longitude } = position.coords;
-  
-        // Reverse geocode to get address
-        const res = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
-        );
-        const data = await res.json();
-        resolve(data.results[0].formatted_address); 
-      }, (err) => {
-        console.error(err);
-        resolve(null);
-      });
-    });
+
+    return new Promise<{ address: string; distanceText: string; distanceValue: number } | null>(
+      (resolve) => {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          try {
+            const { latitude, longitude } = position.coords;
+
+            const resGeo = await fetch(
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
+            );
+
+            const dataGeo = await resGeo.json();
+            const userAddress = dataGeo.address;
+
+            if (!dataGeo) {
+              resolve({ address: userAddress, distanceText: "", distanceValue: 0 });
+              return;
+            }
+
+            // Use Distance Matrix API to get distance to destination
+            const distanceRes = await fetch("/api/get-distance", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                origin: userAddress,
+              }),
+            });
+
+            const dataDist = await distanceRes.json();
+            const element = dataDist.rows?.[0]?.elements?.[0];
+
+            if (element?.status === "OK") {
+              resolve({
+                address: userAddress,
+                distanceText: element.distance.text,
+                distanceValue: element.distance.value,
+              });
+            } else {
+              resolve({ address: userAddress, distanceText: "", distanceValue: 0 });
+            }
+          } catch (err) {
+            console.error(err);
+            resolve(null);
+          }
+        }, (err) => {
+          console.error(err);
+          resolve(null);
+        });
+      }
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,12 +92,23 @@ export default function SignUp() {
       setError("");
     }
 
-    const address = await getUserAddress();
+    const result = await getUserAddress();
+
+    if (!result) {
+      console.error("Δεν μπορέσαμε να βρούμε την απόσταση από το μαγαζί!");
+      return;
+    }
 
     const res = await fetch("/api/auth/signup", {
       method: "POST",
-      body: JSON.stringify({ email, password, name, address }),
       headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name,
+        address: result.address,         // user’s formatted address
+        distanceToDestination: result.distanceValue, // in meters
+      }),
     });
 
     const data = await res.json();

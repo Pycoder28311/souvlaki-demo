@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation"
 import Link from "next/link";
 import "./navbar.css";
 import Image from "next/image";
-import { X } from "lucide-react"
+import { X } from "lucide-react";
+import CreatedOrderModal from "./createdOrderModal";
 
-export default function Navbar({scrolled = false}) {
+export default function Navbar({scrolled = false, isLive}) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState(null); 
@@ -97,8 +98,16 @@ export default function Navbar({scrolled = false}) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: session.user.email, address }),
               });
+              
               setAddress(address ? address.split(",")[0] : "");
-              console.log("✅ Address stored:", address);
+
+              await fetch("/api/get-distance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  origin: address,
+                }),
+              });
             }
           }
         }
@@ -146,14 +155,14 @@ export default function Navbar({scrolled = false}) {
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>
-
-            {business ? (
-              <>
-                <Link href="/messages" className={linkClass}>Μηνύματα</Link>
-                <Link href="/all-orders" className={linkClass}>Παραγγελίες</Link>
-              </>
-            ) : (
-              <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
+            <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
+            {business && (
+              <Link 
+                href="/live-orders" 
+                className={linkClass}
+              >
+                Παραγγελίες Live
+              </Link>
             )}
           </div>
 
@@ -234,6 +243,8 @@ export default function Navbar({scrolled = false}) {
         </div>
       </div>
 
+      {(business && !isLive) && <CreatedOrderModal />}
+
       {/* Mobile Navigation */}
       <div
         className={`md:hidden fixed top-0 left-0 w-full bg-white z-20 transform transition-transform duration-300 ease-in-out ${
@@ -262,30 +273,20 @@ export default function Navbar({scrolled = false}) {
           >
             Σχετικά
           </Link>
-          {business ? (
-            <>
-              <Link 
-                href="/messages" 
-                className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
-                onClick={() => setMobileOpen(false)}
-              >
-                Μηνύματα
-              </Link>
-              <Link 
-                href="/all-orders" 
-                className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
-                onClick={() => setMobileOpen(false)}
-              >
-                Παραγγελίες
-              </Link>
-            </>
-          ) : (
-            <Link
-              href="/contact"
+          <Link
+            href="/contact"
+            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+            onClick={() => setMobileOpen(false)}
+          >
+            Επικοινωνία
+          </Link>
+          {business && (
+            <Link 
+              href="/live-orders" 
               className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
               onClick={() => setMobileOpen(false)}
             >
-              Επικοινωνία
+              Παραγγελίες Live
             </Link>
           )}
         </div>
@@ -301,7 +302,7 @@ export default function Navbar({scrolled = false}) {
 
       {/* Sidebar from the right */}
       <div
-        className={`fixed right-0 h-full w-64 bg-white shadow-xl z-50 transform transition-transform duration-300
+        className={`fixed right-0 h-full w-64 bg-white shadow-xl z-80 transform transition-transform duration-300
           top-[50px] md:top-0
           ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
       >
@@ -344,14 +345,44 @@ export default function Navbar({scrolled = false}) {
                 Προφίλ
               </Link>
             </li>
-            <li>
-              <Link
-                href="/orders-history"
-                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
-              >
-                Οι Παραγγελίες μου
-              </Link>
-            </li>
+            {business && (
+              <>
+                <li>
+                  <Link
+                    href="/live-orders"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                  >
+                    Παραγγελίες Live
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/all-orders"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                  >
+                    Όλες οι Παραγγελίες
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/messages"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                  >
+                    Μηνύματα
+                  </Link>
+                </li>
+              </>
+            )}
+            {!business && (
+              <li>
+                <Link
+                  href="/orders-history"
+                  className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                >
+                  Οι Παραγγελίες μου
+                </Link>
+              </li>
+            )}
           </ul>
 
           {/* Sign Out Button */}

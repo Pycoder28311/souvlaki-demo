@@ -16,7 +16,10 @@ export async function GET(req) {
       const sendOrders = async () => {
         const orders = await prisma.productOrder.findMany({
           where: {
-            status: { in: ["completed", "rejected", "cancelled"] },
+            OR: [
+              { status: "requested" },
+              { status: "cancelled" }, // include cancelled orders
+            ], // ✅ only get requested orders
           },
           orderBy: [
             { id: "desc" }, // newest first if same timestamp

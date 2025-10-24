@@ -19,7 +19,7 @@ export async function POST(req) {
     const newOrder = await prisma.productOrder.create({
       data: {
         userId,
-        status: "pending",
+        status: "requested",
         total: total,
         paid: paid || false,
         items: {

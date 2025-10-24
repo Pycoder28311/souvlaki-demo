@@ -56,6 +56,8 @@ model User {
   emailVerified DateTime?
   business     Boolean   @default(false)
   address      String?
+  distanceToDestination Decimal?  @db.Decimal(6, 2)
+  floor        String?
   stripeCustomerId String?
 
   orders       ProductOrder[]
@@ -190,6 +192,7 @@ model ProductOrder {
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   total     Decimal     @db.Decimal(10,2)
+  deliveryTime String?
   user      User        @relation(fields: [userId], references: [id])
   items     OrderItem[]
 }
@@ -202,7 +205,7 @@ model OrderItem {
   quantity    Int        @default(1)
   price       Decimal    @db.Decimal(10,2) // snapshot of product price
   comment     String?    // <-- user comment about this product in the order
-  order       ProductOrder      @relation(fields: [orderId], references: [id])
+  order       ProductOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product    @relation(fields: [productId], references: [id])
   ingredients OrderItemIngredient[]
   favorites   Favorite[]

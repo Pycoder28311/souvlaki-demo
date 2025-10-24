@@ -57,6 +57,7 @@ type User = {
   image?: string;
   business: boolean;
   address?: string;
+  floor: string;
 };
 
 export default function OrderSidebar({
@@ -87,6 +88,7 @@ export default function OrderSidebar({
         if (session?.user) {
           setUser(session.user);
           setSelected("");
+          setSelectedFloor(session.user.floor);
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -201,6 +203,7 @@ export default function OrderSidebar({
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [selected, setSelected] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("");
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -470,6 +473,41 @@ export default function OrderSidebar({
                       )}
                   </div>
                 )}
+
+                <div className="flex items-center gap-2 mt-4">
+                  <select
+                    value={selectedFloor || ""}
+                    onChange={(e) => setSelectedFloor(e.target.value)}
+                    className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                  >
+                    <option value="">Επίλεξε όροφο</option>
+                    <option value="Ισόγειο">Ισόγειο</option>
+                    <option value="1ος">1ος όροφος</option>
+                    <option value="2ος">2ος όροφος</option>
+                    <option value="3ος">3ος όροφος</option>
+                    <option value="4ος">4ος όροφος</option>
+                    <option value="5ος">5ος όροφος</option>
+                  </select>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/update-floor", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ floor: selectedFloor, userEmail: user.email }),
+                        });
+                        if (!res.ok) throw new Error("Failed to update floor");
+                        alert("Ο όροφος ενημερώθηκε επιτυχώς!");
+                      } catch (err) {
+                        console.error(err);
+                        alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
+                      }
+                    }}
+                    className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                  >
+                    Αποθήκευση
+                  </button>
+                </div>
               </div>
             )}
 
@@ -480,7 +518,16 @@ export default function OrderSidebar({
               </p>
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
-                onClick={() => setPaymentWayModal(true)}
+                onClick={() => {
+                  if (!user?.floor) {
+                    // User has no floor set
+                    alert("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
+                    return;
+                  }
+
+                  // ✅ Proceed if floor exists
+                  setPaymentWayModal(true);
+                }}
               >
                 Επιβεβαίωση Πληρωμής
               </button>

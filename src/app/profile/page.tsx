@@ -20,6 +20,7 @@ export default function ProfilePage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [selected, setSelected] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("");
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -43,6 +44,7 @@ export default function ProfilePage() {
         if (session?.user) {
           setUser(session.user);
           setNameInput(session.user.name);
+          setSelectedFloor(session.user.floor)
           setSelected("");
         }
       } catch (error) {
@@ -65,6 +67,15 @@ export default function ProfilePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
+      await fetch("/api/get-distance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: selected,
+        }),
+      });
+
       if (!response.ok) throw new Error("Failed to update user");
 
       const updatedUser = await response.json();
@@ -188,6 +199,40 @@ export default function ProfilePage() {
                 </button>
             </div>
             )}
+            <div className="flex items-center gap-2 mt-4">
+              <select
+                value={selectedFloor || ""}
+                onChange={(e) => setSelectedFloor(e.target.value)}
+                className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
+              >
+                <option value="">Επίλεξε όροφο</option>
+                <option value="Ισόγειο">Ισόγειο</option>
+                <option value="1ος">1ος όροφος</option>
+                <option value="2ος">2ος όροφος</option>
+                <option value="3ος">3ος όροφος</option>
+                <option value="4ος">4ος όροφος</option>
+                <option value="5ος">5ος όροφος</option>
+              </select>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/update-floor", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
+                    });
+                    if (!res.ok) throw new Error("Failed to update floor");
+                    alert("Ο όροφος ενημερώθηκε επιτυχώς!");
+                  } catch (err) {
+                    console.error(err);
+                    alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
+                  }
+                }}
+                className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+              >
+                Αποθήκευση
+              </button>
+            </div>
         </div>
     </div>
     </>
