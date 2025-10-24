@@ -20,6 +20,7 @@ export async function GET(req) {
               { status: "requested" },
               { status: "cancelled" }, // include cancelled orders
             ], // ✅ only get requested orders
+            seenRejected: false,
           },
           orderBy: [
             { id: "desc" }, // newest first if same timestamp

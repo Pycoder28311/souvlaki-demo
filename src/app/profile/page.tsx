@@ -9,6 +9,7 @@ type User = {
   email: string;
   business: boolean;
   address: string;
+  validRadius: number;
 };
 
 export default function ProfilePage() {
@@ -21,6 +22,7 @@ export default function ProfilePage() {
   const [results, setResults] = useState<string[]>([]);
   const [selected, setSelected] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
+  const [validRadius, setValidRadius] = useState(user?.validRadius?.toString());
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -44,8 +46,9 @@ export default function ProfilePage() {
         if (session?.user) {
           setUser(session.user);
           setNameInput(session.user.name);
-          setSelectedFloor(session.user.floor)
+          setSelectedFloor(session.user.floor);
           setSelected("");
+          setValidRadius(session.user.validRadius?.toString())
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -90,7 +93,7 @@ export default function ProfilePage() {
 
   return (
     <>
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-0">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-0 sm:pt-16">
         <div
             className="
             bg-white shadow-xl w-full text-center relative 
@@ -233,6 +236,62 @@ export default function ProfilePage() {
                 Αποθήκευση
               </button>
             </div>
+
+            {user?.business && (
+              <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
+                <span className="text-gray-700">
+                  Ορίστε την μέγιστη δυνατή απόσταση όπου γίνεται delivery σε (km):
+                </span>
+                <div className="flex flex-row gap-4">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={validRadius ?? ""}
+                    onChange={(e) => setValidRadius(e.target.value)}
+                    placeholder="Ορίστε απόσταση"
+                    className={`border p-2 rounded-lg w-full text-center ${
+                      !validRadius ? "border-red-500" : "border-gray-300"
+                    }`}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!validRadius) {
+                        alert("Παρακαλώ εισάγετε μια τιμή.");
+                        return;
+                      }
+
+                      const radiusValue = parseFloat(validRadius);
+                      if (isNaN(radiusValue) || radiusValue <= 0) {
+                        alert("Η απόσταση πρέπει να είναι μεγαλύτερη από 0 km.");
+                        return;
+                      }
+                      try {
+                        const res = await fetch("/api/update-valid-radius", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            userId: user.id,
+                            validRadius: validRadius,
+                          }),
+                        });
+
+                        if (!res.ok) throw new Error("Failed to update radius");
+
+                        const data = await res.json();
+                        alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
+                      } catch (err) {
+                        console.error(err);
+                        alert("Something went wrong");
+                      }
+                    }}
+                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                  >
+                    Αποθήκευση
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
     </div>
     </>

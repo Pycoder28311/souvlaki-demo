@@ -116,9 +116,25 @@ export default function CreatedOrderModal() {
           >
             {order.status === "cancelled" && (
               <button
-                onClick={() =>
-                  setOrders((prev) => prev.filter((o) => o.id !== order.id))
-                }
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/mark-seen-rejected", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ orderId: order.id }),
+                    });
+
+                    if (!res.ok) throw new Error("Failed to mark as seen");
+
+                    // Optionally remove from local state
+                    setOrders((prev) => prev.filter((o) => o.id !== order.id));
+
+                    alert("Η παραγγελία επισημάνθηκε ως απορριφθείσα!");
+                  } catch (err) {
+                    console.error(err);
+                    alert("Κάτι πήγε στραβά. Προσπάθησε ξανά.");
+                  }
+                }}
                 className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 text-sm font-bold"
               >
                 ✕
@@ -263,7 +279,7 @@ export default function CreatedOrderModal() {
                         setOrders((prev) =>
                           prev.map((o) =>
                             o.id === order.id
-                              ? { ...o, status: "accepted", deliveryTime: time }
+                              ? { ...o, status: "pending", deliveryTime: time }
                               : o
                           )
                         );

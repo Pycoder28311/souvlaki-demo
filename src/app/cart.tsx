@@ -405,9 +405,7 @@ export default function OrderSidebar({
 
       {showPaymentModal && (
         <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
-          
           <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
-            
             {/* Modal Header */}
             <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
               Επιβεβαίωση Πληρωμής
@@ -519,7 +517,7 @@ export default function OrderSidebar({
               <button
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
                 onClick={() => {
-                  if (!user?.floor) {
+                  if (!selectedFloor) {
                     // User has no floor set
                     alert("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
                     return;

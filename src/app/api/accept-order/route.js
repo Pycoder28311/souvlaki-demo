@@ -13,7 +13,7 @@ export async function POST(req) {
     const updatedOrder = await prisma.productOrder.update({
       where: { id },
       data: {
-        status: "accepted",
+        status: "pending",
         deliveryTime, // e.g. "25-30"
       },
     });

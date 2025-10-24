@@ -228,7 +228,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddCategory = () => {
-    const name = prompt("Εισάγετε το νέο όνομα της κατηγορίας");
+    const name = prompt("Εισάγετε το όνομα της νέας κατηγορίας");
     if (!name) return;
 
     setFullProduct((prev) => {
@@ -243,26 +243,37 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
   };
 
   const handleAddOption = () => {
-    const question = prompt("Εισάγετε τη νέα ερώτηση της επιλογής");
+    const question = prompt("Εισάγετε τη ερώτηση της επιλογής");
     if (!question) return;
 
-    const price = prompt("Εισάγετε την τιμή της επιλογής");
-    if (!price) return;
+    const priceStr = prompt("Εισάγετε την τιμή της επιλογής (μόνο αριθμό)");
+    if (!priceStr) {
+      alert("Η τιμή είναι υποχρεωτική.");
+      return;
+    }
 
-    const comment = prompt("Εισάγετε το σχόλιο για την επιλογή");
+    const price = parseFloat(priceStr);
+    if (isNaN(price) || price <= 0) {
+      alert("Η τιμή πρέπει να είναι θετικός αριθμός μεγαλύτερος του 0.");
+      return;
+    }
+
+    const comment = prompt("Εισάγετε το όνομα του προϊόντος που αφορά η επιλογή");
     if (!comment) return;
 
     setFullProduct((prev) => {
       if (!prev) return prev;
       const newOption: Option = {
-        id: Date.now(),       // temporary ID
-        question: question,     // το πεδίο είναι 'answer', όχι 'question'
-        price: Number(price), // σωστή μετατροπή σε number
-        comment: comment,     // optional
-        productId: product?.id
+        id: Date.now(), // temporary ID
+        question: question.trim(),
+        price: price,
+        comment: comment.trim(),
+        productId: product?.id,
       };
       return { ...prev, options: [...(prev.options || []), newOption] };
     });
+
+    alert("Η επιλογή προστέθηκε επιτυχώς ✅");
   };
 
   const handleEditOptionQuestion = (optionId: number) => {
@@ -746,7 +757,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
                                 title="Επεξεργασία Σχολίου"
                               >
-                                Σχόλιο
+                                Προϊόν
                               </button>
 
                               {/* Delete Option */}

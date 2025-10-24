@@ -58,6 +58,7 @@ model User {
   address      String?
   distanceToDestination Decimal?  @db.Decimal(6, 2)
   floor        String?
+  validRadius  Decimal?  @db.Decimal(6, 2)
   stripeCustomerId String?
 
   orders       ProductOrder[]
@@ -188,6 +189,7 @@ model ProductOrder {
   id        Int         @id @default(autoincrement())
   userId    Int
   status    String      @default("pending") // pending, preparing, delivered, cancelled
+  seenRejected Boolean  @default(false)
   paid      Boolean     @default(false)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt

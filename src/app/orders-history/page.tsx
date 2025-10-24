@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import OrderSidebar from "../cart";
 import { ShoppingCart } from "lucide-react";
 import EditModal from '../menu/editModal';
-import Image from "next/image";
 import Link from "next/link";
+import OrderCard from "./orderCard";
 
 type Ingredient = {
   id: number;
@@ -39,6 +39,7 @@ type Order = {
   total: number;
   createdAt: string;
   items: OrderItem[];
+  deliveryTime: string;
 };
 
 type IngCategory = {
@@ -82,9 +83,22 @@ export default function MyOrdersPage() {
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [confirmCancelMap, setConfirmCancelMap] = useState<{ [key: string]: boolean }>({});
 
   const userId = user?.id;
+
+  const pendingRef = useRef<HTMLDivElement>(null);
+  const completedRef = useRef<HTMLDivElement>(null);
+  const cancelledRef = useRef<HTMLDivElement>(null);
+
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      const topOffset = ref.current.getBoundingClientRect().top + window.scrollY - 70; // 60px above
+      window.scrollTo({
+        top: topOffset,
+        behavior: "smooth",
+      });
+    }
+  };
 
   // Fetch session
   useEffect(() => {
@@ -269,7 +283,7 @@ export default function MyOrdersPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div
-        className={`p-8 pt-24 transition-all duration-300 flex flex-col ${
+        className={`p-8 pt-24 lg:p-0 lg:pt-24 transition-all duration-300 flex flex-col ${
           isSidebarOpen
             ? "lg:mr-80 ml-40 lg:max-w-[calc(100%-40rem)] justify-start" // shift right when sidebar open on desktop
             : "lg:ml-80 lg:max-w-[calc(100%-40rem)]"                 // desktop only, full width on mobile
@@ -281,186 +295,88 @@ export default function MyOrdersPage() {
           </>
         )}
 
-        {orders.length > 0 ? (orders.map((order) => {
-          const confirmCancel = confirmCancelMap[order.id] || false;
-          
-          return (
-            <div
-              key={order.id}
-              className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden"
-            >
-              {/* Header */}
-              <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
-                <p className="text-gray-700">
-                  <strong>Σύνολο:</strong> {order.total}€
-                </p>
+        <div className="flex flex-wrap justify-center lg:justify-between gap-3 mb-6 top-0 z-10">
+          <button
+            onClick={() => scrollToSection(pendingRef)}
+            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-lg font-semibold transition"
+          >
+            Εκκρεμείς
+          </button>
+          <button
+            onClick={() => scrollToSection(completedRef)}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
+          >
+            Ολοκληρωμένες
+          </button>
+          <button
+            onClick={() => scrollToSection(cancelledRef)}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
+          >
+            Ακυρωμένες / Απορριφθείσες
+          </button>
+        </div>
 
-                <p className="text-gray-500 text-sm">
-                  <strong>Δημιουργήθηκε:</strong>{" "}
-                  {new Date(order.createdAt).toLocaleString()}
-                </p>
-
-                <span
-                className={`px-3 py-1 text-sm font-medium rounded-full ${
-                  order.status === "completed"
-                    ? "bg-green-500 text-white"
-                    : order.status === "accepted"
-                    ? "bg-blue-500 text-white"
-                    : order.status === "pending"
-                    ? "bg-yellow-500 text-white"
-                    : order.status === "rejected"
-                    ? "bg-red-600 text-white"
-                    : order.status === "cancelled"
-                    ? "bg-gray-400 text-white"
-                    : "bg-gray-300 text-white"
-                }`}
-              >
-                {order.status === "completed"
-                  ? "Ολοκληρώθηκε"
-                  : order.status === "accepted"
-                  ? "Εγκρίθηκε"
-                  : order.status === "pending"
-                  ? "Σε εκκρεμότητα"
-                  : order.status === "rejected"
-                  ? "Απορρίφθηκε"
-                  : order.status === "cancelled"
-                  ? "Ακυρώθηκε"
-                  : "Άγνωστο"}
-              </span>
-              </div>
-
-              {/* Details */}
-              <div className="p-4 space-y-3 bg-gray-100">
-                <ul className="space-y-2">
-                  {order.items.map((item: OrderItem, index) => (
-                    <li
-                      key={`${item.productId}-${index}`} 
-                      className="flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden"
-                    >
-                      {/* Product Image */}
-                      {item.imageId ? (
-                        <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
-                          <Image
-                            src={`/api/images/${item.imageId}`}
-                            alt={item.name}
-                            fill
-                            style={{ objectFit: "cover", objectPosition: "top" }}
-                            className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
-                          Χωρίς Εικόνα
-                        </div>
-                      )}
-
-                      {/* Order Details */}
-                      <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-800">{item.name}</h3>
-
-                          {/* Ingredients */}
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {item.selectedIngredients?.map((ing) => (
-                              <span
-                                key={ing.id}
-                                className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                              >
-                                {ing.name}
-                              </span>
-                            ))}
-                            {item.selectedOptions?.map((opt) => (
-                              <span
-                                key={opt.id}
-                                className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                              >
-                                {opt.comment}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Repeat Order Button */}
-                        <button
-                          className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                          onClick={() => {
-                            // find the product corresponding to this orderItem
-                            const product = products[item.productId];
-                            if (!product) return;
-
-                            addToCart(
-                              product,                        // pass the product object
-                              item.selectedIngredients || [],
-                              item.selectedIngCategories || [],
-                              item.selectedOptions || [],
-                              item.options || []
-                            );
-                          }}
-                        >
-                          Παράγγειλε ξανά
-                        </button>
-                      </div>
-                    </li>
+        {orders.length > 0 ? (
+          <div className="space-y-8">
+            {/* Pending Orders */}
+            {orders.some((order) => order.status === "pending") && (
+              <div ref={pendingRef}>
+                <h2 className="text-xl font-bold text-yellow-600 mb-4">🕒 Εκκρεμείς Παραγγελίες</h2>
+                {orders
+                  .filter((order) => order.status === "pending")
+                  .map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      products={products}
+                      addToCart={addToCart}
+                      setOrders={setOrders}
+                    />
                   ))}
-                </ul>
               </div>
+            )}
 
-              {order.status === "pending" && (
-                <div className="px-4 py-2 bg-gray-100">
-                  {!confirmCancel ? (
-                    <button
-                      onClick={() =>
-                        setConfirmCancelMap((prev) => ({ ...prev, [order.id]: true }))
-                      }
-                      className="mt-2 w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition"
-                    >
-                      Ακύρωση
-                    </button>
-                  ) : (
-                    <div className="space-y-2 mt-2 border border-red-400 rounded-lg p-3 bg-red-50">
-                      <span className="text-xl">Είστε σίγουροι ότι θέλετε να ακυρώσετε την παραγγελία;</span>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={async () => {
-                            try {
-                              const res = await fetch("/api/cancel-order", {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ id: order.id }),
-                              });
-                              if (!res.ok) throw new Error("Failed to cancel order");
+            {/* Completed Orders */}
+            {orders.some((order) => order.status === "completed") && (
+              <div ref={completedRef}>
+                <h2 className="text-xl font-bold text-green-600 mb-4">✅ Ολοκληρωμένες Παραγγελίες</h2>
+                {orders
+                  .filter((order) => order.status === "completed")
+                  .map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      products={products}
+                      addToCart={addToCart}
+                      setOrders={setOrders}
+                    />
+                  ))}
+              </div>
+            )}
 
-                              setOrders((prev) =>
-                                prev.map((o) =>
-                                  o.id === order.id ? { ...o, status: "cancelled" } : o
-                                )
-                              );
-                            } catch (err) {
-                              console.error(err);
-                            } finally {
-                              setConfirmCancelMap((prev) => ({ ...prev, [order.id]: false }));
-                            }
-                          }}
-                          className="w-1/2 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm transition"
-                        >
-                          Ναι
-                        </button>
-                        <button
-                          onClick={() =>
-                            setConfirmCancelMap((prev) => ({ ...prev, [order.id]: false }))
-                          }
-                          className="w-1/2 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm transition"
-                        >
-                          Όχι
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-        )) : (
+            {/* Cancelled & Rejected Orders */}
+            {orders.some(
+              (order) => order.status === "cancelled" || order.status === "rejected"
+            ) && (
+              <div ref={cancelledRef}>
+                <h2 className="text-xl font-bold text-red-600 mb-4">❌ Ακυρωμένες / Απορριφθείσες Παραγγελίες</h2>
+                {orders
+                  .filter(
+                    (order) => order.status === "cancelled" || order.status === "rejected"
+                  )
+                  .map((order) => (
+                    <OrderCard
+                      key={order.id}
+                      order={order}
+                      products={products}
+                      addToCart={addToCart}
+                      setOrders={setOrders}
+                    />
+                  ))}
+              </div>
+            )}
+          </div>
+        ) : (
           <div className="text-center py-10">
             <p className="mb-4 text-xl">Δεν έχετε κάνει ακόμα παραγγελίες.</p>
             <Link

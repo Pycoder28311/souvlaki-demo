@@ -16,7 +16,7 @@ export async function GET(req) {
       const sendOrders = async () => {
         const orders = await prisma.productOrder.findMany({
           where: {
-            status: { in: ["pending", "accepted"] }, // ✅ get pending OR accepted orders
+            status: { in: ["pending", "requested"] }, // ✅ get pending OR accepted orders
           },
           orderBy: [
             { id: "desc" }, // newest first if same timestamp
