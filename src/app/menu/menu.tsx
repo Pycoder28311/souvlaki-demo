@@ -2,13 +2,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
-import Footer from '../footer';
-import EditModal from "./editModal";
 import ProductModal from "./productModal";
-import OrderSidebar from "../cart";
+import { useCart } from "../cartContext";
 import { Search, X} from "lucide-react";
-import { ShoppingCart } from "lucide-react";
-import { Ingredient, IngCategory, Option, Product, Category, OrderItem } from "../types";
+import { Ingredient, Option, Product, Category, OrderItem } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
 import CategorySection from "./components/categorySection";
@@ -32,7 +29,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // default safe for server
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // default safe for server
 
   const [isClient, setIsClient] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
@@ -104,122 +101,12 @@ export default function Menu({ categories: initialCategories, business }: { cate
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-  const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
-  const [orderItems, setOrderItems] = useState<OrderItem[]>(() => {
-    if (typeof window === "undefined") return []; // server
-    try {
-      const stored = localStorage.getItem("orderItems");
-      return stored ? JSON.parse(stored) : [];
-    } catch (err) {
-      console.error("Failed to parse orderItems from localStorage:", err);
-      return [];
-    }
-  });
-
-  // Save to localStorage whenever orderItems change
-  useEffect(() => {
-    localStorage.setItem("orderItems", JSON.stringify(orderItems));
-  }, [orderItems]);
+  const { addToCart } = useCart();
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
-  const [quantity, setQuantity] = useState(editableOrderItem?.quantity || 1);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const addToCart = (
-    product: Product,
-    selectedIngredients: Ingredient[],
-    selectedIngCategories: IngCategory[], // categories
-    selectedOptions: Option[], // 👈 options
-    options: Option[]
-  ) => {
-    setOrderItems((prev) => {
-      // Check if product with same ingredients and options already exists
-      const existing = prev.find((item) => {
-        if (item.productId !== product.id) return false;
-
-        const itemIngredients = item.selectedIngredients || [];
-        if (itemIngredients.length !== selectedIngredients.length) return false;
-        const ingredientsMatch = itemIngredients.every((ing) =>
-          selectedIngredients.some((sel) => sel.id === ing.id)
-        );
-
-        const itemOptions = item.selectedOptions || [];
-        if (itemOptions.length !== selectedOptions.length) return false;
-        const optionsMatch = itemOptions.every((opt) =>
-          selectedOptions.some((sel) => sel.id === opt.id)
-        );
-
-        return ingredientsMatch && optionsMatch;
-      });
-
-      if (existing) {
-        return prev.map((item) =>
-          item === existing ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-
-      const ingredientsTotal = selectedIngredients.reduce(
-        (sum, ing) => sum + Number(ing.price),
-        0
-      );
-      const optionsTotal = selectedOptions.reduce(
-        (sum, opt) => sum + Number(opt.price),
-        0
-      );
-
-      const totalPrice = product.price + ingredientsTotal + optionsTotal;
-
-      return [
-        ...prev,
-        {
-          imageId: product.imageId ?? null,
-          productId: product.id,
-          name: product.name,
-          price: totalPrice,
-          quantity: 1,
-          selectedIngredients,
-          selectedIngCategories,
-          selectedOptions, // 👈 store Option[] here
-          options,
-        },
-      ];
-    });
-
-    setSelectedProduct(null);
-  };
-
-  const editItem = (
-    orderItemToEdit: OrderItem,
-    newIngredients: Ingredient[],
-    selectedOptions?: Option[] | undefined, // εδώ χρησιμοποιούμε τον τύπο SelectedOption { id, value: "yes" | "no" }
-  ) => {
-    setOrderItems((prev) =>
-      prev.map((item) =>
-        item === orderItemToEdit
-          ? {
-              ...item,
-              quantity: quantity,
-              selectedIngredients: newIngredients,
-              selectedOptions: selectedOptions || [], // προσθήκη options
-              // Recalculate price: base price + sum of ingredient prices
-              price:
-              orderItemToEdit.price
-              - (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0)
-              + newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0)
-              - (item.selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0)
-              + (selectedOptions?.reduce((sum, opt) => sum + Number(opt.price), 0) || 0),
-          }
-          : item
-      )
-    );
-
-    setSelectedProduct(null); // close modal after updating
-  };
-
-  const changeQuantity = (delta: number) => {
-    setQuantity((prev) => Math.max(1, prev + delta)); // min 1
-  };
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -234,17 +121,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
         behavior: "smooth",
         });
     }
-  };
-
-  const removeItem = (item: OrderItem) => {
-    setOrderItems((prev) => {
-      const updated = prev.filter((itm) => itm !== item);
-
-      // Optional: immediately update localStorage (redundant if you already have the useEffect)
-      localStorage.setItem("orderItems", JSON.stringify(updated));
-
-      return updated;
-    });
   };
 
   const handleCreateProduct = async (categoryId: number) => {
@@ -746,54 +622,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
           addToCart={addToCart}
         />
       )}
-
-      <OrderSidebar
-        orderItems={orderItems}
-        setEditableOrderItem={setEditableOrderItem}
-        setQuantity={setQuantity}
-        isSidebarOpen={isSidebarOpen}
-        setIsSidebarOpen={setIsSidebarOpen}
-        removeItem={removeItem}
-      />
-
-      {/* Open Sidebar Button */}
-      {!isSidebarOpen && (
-        <button
-          className="hidden md:flex fixed right-0 top-[90px] -translate-y-1/2 px-3 py-2 bg-green-600 text-white rounded-l z-40 items-center justify-center"
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="Open Cart"
-        >
-          <ShoppingCart className="w-8 h-8" />
-        </button>
-      )}
-
-      {!isSidebarOpen && (
-        <button
-          className="
-            block md:hidden
-            fixed bottom-4 left-4 right-4 w-auto px-6 py-3 bg-green-600 text-white flex items-center justify-center rounded-lg z-40
-            text-lg font-semibold shadow-lg hover:bg-green-700 active:bg-green-800 transition-colors duration-200
-          "
-          onClick={() => setIsSidebarOpen(true)}
-          aria-label="Open Cart"
-        >
-          <ShoppingCart className="w-8 h-8 mr-2" /> Καλάθι
-        </button>
-      )}
-
-      {editableOrderItem && (
-        <EditModal
-          orderItem={editableOrderItem}
-          defaultSelectedIngredients={editableOrderItem.selectedIngredients || []} // 👈 pass default ingredients
-          onClose={() => setEditableOrderItem(null)}
-          editItem={editItem}
-          changeQuantity={changeQuantity}
-          quantity={quantity}
-        />
-      )}
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

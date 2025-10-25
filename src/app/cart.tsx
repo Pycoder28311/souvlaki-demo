@@ -7,24 +7,20 @@ import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "l
 import Link from "next/link";
 import Image from "next/image";
 import { User, OrderItem } from "./types"; 
+import { useCart } from "./cartContext";
 
 interface OrderSidebarProps {
-  orderItems: OrderItem[];
   setEditableOrderItem: (item: OrderItem | null) => void;
-  setQuantity: (qty: number) => void;
   isSidebarOpen: boolean;
   setIsSidebarOpen: (open: boolean) => void;
-  removeItem: (item: OrderItem) => void;
 }
 
 export default function OrderSidebar({
-  orderItems,
   setEditableOrderItem,
-  setQuantity,
   isSidebarOpen,
   setIsSidebarOpen,
-  removeItem,
 }: OrderSidebarProps) {
+  const { orderItems, removeItem, setQuantity } = useCart();
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -45,6 +41,7 @@ export default function OrderSidebar({
         if (session?.user) {
           setUser(session.user);
           setSelected("");
+          
           setSelectedFloor(session.user.floor);
         }
       } catch (error) {
@@ -176,7 +173,15 @@ export default function OrderSidebar({
 
   const handleUpdate = async () => {
     try {
-      const payload = { address: selected };
+      const distanceRes = await fetch("/api/get-distance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin: selected }),
+      });
+
+      const distanceData = await distanceRes.json();
+      const distanceToDestination = distanceData.distanceValue; 
+      const payload = { address: selected,  distanceToDestination:  distanceToDestination };
 
       const response = await fetch("/api/update-user", {
         method: "PUT",

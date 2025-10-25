@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import { useState } from 'react';
-import Footer from '../footer';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -234,9 +233,6 @@ export default function Contact() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }                  

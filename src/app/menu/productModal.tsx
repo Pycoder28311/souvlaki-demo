@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Minus, Plus, Trash2 } from "lucide-react"
-import { ChevronDown, ChevronRight, X } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react"
 import { Ingredient, IngCategory, Option, Product } from "../types";
 import ProductDetail from "./components/productDetails";
 

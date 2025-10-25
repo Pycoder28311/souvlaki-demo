@@ -2,23 +2,21 @@ import { useState } from "react";
 import Image from 'next/image';
 import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
 import { Ingredient, Option, OrderItem } from "../types"
+import { useCart } from "../cartContext";
 
 // types.ts or inside EditModal.tsx
 interface EditModalProps {
   orderItem: OrderItem;
   defaultSelectedIngredients?: Ingredient[];
   onClose: () => void;
-  editItem: (
-    orderItemToEdit: OrderItem,
-    selectedIngredients: Ingredient[],
-    selectedOptions?: Option[] | undefined,
-  ) => void;
-  changeQuantity: (newQuantity: number) => void;
-  quantity?: number;
 }
 
-export default function EditModal({ orderItem,  defaultSelectedIngredients = [], onClose, editItem, changeQuantity, quantity }: EditModalProps) {
-  
+export default function EditModal({ 
+  orderItem, 
+  defaultSelectedIngredients = [], 
+  onClose,
+}: EditModalProps) {
+  const { editItem, changeQuantity, quantity } = useCart();
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>(defaultSelectedIngredients);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>(orderItem.selectedOptions || []);
   const [openCategories, setOpenCategories] = useState<Record<number, boolean>>({});

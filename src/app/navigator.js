@@ -98,21 +98,23 @@ export default function Navbar({scrolled = false, isLive}) {
           if (!session.user.address) {
             const address = await getUserAddress();
             if (address) {
+              const distanceRes = await fetch("/api/get-distance", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ origin: address }),
+              });
+
+              const distanceData = await distanceRes.json();
+              const distanceToDestination = distanceData.distanceValue; 
+
+              // Then, update the user with the distance included
               await fetch("/api/update-address", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: session.user.email, address }),
+                body: JSON.stringify({ email: session.user.email, address, distanceToDestination }),
               });
               
               setAddress(address ? address.split(",")[0] : "");
-
-              await fetch("/api/get-distance", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  origin: address,
-                }),
-              });
             }
           }
         }

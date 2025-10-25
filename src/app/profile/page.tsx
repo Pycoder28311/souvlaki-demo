@@ -57,23 +57,28 @@ export default function ProfilePage() {
           ? { name: nameInput }
           : { address: selected };
 
+      // First, get the distance
+      const distanceRes = await fetch("/api/get-distance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ origin: selected }),
+      });
+
+      const distanceData = await distanceRes.json();
+      const distanceToDestination = distanceData.distanceValue; 
+
+      // Then, update the user with the distance included
       const response = await fetch("/api/update-user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      await fetch("/api/get-distance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          origin: selected,
+          ...payload,
+          distanceToDestination, // add the distance
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to update user");
-
       const updatedUser = await response.json();
+
       setUser(updatedUser);
 
       if (field === "name") setEditingName(false);

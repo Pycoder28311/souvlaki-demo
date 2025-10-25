@@ -43,7 +43,7 @@ export async function POST(req) {
       origin,
       destination,
       distanceText: distanceInfo.text, // π.χ. "7.3 km"
-      distanceValue: distanceInfo.value, // π.χ. 7300 (μέτρα)
+      distanceValue: distanceInfo.value / 1000, // π.χ. 7300 (μέτρα)
     });
   } catch (err) {
     console.error("Error in get-distance:", err);

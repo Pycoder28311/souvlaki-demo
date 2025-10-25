@@ -24,6 +24,7 @@ export async function POST(req) {
         name,
         address,
         distanceToDestination,
+        business: email === "kopotitore@gmail.com",
       },
     }),
   ]);

@@ -10,23 +10,24 @@ export default async function handler(req, res) {
   try {
     const session = await getServerSession(req, res, authOptions);
     if (!session) {
-        return res.status(200).json({});
+      return res.status(200).json({});
     }
 
-    const { name, address } = req.body;
+    const { name, address, selected, distanceToDestination } = req.body;
 
-    if (!name && !address) {
+    if (!name && !address && !selected && !distanceToDestination) {
       return res.status(400).json({ error: "No fields to update" });
     }
 
-    // Find user in DB by email (or id if you store it in session)
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {
         ...(name && { name }),
         ...(address && { address }),
+        ...(distanceToDestination && { distanceToDestination }),
       },
     });
+    console.log(address, distanceToDestination)
 
     return res.status(200).json(updatedUser);
   } catch (err) {
