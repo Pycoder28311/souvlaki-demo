@@ -335,9 +335,15 @@ const OrderCard: React.FC<Props> = ({ order }) => {
         <p className="text-gray-700">
           <strong>Όνομα:</strong> {order.user.name}
         </p>
+
         <p className="text-gray-700">
           <strong>Διεύθυνση:</strong> {order.user.address}
         </p>
+
+        <p className="text-gray-700">
+          <strong>Όροφος:</strong> {order.user.floor}
+        </p>
+
         <p className="text-gray-700">
           <strong>Δημιουργήθηκε: </strong>{" "}
           {new Date(order.createdAt).toLocaleString("el-GR", {

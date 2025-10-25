@@ -40,6 +40,7 @@ export default async function DataPage() {
     ...category,
     products: category.products.map((p) => ({
       ...p,
+      categoryId: category.id,
       price: Number(p.price),
       offerPrice: Number(p.offerPrice),
       imageId: p.image?.id ?? null, // only store the ID
@@ -48,5 +49,5 @@ export default async function DataPage() {
     })),
   }));
 
-  return <Menu categories={categories} business={session?.user?.email == "kopotitore@gmail.com"}/>;
+  return <Menu categories={categories} business={session?.user?.email == "mitsosbulubasis@gmail.com"}/>;
 }

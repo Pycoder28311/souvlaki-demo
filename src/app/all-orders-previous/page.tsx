@@ -91,6 +91,10 @@ export default async function MyOrdersPage() {
               </p>
 
               <p className="text-gray-700">
+                <strong>Όροφος:</strong> {order.user.floor}
+              </p>
+
+              <p className="text-gray-700">
                 <strong>Δημιουργήθηκε:</strong> {order.createdAt.toLocaleString()}
               </p>
 

@@ -337,7 +337,7 @@ export default function OrderSidebar({
       </div>
 
       {/* Total and Checkout */}
-      {orderItems.length > 0 && user?.business  && (
+      {orderItems.length > 0 && !user?.business  && (
         <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
@@ -348,7 +348,7 @@ export default function OrderSidebar({
         </div>
       )}
 
-      {orderItems.length === 0 && user?.business && (
+      {orderItems.length === 0 && !user?.business && (
         <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
             <button

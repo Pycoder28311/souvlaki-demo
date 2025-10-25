@@ -49,6 +49,7 @@ export default function MyOrdersPage() {
   }, []);
 
   useEffect(() => {
+    if (!userId) return;
     const evtSource = new EventSource(`/api/read-orders?userId=${userId}`);
 
     evtSource.onmessage = (event: MessageEvent) => {
@@ -70,7 +71,7 @@ export default function MyOrdersPage() {
     return () => {
       evtSource.close();
     };
-  }, []);
+  }, [userId]);
 
   const removeItem = (item: OrderItem) => {
     setOrderItems((prev) => {
@@ -207,7 +208,16 @@ export default function MyOrdersPage() {
     };
   }, [isSidebarOpen]);
 
-  //if (loading) return <p>Φόρτωση...</p>;
+  if (orders.length === 0) return 
+    <div className="text-center py-10 pt-30">
+      <p className="mb-4 text-xl">Δεν έχετε κάνει ακόμα παραγγελίες.</p>
+      <Link
+        href="/menu"
+        className="border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white px-8 py-3 font-bold transition-colors inline-block"
+      >
+        Δες το Μενού
+      </Link>
+    </div>;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -218,11 +228,7 @@ export default function MyOrdersPage() {
             : "lg:ml-80 lg:max-w-[calc(100%-40rem)]"                 // desktop only, full width on mobile
         }`}
       >
-        {orders.length > 0 &&  (
-          <>
-            <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
-          </>
-        )}
+        <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
 
         <div className="flex flex-wrap justify-center lg:justify-between gap-3 mb-6 top-0 z-10">
           <button
@@ -245,77 +251,65 @@ export default function MyOrdersPage() {
           </button>
         </div>
 
-        {orders.length > 0 ? (
-          <div className="space-y-8">
-            {/* Pending Orders */}
-            {orders.some((order) => order.status === "pending") && (
-              <div ref={pendingRef}>
-                <h2 className="text-xl font-bold text-yellow-600 mb-4">🕒 Εκκρεμείς Παραγγελίες</h2>
-                {orders
-                  .filter((order) => order.status === "pending")
-                  .map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      products={products}
-                      addToCart={addToCart}
-                      setOrders={setOrders}
-                    />
-                  ))}
-              </div>
-            )}
+        <div className="space-y-8">
+          {/* Pending Orders */}
+          {orders.some((order) => order.status === "pending") && (
+            <div ref={pendingRef}>
+              <h2 className="text-xl font-bold text-yellow-600 mb-4">🕒 Εκκρεμείς Παραγγελίες</h2>
+              {orders
+                .filter((order) => order.status === "pending")
+                .map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    products={products}
+                    addToCart={addToCart}
+                    setOrders={setOrders}
+                  />
+                ))}
+            </div>
+          )}
 
-            {/* Completed Orders */}
-            {orders.some((order) => order.status === "completed") && (
-              <div ref={completedRef}>
-                <h2 className="text-xl font-bold text-green-600 mb-4">✅ Ολοκληρωμένες Παραγγελίες</h2>
-                {orders
-                  .filter((order) => order.status === "completed")
-                  .map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      products={products}
-                      addToCart={addToCart}
-                      setOrders={setOrders}
-                    />
-                  ))}
-              </div>
-            )}
+          {/* Completed Orders */}
+          {orders.some((order) => order.status === "completed") && (
+            <div ref={completedRef}>
+              <h2 className="text-xl font-bold text-green-600 mb-4">✅ Ολοκληρωμένες Παραγγελίες</h2>
+              {orders
+                .filter((order) => order.status === "completed")
+                .map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    products={products}
+                    addToCart={addToCart}
+                    setOrders={setOrders}
+                  />
+                ))}
+            </div>
+          )}
 
-            {/* Cancelled & Rejected Orders */}
-            {orders.some(
-              (order) => order.status === "cancelled" || order.status === "rejected"
-            ) && (
-              <div ref={cancelledRef}>
-                <h2 className="text-xl font-bold text-red-600 mb-4">❌ Ακυρωμένες / Απορριφθείσες Παραγγελίες</h2>
-                {orders
-                  .filter(
-                    (order) => order.status === "cancelled" || order.status === "rejected"
-                  )
-                  .map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      products={products}
-                      addToCart={addToCart}
-                      setOrders={setOrders}
-                    />
-                  ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-10">
-            <p className="mb-4 text-xl">Δεν έχετε κάνει ακόμα παραγγελίες.</p>
-            <Link
-              href="/menu"
-              className="border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white px-8 py-3 font-bold transition-colors inline-block"
-            >
-              Δες το Μενού
-            </Link>
-          </div>
-        )}
+          {/* Cancelled & Rejected Orders */}
+          {orders.some(
+            (order) => order.status === "cancelled" || order.status === "rejected"
+          ) && (
+            <div ref={cancelledRef}>
+              <h2 className="text-xl font-bold text-red-600 mb-4">❌ Ακυρωμένες / Απορριφθείσες Παραγγελίες</h2>
+              {orders
+                .filter(
+                  (order) => order.status === "cancelled" || order.status === "rejected"
+                )
+                .map((order) => (
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    products={products}
+                    addToCart={addToCart}
+                    setOrders={setOrders}
+                  />
+                ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <OrderSidebar

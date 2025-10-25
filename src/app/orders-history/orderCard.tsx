@@ -101,13 +101,8 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
           <strong>Σύνολο:</strong> {order.total}€
         </p>
 
-        <p className="text-gray-500 text-sm">
-          <strong>Δημιουργήθηκε:</strong>{" "}
-          {new Date(order.createdAt).toLocaleString()}
-        </p>
-
         <span
-          className={`px-3 py-1 text-sm font-medium rounded-full ${
+          className={`px-3 py-1 text-sm font-medium rounded-lg ${
             order.status === "completed"
                 ? "bg-green-500 text-white"
                 : order.status === "pending"
@@ -135,14 +130,59 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
         </span>
       </div>
 
-      {order.deliveryTime && order.status === "pending" && (
-        <div className="px-4 py-2 bg-white text-gray-700 text-sm font-semibold">
-          Παράδοση σε: <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμο" && "λεπτά"}</span>
+      <div className="mb-4 p-4 bg-white space-y-3">
+        {/* Delivery Time */}
+        <div className="flex justify-between">
+          {order.deliveryTime && order.status === "pending" && (
+            <p className="text-gray-700 text-lg font-semibold">
+              Παράδοση σε: <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμο" && "λεπτά"}</span>
+            </p>
+          )}
+
+          {/* Created At */}
+          <p className="text-gray-500 text-lg">
+            <strong>Δημιουργήθηκε:</strong>{" "}
+            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </p>
         </div>
-      )}
+
+        {/* Cancel Button */}
+        {order.status === "pending" && (
+          <div>
+            {!confirmCancel ? (
+              <button
+                onClick={() => setConfirmCancel(true)}
+                className="mt-2 w-full py-1.5 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-md transition"
+              >
+                Ακύρωση
+              </button>
+            ) : (
+              <div className="space-y-2 mt-2 border border-red-400 rounded-lg p-3 bg-red-50">
+                <span className="text-gray-800 font-semibold text-sm">
+                  Είστε σίγουροι ότι θέλετε να ακυρώσετε την παραγγελία;
+                </span>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleCancel}
+                    className="w-1/2 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm transition"
+                  >
+                    Ναι
+                  </button>
+                  <button
+                    onClick={() => setConfirmCancel(false)}
+                    className="w-1/2 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm transition"
+                  >
+                    Όχι
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Details */}
-      <div className="p-4 space-y-3 bg-gray-100">
+      <div className="px-4 pb-4 space-y-3">
         <ul className="space-y-2">
           {order.items.map((item, index) => (
             <li
@@ -217,40 +257,6 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
           ))}
         </ul>
       </div>
-
-      {/* Cancel Button */}
-      {order.status === "pending" && (
-        <div className="px-4 py-2 bg-gray-100">
-          {!confirmCancel ? (
-            <button
-              onClick={() => setConfirmCancel(true)}
-              className="mt-2 w-full py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition"
-            >
-              Ακύρωση
-            </button>
-          ) : (
-            <div className="space-y-2 mt-2 border border-red-400 rounded-lg p-3 bg-red-50">
-              <span className="text-xl">
-                Είστε σίγουροι ότι θέλετε να ακυρώσετε την παραγγελία;
-              </span>
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleCancel}
-                  className="w-1/2 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm transition"
-                >
-                  Ναι
-                </button>
-                <button
-                  onClick={() => setConfirmCancel(false)}
-                  className="w-1/2 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm transition"
-                >
-                  Όχι
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 }
