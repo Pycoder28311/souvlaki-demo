@@ -2,12 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-};
+import { Order, Product, Ingredient } from "../types";
 
 type Option = {
   id: number;
@@ -23,47 +18,6 @@ type IngCategory = {
   ingredients: Ingredient[];
   isRequired?: boolean;
 };
-
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
-
-type Order = {
-  id: number;
-  status: string;
-  total: number;
-  createdAt: string;
-  items: OrderItem[];
-  deliveryTime: string;
-};
-
-type ImageType = {
-  id: number;
-  data: Uint8Array;
-  createdAt: Date;
-}
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
 
 interface ProductMap {
   [key: number]: Product;

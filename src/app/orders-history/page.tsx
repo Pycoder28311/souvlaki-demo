@@ -6,85 +6,14 @@ import { ShoppingCart } from "lucide-react";
 import EditModal from '../menu/editModal';
 import Link from "next/link";
 import OrderCard from "./orderCard";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
-
-type Order = {
-  id: number;
-  status: string;
-  total: number;
-  createdAt: string;
-  items: OrderItem[];
-  deliveryTime: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type ImageType = {
-  id: number;
-  data: Uint8Array;
-  createdAt: Date;
-}
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  image?: string;
-  business: boolean;
-};
+import { Order, Product, Ingredient, Option, OrderItem, IngCategory, } from "../types"; 
 
 export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-
-  const userId = user?.id;
+  const [userId, setUserId] = useState();
 
   const pendingRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef<HTMLDivElement>(null);
@@ -109,7 +38,7 @@ export default function MyOrdersPage() {
 
         const session = await response.json();
         if (session?.user) {
-          setUser(session.user);
+          setUserId(session.user.id);
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -119,27 +48,21 @@ export default function MyOrdersPage() {
     fetchSession();
   }, []);
 
-  // Fetch orders when userId is available
   useEffect(() => {
-    if (!userId) return;
+    const evtSource = new EventSource(`/api/read-orders?userId=${userId}`);
 
-    // Connect to SSE endpoint
-    const evtSource = new EventSource(`/api/read-live-orders?userId=${userId}`);
-
-    evtSource.onmessage = (event) => {
+    evtSource.onmessage = (event: MessageEvent) => {
       try {
-        const data = JSON.parse(event.data);
-        if (data.orders) setOrders(data.orders);
-        if (data.products) setProducts(data.products);
+        const data: { orders: Order[]; products: Product[] } = JSON.parse(event.data);
+        setOrders(data.orders);
+        setProducts(data.products);
+        console.log(data)
       } catch (err) {
         console.error("Error parsing SSE data:", err);
-      } finally {
-        setLoading(false);
       }
     };
 
-    evtSource.onerror = (err) => {
-      console.error("SSE connection error:", err);
+    evtSource.onerror = () => {
       evtSource.close();
     };
 
@@ -147,7 +70,7 @@ export default function MyOrdersPage() {
     return () => {
       evtSource.close();
     };
-  }, [userId]);
+  }, []);
 
   const removeItem = (item: OrderItem) => {
     setOrderItems((prev) => {
@@ -254,7 +177,7 @@ export default function MyOrdersPage() {
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
-              selectedOptions: selectedOptions, // προσθήκη options
+              selectedOptions: selectedOptions || [], // προσθήκη options
               // Recalculate price: base price + sum of ingredient prices
               price:
               orderItemToEdit.price
@@ -284,7 +207,7 @@ export default function MyOrdersPage() {
     };
   }, [isSidebarOpen]);
 
-  if (loading) return <p>Φόρτωση...</p>;
+  //if (loading) return <p>Φόρτωση...</p>;
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -1,41 +1,7 @@
 import { useState } from "react";
 import Image from 'next/image';
-import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react"
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  delete?: boolean;
-  productId?: number;
-};
-
-type OrderItem = {
-  imageId: number | null;
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
+import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
+import { Ingredient, Option, OrderItem } from "../types"
 
 // types.ts or inside EditModal.tsx
 interface EditModalProps {
@@ -234,16 +200,6 @@ export default function EditModal({ orderItem,  defaultSelectedIngredients = [],
                               onChange={() => toggleIngredient(ing)}
                               className="h-4 w-4"
                             />
-
-                            {ing.image && (
-                              <Image
-                                src={ing.image}
-                                alt={ing.name}
-                                width={40}
-                                height={40}
-                                className="object-cover rounded"
-                              />
-                            )}
 
                             <div className="flex-1">
                               <p className="font-semibold text-gray-800">{ing.name}</p>

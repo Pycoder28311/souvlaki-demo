@@ -8,40 +8,7 @@ import Link from 'next/link';
 import OrderSidebar from "../cart";
 import EditModal from '../menu/editModal';
 import { ShoppingCart } from "lucide-react";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
+import { OrderItem, Ingredient } from "../types"; 
 
 export default function About() {
   const [activeTab, setActiveTab] = useState('history');

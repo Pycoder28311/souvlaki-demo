@@ -6,69 +6,12 @@ import Footer from '../footer';
 import EditModal from "./editModal";
 import ProductModal from "./productModal";
 import OrderSidebar from "../cart";
-import Image from "next/image";
-import { Search, X, Edit2, Trash2 } from "lucide-react";
+import { Search, X} from "lucide-react";
 import { ShoppingCart } from "lucide-react";
-import { Plus } from "lucide-react";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type ImageType = {
-  id: number
-  data: Uint8Array
-  createdAt: Date
-}
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
-
-type Category = {
-  id: number;
-  name: string;
-  products: Product[];
-};
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
+import { Ingredient, IngCategory, Option, Product, Category, OrderItem } from "../types";
+import AdminProductModal from "./components/adminProductModal";
+import AdminCategoryModal from "./components/adminCategoryModal";
+import CategorySection from "./components/categorySection";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(false);
@@ -83,7 +26,7 @@ function useIsMobile(breakpoint = 768) {
   return isMobile;
 }
 
-export default function Menu({ categories: initialCategories, email }: { categories: Category[], email?: string }) {
+export default function Menu({ categories: initialCategories, business }: { categories: Category[], email?: string, business?: boolean }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
   const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
 
@@ -258,7 +201,7 @@ export default function Menu({ categories: initialCategories, email }: { categor
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
-              selectedOptions: selectedOptions, // προσθήκη options
+              selectedOptions: selectedOptions || [], // προσθήκη options
               // Recalculate price: base price + sum of ingredient prices
               price:
               orderItemToEdit.price
@@ -741,106 +684,24 @@ export default function Menu({ categories: initialCategories, email }: { categor
                 );
 
                 return (
-                  <section
+                  <CategorySection
                     key={category.id}
-                    ref={(el) => {
-                      categoryRefs.current[category.id] = el;
-                    }}
-                  >
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-2xl font-bold">{category.name}</h2>
-
-                    {email === "kopotitore@gmail.com" && (
-                      <button
-                        onClick={() =>
-                          setSelectedCategory(
-                            selectedCategory?.id === category.id ? null : category
-                          )
-                        }
-                        className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-                        title="Επεξεργασία Κατηγορίας"
-                      >
-                        <Edit2 size={20} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6">
-                    {filteredProducts.map((product) => (
-                      <div
-                        key={product.id}
-                        className="relative flex items-start justify-between border border-gray-200 rounded-xl h-28 shadow-sm hover:shadow-lg transition-all cursor-pointer bg-white"
-                        onClick={() => setSelectedProduct(product)}
-                      >
-                        {/* Product Info */}
-                        <div className="flex-1 p-2 pr-12">
-                          <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">{product.name}</h3>
-
-                          {product.offer && (
-                            <p className="text-sm text-red-500 font-semibold mb-1">Προσφορά!</p>
-                          )}
-
-                          <p className="font-bold text-yellow-600 text-lg mb-2 flex items-center gap-2">
-                            {product.offer ? (
-                              <>
-                                <span>{(product.price).toFixed(2)}€</span>
-                                <span className="line-through text-gray-400">{product.offerPrice?.toFixed(2)}€</span>
-                              </>
-                            ) : (
-                              <span>{product.price.toFixed(2)}€</span>
-                            )}
-                          </p>
-                        </div>
-
-                        {/* Product Image */}
-                        {product.imageId ? (
-                          <div className={`w-28 relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0 ${email === "kopotitore@gmail.com" ? "h-28" : "h-full"
-                          }`}>
-                            <Image
-                              src={`/api/images/${product.imageId}`}
-                              alt={product.name}
-                              fill
-                              style={{ objectFit: "cover" }}
-                            />
-
-                            {/* + Button (absolute positioned) */}
-                            <button
-                              className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 
-                                        shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
-                            >
-                              <Plus size={20} />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="w-28 h-full bg-gray-200 flex items-center justify-center text-gray-500 rounded-r-xl flex-shrink-0">
-                            Χωρίς Εικόνα
-                          </div>
-                        )}
-                        {email === "kopotitore@gmail.com" && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedAdminProduct(
-                                selectedAdminProduct?.id === product.id ? null : product
-                              )
-                            }}
-                            className="absolute top-2 right-2 p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
-                            title="Επεξεργασία Προϊόντος"
-                          >
-                            <Edit2 size={20} /> {/* You can replace with Edit2 icon from lucide-react */}
-                          </button>
-                        )}
-
-                      </div>
-                    ))}
-                  </div>
-                </section>
+                    category={category}
+                    products={filteredProducts.filter(p => p.categoryId === category.id)}
+                    business={business}
+                    categoryRefs={categoryRefs}
+                    selectedCategory={selectedCategory}
+                    setSelectedCategory={setSelectedCategory}
+                    setSelectedProduct={setSelectedProduct}
+                    selectedAdminProduct={selectedAdminProduct}
+                    setSelectedAdminProduct={setSelectedAdminProduct}
+                  />
                 )})}
             </div>
         </div>
       </div>
 
-      {email === "kopotitore@gmail.com" && (
+      {business && (
         <div className="w-full flex justify-center mt-4 mb-4">
           <button
             onClick={handleCreateCategory}
@@ -851,145 +712,35 @@ export default function Menu({ categories: initialCategories, email }: { categor
         </div>
       )}
 
-      {email === "kopotitore@gmail.com" && selectedCategory && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-40">
-          <div
-            ref={modalRef}
-            className="bg-white p-6 rounded-2xl shadow-xl w-[90%] sm:w-[500px] relative"
-          >
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-            >
-              <X size={22} />
-            </button>
-
-            <h3 className="text-xl font-semibold mb-4 text-center">
-              Επεξεργασία Κατηγορίας: {selectedCategory.name}
-            </h3>
-
-            <div className="flex flex-col gap-3">
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={() => moveCategory(selectedCategory.id, "up")}
-                  className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
-                >
-                  ▲ Πάνω
-                </button>
-                <button
-                  onClick={() => moveCategory(selectedCategory.id, "down")}
-                  className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
-                >
-                  ▼ Κάτω
-                </button>
-              </div>
-
-              <button
-                onClick={saveCategoryPositions}
-                className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform transform hover:scale-105 font-medium"
-              >
-                Ενημέρωση Θέσεων
-              </button>
-
-              <button
-                onClick={() => handleCreateProduct(selectedCategory.id)}
-                className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 font-medium"
-              >
-                <Plus size={18} className="inline mr-2" />
-                Δημιουργία Προϊόντος
-              </button>
-
-              <button
-                onClick={() =>
-                  handleEditCategory(
-                    selectedCategory.id,
-                    selectedCategory.name
-                  )
-                }
-                className="w-full py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-transform transform hover:scale-105 font-medium"
-              >
-                <Edit2 size={18} className="inline mr-2" />
-                Επεξεργασία Ονόματος
-              </button>
-
-              <button
-                onClick={() =>
-                  handleDeleteCategory(
-                    selectedCategory.id,
-                    selectedCategory.name
-                  )
-                }
-                className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform transform hover:scale-105 font-medium"
-              >
-                <Trash2 size={18} className="inline mr-2" />
-                Διαγραφή Κατηγορίας
-              </button>
-            </div>
-          </div>
-        </div>
+      {business && selectedCategory && (
+        <AdminCategoryModal
+          category={selectedCategory}
+          modalRef={modalRef}
+          onClose={() => setSelectedCategory(null)}
+          moveCategory={moveCategory}
+          saveCategoryPositions={saveCategoryPositions}
+          handleCreateProduct={handleCreateProduct}
+          handleEditCategory={handleEditCategory}
+          handleDeleteCategory={handleDeleteCategory}
+        />
       )}
 
-      {email === "kopotitore@gmail.com" && selectedAdminProduct && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-40">
-          <div
-            ref={modalProdRef}
-            className="bg-white p-6 rounded-2xl shadow-xl w-[90%] sm:w-[400px] relative"
-          >
-            {/* Close Button */}
-            <button
-              onClick={() => setSelectedAdminProduct(null)}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 transition"
-            >
-              ✕
-            </button>
-
-            <h3 className="text-lg font-semibold mb-4 text-center">
-              Ενέργειες Προϊόντος: {selectedAdminProduct.name}
-            </h3>
-
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => handleEditProduct(selectedAdminProduct.id, selectedAdminProduct.name)}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-              >
-                Επεξεργασία Ονόματος
-              </button>
-
-              <button
-                onClick={() => handleDeleteProduct(selectedAdminProduct.id, selectedAdminProduct.name)}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-              >
-                Διαγραφή Προϊόντος
-              </button>
-
-              <button
-                onClick={() => toggleProductOffer(selectedAdminProduct.id, selectedAdminProduct.offer, selectedAdminProduct.price)}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-              >
-                {selectedAdminProduct.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
-              </button>
-
-              <button
-                onClick={() => setEditDescription(selectedAdminProduct.id)}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
-                Επεξεργασία Περιγραφής
-              </button>
-
-              <button
-                onClick={() => setEditPrice(selectedAdminProduct.id)}
-                className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
-              >
-                Επεξεργασία Τιμής
-              </button>
-            </div>
-          </div>
-        </div>
+      {business && selectedAdminProduct && (
+        <AdminProductModal
+          product={selectedAdminProduct}
+          modalRef={modalProdRef}
+          onClose={() => setSelectedAdminProduct(null)}
+          onEditName={handleEditProduct}
+          onDelete={handleDeleteProduct}
+          onToggleOffer={toggleProductOffer}
+          onEditDescription={setEditDescription}
+          onEditPrice={setEditPrice}
+        />
       )}
 
       {selectedProduct && (
         <ProductModal
-          email={email}
+          business={business}
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           addToCart={addToCart}

@@ -4,58 +4,16 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Minus, Plus, Trash2 } from "lucide-react"
 import { ChevronDown, ChevronRight, X } from "lucide-react";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  delete?: boolean;
-  isRequired?: boolean;
-};
-
-type ImageType = {
-  id: number
-  data: Uint8Array
-  createdAt: Date
-}
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  delete?: boolean;
-  productId?: number;
-};
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
+import { Ingredient, IngCategory, Option, Product } from "../types";
 
 type ModalProps = {
-  email?: string;
+  business?: boolean;
   product: Product | null;
   onClose: () => void;
   addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[], selectedOptions: Option[], options: Option[]) => void;
 };
 
-export default function ProductModal({ email, product, onClose, addToCart }: ModalProps) {
+export default function ProductModal({ business, product, onClose, addToCart }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
@@ -170,7 +128,6 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
       const timer = setTimeout(() => setAnimate(true), 10);
       return () => clearTimeout(timer);
   }, []);
-
 
   const handleEditIngredientName = (catId: number, ingId: number) => {
     const cat = fullProduct?.ingCategories?.find((c) => c.id === catId);
@@ -344,7 +301,6 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
     });
   };
 
-
   const handleDeleteCategory = (catId: number) => {
     if (!confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή την κατηγορία;")) return;
 
@@ -474,7 +430,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                 <X className="w-7 h-7" />
               </button>
 
-              {email === "kopotitore@gmail.com" && (
+              {business && (
                 <div className="p-6 max-w-lg mx-auto">
                   <h1 className="text-xl font-bold mb-4">Ανέβασε Εικόνα</h1>
             
@@ -559,7 +515,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                           )}
                         </div>
 
-                        {email === "kopotitore@gmail.com" && (
+                        {business && (
                           <div className="flex gap-1">
                             {/* Edit Category */}
                             <button
@@ -619,16 +575,6 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 className="h-4 w-4"
                               />
 
-                              {ing.image && (
-                                <Image
-                                  src={ing.image}
-                                  alt={ing.name}
-                                  width={40}
-                                  height={40}
-                                  className="object-cover rounded"
-                                />
-                              )}
-
                               <div className="flex-1">
                                 <p className="font-semibold text-gray-800">{ing.name}</p>
                                 {ing.price > 0 && (
@@ -636,7 +582,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                                 )}
                               </div>
 
-                              {email === "kopotitore@gmail.com" && (
+                              {business && (
                                 <div className="flex gap-1">
                                   <button
                                     onClick={(e) => {
@@ -678,7 +624,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                             </label>
                           ))}
 
-                          {email === "kopotitore@gmail.com" && (
+                          {business && (
                             <button
                               onClick={() => handleAddIngredient(ingCat.id)}
                               className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm"
@@ -722,7 +668,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                             <h3 className="font-bold text-lg text-gray-800">{opt.question}</h3>
                           </div>
 
-                          {email === "kopotitore@gmail.com" && (
+                          {business && (
                             <div className="flex gap-1">
                               {/* Edit Question */}
                               <button
@@ -807,7 +753,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
                     );
                 })}
 
-                {email === "kopotitore@gmail.com" && (
+                {business && (
                   <div className="flex justify-between">
                     <button
                       onClick={handleAddCategory}
@@ -826,7 +772,7 @@ export default function ProductModal({ email, product, onClose, addToCart }: Mod
               </div>
             </>
           )}
-          {email === "kopotitore@gmail.com" && (
+          {business && (
             <div className="w-full flex justify-center">
               <button
                 onClick={async () => {

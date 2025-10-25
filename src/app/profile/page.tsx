@@ -2,15 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  business: boolean;
-  address: string;
-  validRadius: number;
-};
+import { User } from "../types"; 
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User>();

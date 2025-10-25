@@ -48,5 +48,5 @@ export default async function DataPage() {
     })),
   }));
 
-  return <Menu categories={categories} email={session?.user?.email ?? undefined} />;
+  return <Menu categories={categories} business={session?.user?.email == "kopotitore@gmail.com"}/>;
 }

@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { User } from "./types"; 
 
 type OrderItem = {
   id: number;
@@ -9,12 +10,6 @@ type OrderItem = {
   quantity: number;
   price: number;
   ingredients?: { id: number; name: string; price: number }[];
-};
-
-type User = {
-  id: number;
-  name: string;
-  address?: string;
 };
 
 type PaymentModalProps = {

@@ -2,84 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  ingredient: {
-    id: number;
-    name: string;
-    price: number;
-  };
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type OrderItem = {
-  id: number;
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  ingredients: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions: Option[];
-  options?: Option[];
-  product: Product;
-};
-
-type Order = {
-  id: number;
-  status: string;
-  total: number;
-  createdAt: string;
-  items: OrderItem[];
-  user: User;
-  paid: boolean;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type ImageType = {
-  id: number;
-  data: Uint8Array;
-  createdAt: Date;
-}
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  image?: string;
-  business: boolean;
-  address: string;
-};
+import { Order } from "./types"; 
 
 export default function CreatedOrderModal() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -172,7 +95,7 @@ export default function CreatedOrderModal() {
                 <ul className="mt-1 space-y-1 text-sm text-gray-600 list-disc ml-4">
                 {order.items.slice(0, 2).map((item) => (
                     <li key={item.id} className="pt-1">
-                    {item.quantity}× {item.product.name} –{" "}
+                    {item.quantity}× {item.product?.name} –{" "}
                     <span className="font-medium">{Number(item.price).toFixed(2)}€</span>
                     </li>
                 ))}

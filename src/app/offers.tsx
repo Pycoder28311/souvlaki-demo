@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import ProductModal from "./menu/productModal";
 import { Dispatch, SetStateAction } from "react";
+import { User } from "./types"; 
 
 interface ProductModalProps {
   addToCart: (
@@ -56,15 +57,6 @@ type IngCategory = {
   name: string;
   ingredients: Ingredient[];
   isRequired?: boolean;
-};
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  image?: string;
-  business: boolean;
-  address?: string;
 };
 
 export default function MenuGrid({
@@ -171,7 +163,7 @@ export default function MenuGrid({
 
       {selectedProduct && (
         <ProductModal
-          email={user?.email}
+          business={user?.business}
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           addToCart={addToCart}

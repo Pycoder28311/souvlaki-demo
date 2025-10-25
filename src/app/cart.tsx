@@ -6,40 +6,7 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
+import { User, OrderItem } from "./types"; 
 
 interface OrderSidebarProps {
   orderItems: OrderItem[];
@@ -49,16 +16,6 @@ interface OrderSidebarProps {
   setIsSidebarOpen: (open: boolean) => void;
   removeItem: (item: OrderItem) => void;
 }
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  image?: string;
-  business: boolean;
-  address?: string;
-  floor: string;
-};
 
 export default function OrderSidebar({
   orderItems,

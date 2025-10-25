@@ -18,11 +18,10 @@ export default function CookieConsent() {
   }, []);
 
   const acceptCookies = async () => {
-    const res = await fetch('/api/cookies', {
+    await fetch('/api/cookies', {
         method: 'POST',
         body: JSON.stringify({ accepted: true }),
     });
-    const data = await res.json();
     setShowBanner(false);
     };
 

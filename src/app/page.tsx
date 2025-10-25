@@ -11,67 +11,7 @@ import OrderSidebar from "./cart";
 import EditModal from './menu/editModal';
 import { ShoppingCart } from "lucide-react";
 import MenuGrid from "./offers";
-
-export type User = {
-  id: number;
-  email: string;
-  password: string;
-  name: string;
-  business: boolean;
-};
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type OrderItem = {
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  selectedIngredients?: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions?: Option[];
-  options?: Option[];
-};
-
-type ImageType = {
-  id: number
-  data: Uint8Array
-  createdAt: Date
-}
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
+import { OrderItem, Ingredient, Option, IngCategory, Product } from "./types"; 
 
 export default function Home() {
 
@@ -241,7 +181,7 @@ export default function Home() {
               ...item,
               quantity: quantity,
               selectedIngredients: newIngredients,
-              selectedOptions: selectedOptions, // προσθήκη options
+              selectedOptions: selectedOptions || [], // προσθήκη options
               // Recalculate price: base price + sum of ingredient prices
               price:
               orderItemToEdit.price

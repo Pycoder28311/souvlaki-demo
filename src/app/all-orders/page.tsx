@@ -1,84 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  ingredient: {
-    id: number;
-    name: string;
-    price: number;
-  };
-};
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type OrderItem = {
-  id: number;
-  productId: number;
-  name: string;
-  price: number;
-  quantity: number;
-  imageId: number | null;
-  ingredients: Ingredient[]; // optional array of selected ingredients
-  selectedIngCategories?: IngCategory[]; // optional array of selected ingredient categories
-  selectedOptions: Option[];
-  options?: Option[];
-  product: Product;
-};
-
-type Order = {
-  id: number;
-  status: string;
-  total: number;
-  createdAt: string;
-  items: OrderItem[];
-  user: User;
-  paid: boolean;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
-type ImageType = {
-  id: number;
-  data: Uint8Array;
-  createdAt: Date;
-}
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  image?: string;
-  business: boolean;
-  address: string;
-};
+import { Order } from "../types"; 
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -171,10 +94,10 @@ export default function Orders() {
                     (acc, opt) => acc + Number(opt.price || 0),
                     0
                   );
-                  const ingredientsTotal = item.ingredients.reduce(
+                  const ingredientsTotal = item.ingredients?.reduce(
                     (acc, ing) => acc + Number(ing.price || 0),
                     0
-                  );
+                  ) || 0;
 
                   // Total per item
                   const itemTotal = (Number(item.price) - (optionsTotal + ingredientsTotal)) * item.quantity;
@@ -186,16 +109,16 @@ export default function Orders() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-gray-800">
-                          {item.quantity} × {item.product.name}
+                          {item.quantity} × {item.product?.name}
                         </span>
                         <span className="text-gray-700">{itemTotal.toFixed(2)}€</span>
                       </div>
 
-                      {item.ingredients.length > 0 && (
+                      {item.ingredients && item.ingredients.length > 0 && (
                         <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
                           {item.ingredients.map((ing) => (
                             <li key={ing.id}>
-                              {ing.ingredient.name}{" "}
+                              {ing.ingredient?.name}{" "}
                               {ing.price ? `(${Number(ing.price).toFixed(2)}€)` : ""}
                             </li>
                           ))}

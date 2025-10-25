@@ -3,16 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../api/auth/authOptions";
 import { redirect } from "next/navigation";
+import { MessageItem } from "../types";
 
 export const revalidate = 0;
-
-// Define the type for a message row
-type MessageItem = {
-  id: number;
-  content: string;
-  senderEmail: string;
-  createdAt: Date;
-};
 
 export default async function DataPage() {
 
