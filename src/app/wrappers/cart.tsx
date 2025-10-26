@@ -6,50 +6,25 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { User, OrderItem } from "./types"; 
-import { useCart } from "./cartContext";
+import { OrderItem, Option, User } from "../types"; 
+import { useCart } from "../wrappers/cartContext";
 
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (open: boolean) => void;
 }
 
 export default function OrderSidebar({
   setEditableOrderItem,
-  isSidebarOpen,
-  setIsSidebarOpen,
 }: OrderSidebarProps) {
-  const { orderItems, removeItem, setQuantity } = useCart();
+  const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen } = useCart();
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentWayModal, setPaymentWayModal] = useState(false);
+  const { user, setUser, address, setAddress, selectedFloor, setSelectedFloor } = useCart();
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
-  }, []);
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-          setSelected("");
-          
-          setSelectedFloor(session.user.floor);
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
   }, []);
 
   const handlePayment = async () => {
@@ -156,8 +131,42 @@ export default function OrderSidebar({
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
-  const [selected, setSelected] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState("");
+  const [validRadius, setValidRadius] = useState<number | null>(null);
+  const [isTooFar, setIsTooFar] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setSelectedFloor(user.floor ?? "");
+      setAddress(user.address ?? "");
+
+      // If user is a business, use their own validRadius
+      if (user.business) {
+        const radius = user.validRadius ?? 0;
+        setValidRadius(radius);
+        setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
+      }
+    }
+  }, [user, setAddress]);
+
+  useEffect(() => {
+    const fetchRadius = async () => {
+      try {
+        const res = await fetch("/api/business-valid-radius");
+        if (!res.ok) throw new Error("Failed to fetch valid radius");
+
+        const radius: number = await res.json();
+        setValidRadius(radius);
+        if (user?.distanceToDestination != null) {
+          setIsTooFar(user.distanceToDestination > radius);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    if (!user?.business) {
+      fetchRadius();
+    }
+  }, []);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -176,13 +185,21 @@ export default function OrderSidebar({
       const distanceRes = await fetch("/api/get-distance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: selected }),
+        body: JSON.stringify({ origin: address }),
       });
 
       const distanceData = await distanceRes.json();
-      const distanceToDestination = distanceData.distanceValue; 
-      const payload = { address: selected,  distanceToDestination:  distanceToDestination };
+      const distanceToDestination = distanceData.distanceValue;
+      if (validRadius != null && distanceToDestination > Number(validRadius)) {
+        setIsTooFar(true)
+        alert(
+          `Προειδοποίηση: Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.`
+        );
+      } else {
+        setIsTooFar(false)
+      }
 
+      const payload = { address: address,  distanceToDestination:  distanceToDestination };
       const response = await fetch("/api/update-user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -192,7 +209,6 @@ export default function OrderSidebar({
 
       const updatedUser = await response.json();
       setUser(updatedUser);
-      setSelected("")
       setEditingAddress(false);
     } catch (error) {
       console.error("Error updating user:", error);
@@ -200,7 +216,6 @@ export default function OrderSidebar({
   };
 
   if (!hydrated) {
-    // Render nothing (or a skeleton) until client + localStorage are ready
     return null;
   }
 
@@ -237,8 +252,8 @@ export default function OrderSidebar({
         ) : (
           orderItems.map((item, index) => {
             const ingredientKey = (item.selectedIngredients || [])
-              .map((ing) => ing.id)
-              .sort((a, b) => a - b)
+              .map((ing: {id: number, name: string, price: number}) => ing.id)
+              .sort((a: number, b: number) => a - b)
               .join("-");
 
             const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
@@ -317,7 +332,7 @@ export default function OrderSidebar({
                 </div>
                 {expandedItems[item.productId] && ((item.selectedIngredients && item.selectedIngredients.length > 0) || (item.selectedOptions && item.selectedOptions.length > 0)) && (
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {item.selectedIngredients?.map((ing) => (
+                    {item.selectedIngredients?.map((ing: {id: number, name: string, price: number}) => (
                       <span
                         key={ing.id}
                         className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
@@ -325,7 +340,7 @@ export default function OrderSidebar({
                         {ing.name}
                       </span>
                     ))}
-                    {item.selectedOptions?.map((opt) => (
+                    {item.selectedOptions?.map((opt: Option) => (
                       <span
                         key={opt.id}
                         className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
@@ -381,15 +396,7 @@ export default function OrderSidebar({
                   <span className="font-semibold text-gray-800">Διεύθυνση:</span> {user.address}
                 </span>
 
-                <div
-                  onClick={() => setEditingAddress(true)}
-                  className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
-                >
-                  <Edit2 size={18} />
-                  <span>Αλλαγή Διεύθυνσης</span>
-                </div>
-
-                {editingAddress && (
+                {editingAddress ? (
                   <div className="mt-4 relative">
                       <div className="flex items-center gap-2">
                       <input
@@ -420,7 +427,7 @@ export default function OrderSidebar({
                           <li
                               key={i}
                               onClick={() => {
-                              setSelected(r);
+                              setAddress(r);
                               setQuery(r);
                               setResults([]);
                               }}
@@ -431,6 +438,14 @@ export default function OrderSidebar({
                           ))}
                       </ul>
                       )}
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => setEditingAddress(true)}
+                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
+                  >
+                    <Edit2 size={18} />
+                    <span>Αλλαγή Διεύθυνσης</span>
                   </div>
                 )}
 
@@ -508,26 +523,47 @@ export default function OrderSidebar({
             
             {/* Modal Header */}
             <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
-              Τρόπος Πληρωμής
+              Τρόπος Πληρωμής {user?.distanceToDestination} {validRadius}
             </h2>
+
+            {/* Warning message */}
+            {isTooFar && (
+              <p className="text-red-600 font-semibold px-6 mb-4">
+                Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.
+              </p>
+            )}
 
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">
               <p className="mt-4 font-bold text-gray-900 text-lg">
                 Σύνολο: {total.toFixed(2)}€
               </p>
-              <button
-                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
-                onClick={handleClickDoor}
-              >
-                Πληρωμή από κοντά
-              </button>
-              <button
-                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
-                onClick={handleClickOnline}
-              >
-                Πληρωμή Online
-              </button>
+
+              {/* Determine disabled state */}
+              {(() => {
+                const isDisabled: boolean = !!(isTooFar);
+                const disabledClasses = "opacity-50 pointer-events-none";
+
+                return (
+                  <>
+                    <button
+                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      onClick={handleClickDoor}
+                      disabled={isDisabled}
+                    >
+                      Πληρωμή από κοντά
+                    </button>
+                    <button
+                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      onClick={handleClickOnline}
+                      disabled={isDisabled}
+                    >
+                      Πληρωμή Online
+                    </button>
+                  </>
+                );
+              })()}
+
               <button
                 className="mt-2 w-full bg-gray-200 text-gray-700 py-3 sm:py-2 rounded-xl hover:bg-gray-300 transition"
                 onClick={() => setPaymentWayModal(false)}

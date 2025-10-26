@@ -4,14 +4,12 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import OrderCard from "./orderCard";
 import { Order, Product } from "../types";
-import { useCart } from "../cartContext"; 
+import { useCart } from "../wrappers/cartContext"; 
 
 export default function MyOrdersPage() {
-  const {addToCart} = useCart();
+  const { addToCart, isSidebarOpen } = useCart();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
-  const [userId, setUserId] = useState();
 
   const pendingRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef<HTMLDivElement>(null);
@@ -27,24 +25,8 @@ export default function MyOrdersPage() {
     }
   };
 
-  // Fetch session
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUserId(session.user.id);
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
-  }, []);
+  const { user } = useCart();
+  const userId = useState(user?.id);
 
   useEffect(() => {
     if (!userId) return;
@@ -55,7 +37,6 @@ export default function MyOrdersPage() {
         const data: { orders: Order[]; products: Product[] } = JSON.parse(event.data);
         setOrders(data.orders);
         setProducts(data.products);
-        console.log(data)
       } catch (err) {
         console.error("Error parsing SSE data:", err);
       }
@@ -70,22 +51,6 @@ export default function MyOrdersPage() {
       evtSource.close();
     };
   }, [userId]);
-
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isSidebarOpen && isMobile) {
-      // Disable background scroll
-      document.body.style.overflow = "hidden";
-    } else {
-      // Re-enable when closed
-      document.body.style.overflow = "";
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isSidebarOpen]);
 
   if (orders.length === 0) return 
     <div className="text-center py-10 pt-30">

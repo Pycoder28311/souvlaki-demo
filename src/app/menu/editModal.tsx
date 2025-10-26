@@ -2,7 +2,7 @@ import { useState } from "react";
 import Image from 'next/image';
 import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
 import { Ingredient, Option, OrderItem } from "../types"
-import { useCart } from "../cartContext";
+import { useCart } from "../wrappers/cartContext";
 
 // types.ts or inside EditModal.tsx
 interface EditModalProps {

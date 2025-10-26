@@ -5,10 +5,10 @@ import Image from 'next/image';
 import Link from "next/link";
 import homepage from "../../public/homepage.jpg";
 import { useEffect, useRef, useState } from "react";
-import RedSquareCarousel from './carousel';
-import MenuGrid from "./offers";
+import RedSquareCarousel from './z-components/carousel';
+import MenuGrid from "./z-components/offers";
 import { Product } from "./types"; 
-import { useCart } from './cartContext';
+import { useCart } from './wrappers/cartContext';
 
 export default function Home() {
 
@@ -29,7 +29,6 @@ export default function Home() {
 
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState<boolean[]>([false, false, false]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -114,22 +113,6 @@ export default function Home() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isSidebarOpen && isMobile) {
-      // Disable background scroll
-      document.body.style.overflow = "hidden";
-    } else {
-      // Re-enable when closed
-      document.body.style.overflow = "";
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isSidebarOpen]);
 
   return (
     <div className="min-h-screen bg-white overflow-hidden">

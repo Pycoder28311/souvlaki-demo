@@ -8,15 +8,14 @@ import "./navbar.css";
 import Image from "next/image";
 import { X } from "lucide-react";
 import CreatedOrderModal from "./createdOrderModal";
+import { useCart } from "../wrappers/cartContext";
 
-export default function Navbar({scrolled = false, isLive}) {
+export default function Navbar({scrolled = false, isLive }) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState(null); 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const [address, setAddress] = useState("");
-  const [showRadiusNote, setShowRadiusNote] = useState(false);
+  const { user, address, showRadiusNote } = useCart();
 
   // derive business from user
   const business = user?.business ?? false;
@@ -50,81 +49,6 @@ export default function Navbar({scrolled = false, isLive}) {
       window.removeEventListener("resize", handleScroll);
     };
   }, [scrolled]);
-
-  // navigator.js
-  const getUserAddress = async () => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      return null;
-    }
-
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const res = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&language=el&key=${process.env.NEXT_PUBLIC_GEOLOCATION_API}`
-            );
-            const data = await res.json();
-            resolve(data.results?.[0]?.formatted_address || null);
-          } catch (err) {
-            console.error("Failed to fetch address:", err);
-            resolve(null);
-          }
-        },
-        (err) => {
-          console.error("Geolocation error:", err);
-          resolve(null);
-        }
-      );
-    });
-  };
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-          setAddress(session.user.address ? session.user.address.split(",")[0] : "");
-
-          if (session.user.validRadius == null && session.user.business) {
-            setShowRadiusNote(true);
-          }
-
-          if (!session.user.address) {
-            const address = await getUserAddress();
-            if (address) {
-              const distanceRes = await fetch("/api/get-distance", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ origin: address }),
-              });
-
-              const distanceData = await distanceRes.json();
-              const distanceToDestination = distanceData.distanceValue; 
-
-              // Then, update the user with the distance included
-              await fetch("/api/update-address", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: session.user.email, address, distanceToDestination }),
-              });
-              
-              setAddress(address ? address.split(",")[0] : "");
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
-  }, []);
 
   const handleClick = () => {
     if (user) {
@@ -347,7 +271,7 @@ export default function Navbar({scrolled = false, isLive}) {
                   {user?.name}
                 </h2>
                 <p className="text-sm text-gray-500 break-words">
-                  {address}
+                  {address?.split(",")[0] || ""}
                 </p>
               </div>
             </div>

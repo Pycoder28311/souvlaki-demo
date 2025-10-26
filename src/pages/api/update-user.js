@@ -27,7 +27,6 @@ export default async function handler(req, res) {
         ...(distanceToDestination && { distanceToDestination }),
       },
     });
-    console.log(address, distanceToDestination)
 
     return res.status(200).json(updatedUser);
   } catch (err) {

@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { User } from "./types"; 
+import { User } from "../types"; 
 
 type OrderItem = {
   id: number;

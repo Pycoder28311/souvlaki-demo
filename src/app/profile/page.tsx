@@ -2,19 +2,47 @@
 
 import { useState, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
-import { User } from "../types"; 
+import { useCart } from "../wrappers/cartContext";
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User>();
+  const { user, setUser, address, setAddress } = useCart();
   const [editingName, setEditingName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [nameInput, setNameInput] = useState("");
-
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
-  const [selected, setSelected] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState("");
-  const [validRadius, setValidRadius] = useState(user?.validRadius?.toString());
+  const [selectedFloor, setSelectedFloor] = useState<string | undefined>("");
+  const [validRadius, setValidRadius] = useState<number | null>(null);
+
+  // 🧠 When user changes (loaded later), update the dependent states
+  useEffect(() => {
+    if (user) {
+      setNameInput(user.name ?? "");
+      setSelectedFloor(user.floor ?? "");
+      if (user.business) {
+        setValidRadius(user.validRadius ?? 0);
+      }
+      setAddress(user.address ?? "");
+    }
+  }, [user, setAddress]);
+
+  useEffect(() => {
+    const fetchRadius = async () => {
+      try {
+        const res = await fetch("/api/business-valid-radius");
+        if (!res.ok) throw new Error("Failed to fetch valid radius");
+
+        const radius: number = await res.json();
+        setValidRadius(radius);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (!user?.business) {
+      fetchRadius();
+    }
+  }, []);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -28,44 +56,28 @@ export default function ProfilePage() {
     setResults(data.suggestions || []);
   };
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-          setNameInput(session.user.name);
-          setSelectedFloor(session.user.floor);
-          setSelected("");
-          setValidRadius(session.user.validRadius?.toString())
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
-  }, []);
-
   const handleUpdate = async (field: "name" | "address") => {
     try {
       const payload =
         field === "name"
           ? { name: nameInput }
-          : { address: selected };
+          : { address: address };
 
       // First, get the distance
       const distanceRes = await fetch("/api/get-distance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: selected }),
+        body: JSON.stringify({ origin: address }),
       });
 
       const distanceData = await distanceRes.json();
       const distanceToDestination = distanceData.distanceValue; 
+
+      if (validRadius != null && distanceToDestination > Number(validRadius)) {
+        alert(
+          `Προειδοποίηση: Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.`
+        );
+      }
 
       // Then, update the user with the distance included
       const response = await fetch("/api/update-user", {
@@ -174,7 +186,7 @@ export default function ProfilePage() {
                     <li
                         key={i}
                         onClick={() => {
-                        setSelected(r);
+                        setAddress(r);
                         setQuery(r);
                         setResults([]);
                         }}
@@ -186,7 +198,7 @@ export default function ProfilePage() {
                 </ul>
                 )}
 
-                {selected && <p className="mt-2 text-gray-700">Επιλεγμένη Διεύθυνση: {selected}</p>}
+                {user?.address && <p className="mt-2 text-gray-700">Επιλεγμένη Διεύθυνση: {user?.address}</p>}
             </div>
             ) : (
             <div className="flex items-center justify-center gap-2 max-w-full mb-4">
@@ -245,7 +257,7 @@ export default function ProfilePage() {
                     step="0.01"
                     min="0"
                     value={validRadius ?? ""}
-                    onChange={(e) => setValidRadius(e.target.value)}
+                    onChange={(e) => setValidRadius(parseFloat(e.target.value))}
                     placeholder="Ορίστε απόσταση"
                     className={`border p-2 rounded-lg w-full text-center ${
                       !validRadius ? "border-red-500" : "border-gray-300"
@@ -258,7 +270,7 @@ export default function ProfilePage() {
                         return;
                       }
 
-                      const radiusValue = parseFloat(validRadius);
+                      const radiusValue = validRadius;
                       if (isNaN(radiusValue) || radiusValue <= 0) {
                         alert("Η απόσταση πρέπει να είναι μεγαλύτερη από 0 km.");
                         return;
@@ -275,7 +287,7 @@ export default function ProfilePage() {
 
                         if (!res.ok) throw new Error("Failed to update radius");
 
-                        const data = await res.json();
+                        const data = await res.json(); 
                         alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
                       } catch (err) {
                         console.error(err);

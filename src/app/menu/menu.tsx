@@ -3,9 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import ProductModal from "./productModal";
-import { useCart } from "../cartContext";
+import { useCart } from "../wrappers/cartContext";
 import { Search, X} from "lucide-react";
-import { Ingredient, Option, Product, Category, OrderItem } from "../types";
+import { Product, Category } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
 import CategorySection from "./components/categorySection";
@@ -29,10 +29,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // default safe for server
 
   const [isClient, setIsClient] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
+  const { addToCart, isSidebarOpen, setIsSidebarOpen } = useCart();
 
   useEffect(() => {
     setIsClient(true);
@@ -102,11 +102,9 @@ export default function Menu({ categories: initialCategories, business }: { cate
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
-  const { addToCart } = useCart();
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -378,21 +376,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, []);
-
-  useEffect(() => {
-    if (isSidebarOpen && isMobile) {
-      // Disable background scroll
-      document.body.style.overflow = "hidden";
-    } else {
-      // Re-enable when closed
-      document.body.style.overflow = "";
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isSidebarOpen, isMobile]);
 
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const modalRef = useRef<HTMLDivElement>(null);

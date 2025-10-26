@@ -7,6 +7,7 @@ export interface User {
   address?: string;
   floor: string;
   validRadius: number;
+  distanceToDestination: number;
 };
 
 export interface Ingredient {

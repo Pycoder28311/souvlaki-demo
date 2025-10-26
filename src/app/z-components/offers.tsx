@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import ProductModal from "./menu/productModal";
+import ProductModal from "../menu/productModal";
 import { Dispatch, SetStateAction } from "react";
-import { User } from "./types"; 
+import { useCart } from "../wrappers/cartContext";
+import { ImageType, Option, Product, Ingredient, IngCategory } from "../types";
 
 interface ProductModalProps {
   addToCart: (
@@ -18,47 +19,6 @@ interface ProductModalProps {
   setSelectedProduct: Dispatch<SetStateAction<Product | null>>;
 }
 
-type ImageType = {
-  id: number
-  data: Uint8Array
-  createdAt: Date
-}
-
-type Option = {
-  id: number;
-  question: string;
-  price: number;
-  comment?: string;
-  productId?: number;
-};
-
-type Product = {
-  id: number
-  name: string
-  price: number
-  offer: boolean
-  offerPrice?: number;
-  description: string;
-  image?: ImageType | null
-  imageId?: number | null; 
-  ingCategories?: IngCategory[];
-  options?: Option[];
-}
-
-type Ingredient = {
-  id: number;
-  name: string;
-  price: number;
-  image?: string;
-};
-
-type IngCategory = {
-  id: number;
-  name: string;
-  ingredients: Ingredient[];
-  isRequired?: boolean;
-};
-
 export default function MenuGrid({
   addToCart,
   selectedProduct,
@@ -66,7 +26,7 @@ export default function MenuGrid({
 }: ProductModalProps) {
   const [menuItems, setMenuItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<User | null>(null);
+  const { user } = useCart();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -83,24 +43,6 @@ export default function MenuGrid({
     }
 
     fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
   }, []);
 
   if (loading) return <p>Φόρτωση...</p>;

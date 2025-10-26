@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Order } from "./types"; 
+import { Order } from "../types"; 
+import { OrderItem } from "../types";
 
 export default function CreatedOrderModal() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -93,7 +94,7 @@ export default function CreatedOrderModal() {
               {/* Mini Items list */}
               {order.status !== "cancelled" && (
                 <ul className="mt-1 space-y-1 text-sm text-gray-600 list-disc ml-4">
-                {order.items.slice(0, 2).map((item) => (
+                {order.items.slice(0, 2).map((item: OrderItem) => (
                     <li key={item.id} className="pt-1">
                     {item.quantity}× {item.product?.name} –{" "}
                     <span className="font-medium">{Number(item.price).toFixed(2)}€</span>
