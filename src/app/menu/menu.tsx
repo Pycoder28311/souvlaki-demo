@@ -87,7 +87,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
     handleResize(); // set immediately on mount
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [setIsSidebarOpen]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -100,7 +100,8 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [setIsSidebarOpen]);
+  
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [showSearch, setShowSearch] = useState(false);
