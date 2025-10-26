@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Order } from "../types"; 
 import { OrderItem } from "../types";
@@ -11,6 +11,71 @@ export default function CreatedOrderModal() {
   const [deliveryModalOpen, setDeliveryModalOpen] = useState<number | null>(null);
   const [deliveryTime, setDeliveryTime] = useState(""); // input value
   const [successMap, setSuccessMap] = useState<{ [key: number]: boolean }>({});
+  const printRef = useRef<HTMLDivElement>(null);
+  const textToPrint = "lets try here again";
+
+  const handlePrint = (order: Order) => {
+    if (!printRef.current) return;
+
+    const printWindow = window.open("", "", "width=700,height=600");
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+        <head>
+          <title>Print</title>
+          <style>
+            @media print {
+              @page { margin: 0; }
+              body {
+                margin: 0;
+                font-family: Arial, sans-serif;
+                white-space: pre-wrap;
+                font-size: 18px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+              }
+              .receipt {
+                text-align: center;
+                border: 1px solid #000;
+                padding: 20px;
+                width: 400px;
+              }
+            }
+            body {
+              font-family: Arial, sans-serif;
+              white-space: pre-wrap;
+              font-size: 18px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100vh;
+            }
+            .receipt {
+              text-align: center;
+              border: 1px solid #000;
+              padding: 20px;
+              width: 400px;
+            }
+            .logo {
+              max-width: 150px;
+              margin-bottom: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="receipt">
+            <img src="${window.location.origin}/cover.jpg" class="logo" />
+            <div>${textToPrint} ${order.id}</div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => printWindow.print(), 100);
+    }
+  };
   
   useEffect(() => {
       const evtSource = new EventSource("/api/read-requested-orders");
@@ -49,22 +114,6 @@ export default function CreatedOrderModal() {
 
       setSuccessMap((prev: { [key: number]: boolean }) => ({ ...prev, [order.id]: true }));
 
-      // ✅ Your print logic with custom text
-      const textToPrint = `
-        <div style="font-family: Arial; padding: 20px;">
-          <h2>Order Accepted</h2>
-          <p>Order ID: ${order.id}</p>
-          <p>Delivery Time: ${time}</p>
-          <p>Status: Pending</p>
-          <p>Thank you for your order!</p>
-        </div>
-      `;
-
-      const originalContents = document.body.innerHTML;
-      document.body.innerHTML = textToPrint;
-      window.print();
-      document.body.innerHTML = originalContents;
-      window.location.reload(); // restore events/styles
 
       // Hide tick after 2 seconds
       setTimeout(() => {
@@ -83,7 +132,6 @@ export default function CreatedOrderModal() {
         scrollbarWidth: "none", // Firefox
     }}    
     >
-      
       {orders.map((order) => (
         <div className="w-full flex justify-end" key={order.id}>
           <div
@@ -233,9 +281,10 @@ export default function CreatedOrderModal() {
                   <select
                     value={deliveryTime}
                     onChange={(e) => {
-                      const time = e.target.value;
+                      {/*const time = e.target.value;
                       setDeliveryTime(time);
-                      handleAcceptOrder(time, order);
+                      handleAcceptOrder(time, order);*/}
+                      handlePrint(order);
                     }}
                     className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
                   >
@@ -286,6 +335,9 @@ export default function CreatedOrderModal() {
           </div>
         </div>
       ))}
+      <div ref={printRef} className="hidden">
+        {textToPrint}
+      </div>
     </div>
   );
 }

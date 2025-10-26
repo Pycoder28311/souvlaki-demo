@@ -9,6 +9,7 @@ import RedSquareCarousel from './z-components/carousel';
 import MenuGrid from "./z-components/offers";
 import { Product } from "./types"; 
 import { useCart } from './wrappers/cartContext';
+import PrintButton from './testPrint';
 
 export default function Home() {
 
@@ -114,10 +115,6 @@ export default function Home() {
     }
   };
 
-  const handlePrint = () => {
-    window.print(); // opens the browser print dialog
-  };
-
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       <Head>
@@ -183,12 +180,13 @@ export default function Home() {
         </button>
       </div>
 
-      <button
-        onClick={handlePrint}
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Print Page here
-      </button>
+      <PrintButton
+        textToPrint={`ΠΑΡΑΓΓΕΛΙΑ #123
+      Προϊόν 1 x2
+      Προϊόν 2 x1
+      -------------------
+      Σύνολο: 25€`}
+      />
 
       {/* Menu Section */}
       <section id="menu" className="py-16 bg-white">

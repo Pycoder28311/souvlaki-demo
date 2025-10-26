@@ -146,7 +146,7 @@ export default function OrderSidebar({
         setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
       }
     }
-  }, [user, setAddress, user?.business]);
+  }, [user, setAddress, user?.business, setSelectedFloor]);
 
   useEffect(() => {
     const fetchRadius = async () => {
@@ -166,7 +166,7 @@ export default function OrderSidebar({
     if (!user?.business) {
       fetchRadius();
     }
-  }, []);
+  }, [user?.business, user?.distanceToDestination]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
