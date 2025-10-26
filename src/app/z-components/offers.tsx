@@ -5,7 +5,7 @@ import Image from "next/image";
 import ProductModal from "../menu/productModal";
 import { Dispatch, SetStateAction } from "react";
 import { useCart } from "../wrappers/cartContext";
-import { ImageType, Option, Product, Ingredient, IngCategory } from "../types";
+import { Option, Product, Ingredient, IngCategory } from "../types";
 
 interface ProductModalProps {
   addToCart: (

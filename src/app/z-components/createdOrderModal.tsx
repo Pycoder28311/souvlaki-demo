@@ -25,6 +25,56 @@ export default function CreatedOrderModal() {
       };
   }, []);
 
+  const handleAcceptOrder = async (time: string, order: Order) => {
+    if (!time) return;
+
+    try {
+      const res = await fetch("/api/accept-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: order.id,       // the current order id
+          deliveryTime: time, // the selected time
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to accept order");
+
+      // Update order locally
+      setOrders((prev: Order[]) =>
+        prev.map((o) =>
+          o.id === order.id ? { ...o, status: "pending", deliveryTime: time } : o
+        )
+      );
+
+      setSuccessMap((prev: { [key: number]: boolean }) => ({ ...prev, [order.id]: true }));
+
+      // ✅ Your print logic with custom text
+      const textToPrint = `
+        <div style="font-family: Arial; padding: 20px;">
+          <h2>Order Accepted</h2>
+          <p>Order ID: ${order.id}</p>
+          <p>Delivery Time: ${time}</p>
+          <p>Status: Pending</p>
+          <p>Thank you for your order!</p>
+        </div>
+      `;
+
+      const originalContents = document.body.innerHTML;
+      document.body.innerHTML = textToPrint;
+      window.print();
+      document.body.innerHTML = originalContents;
+      window.location.reload(); // restore events/styles
+
+      // Hide tick after 2 seconds
+      setTimeout(() => {
+        setSuccessMap((prev: { [key: number]: boolean }) => ({ ...prev, [order.id]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
   if (!orders.length) return null;
 
   return (
@@ -33,6 +83,7 @@ export default function CreatedOrderModal() {
         scrollbarWidth: "none", // Firefox
     }}    
     >
+      
       {orders.map((order) => (
         <div className="w-full flex justify-end" key={order.id}>
           <div
@@ -181,42 +232,10 @@ export default function CreatedOrderModal() {
                   <h3 className="text-gray-800 font-semibold mb-2">Χρόνος παράδοσης</h3>
                   <select
                     value={deliveryTime}
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const time = e.target.value;
                       setDeliveryTime(time);
-
-                      if (!time) return;
-
-                      try {
-                        const res = await fetch("/api/accept-order", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            id: order.id,       // the current order id
-                            deliveryTime: time, // the selected time
-                          }),
-                        });
-
-                        if (!res.ok) throw new Error("Failed to accept order");
-
-                        // Update order locally
-                        setOrders((prev) =>
-                          prev.map((o) =>
-                            o.id === order.id
-                              ? { ...o, status: "pending", deliveryTime: time }
-                              : o
-                          )
-                        );
-
-                        setSuccessMap((prev) => ({ ...prev, [order.id]: true }));
-
-                        // Hide tick after 2 seconds
-                        setTimeout(() => {
-                          setSuccessMap((prev) => ({ ...prev, [order.id]: false }));
-                        }, 2000);
-                      } catch (err) {
-                        console.error(err);
-                      }
+                      handleAcceptOrder(time, order);
                     }}
                     className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
                   >

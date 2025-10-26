@@ -6,7 +6,7 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { OrderItem, Option, User } from "../types"; 
+import { OrderItem, Option} from "../types"; 
 import { useCart } from "../wrappers/cartContext";
 
 interface OrderSidebarProps {
@@ -146,7 +146,7 @@ export default function OrderSidebar({
         setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
       }
     }
-  }, [user, setAddress]);
+  }, [user, setAddress, user?.business]);
 
   useEffect(() => {
     const fetchRadius = async () => {
@@ -523,7 +523,7 @@ export default function OrderSidebar({
             
             {/* Modal Header */}
             <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
-              Τρόπος Πληρωμής {user?.distanceToDestination} {validRadius}
+              Τρόπος Πληρωμής
             </h2>
 
             {/* Warning message */}

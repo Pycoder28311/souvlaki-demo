@@ -197,7 +197,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user?.business) {
       fetchRadius();
     }
-  }, []);
+  }, [user?.business, validRadius]);
 
   const getUserAddress = async () => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {

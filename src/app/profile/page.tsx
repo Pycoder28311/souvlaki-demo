@@ -42,7 +42,7 @@ export default function ProfilePage() {
     if (!user?.business) {
       fetchRadius();
     }
-  }, []);
+  }, [user?.business]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);

@@ -2,14 +2,13 @@
 
 import { usePathname } from "next/navigation";
 import Navbar from "../z-components/navigator";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import OrderSidebar from "./cart";
 import EditModal from '../menu/editModal';
 import { OrderItem } from "../types"; 
 import { CartProvider } from "./cartContext";
 import Footer from "../z-components/footer";
 import CartToggleButton from "./cartToggleButton";
-import { User } from "../types";
 
 export default function AppWrapper({ children }: { children: React.ReactNode }) {
   const pathnameRaw = usePathname();

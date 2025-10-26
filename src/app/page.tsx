@@ -114,6 +114,10 @@ export default function Home() {
     }
   };
 
+  const handlePrint = () => {
+    window.print(); // opens the browser print dialog
+  };
+
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       <Head>
@@ -178,6 +182,13 @@ export default function Home() {
           {loading ? 'Φόρτωση...' : 'Πλήρωσε τώρα'}
         </button>
       </div>
+
+      <button
+        onClick={handlePrint}
+        className="bg-blue-500 text-white px-4 py-2 rounded"
+      >
+        Print Page
+      </button>
 
       {/* Menu Section */}
       <section id="menu" className="py-16 bg-white">
