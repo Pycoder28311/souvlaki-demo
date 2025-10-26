@@ -187,7 +187,7 @@ export default function Home() {
         onClick={handlePrint}
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
-        Print Page
+        Print Page here
       </button>
 
       {/* Menu Section */}
