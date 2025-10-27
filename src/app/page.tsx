@@ -9,7 +9,6 @@ import RedSquareCarousel from './z-components/carousel';
 import MenuGrid from "./z-components/offers";
 import { Product } from "./types"; 
 import { useCart } from './wrappers/cartContext';
-import PrintButton from './testPrint';
 
 export default function Home() {
 
@@ -179,14 +178,6 @@ export default function Home() {
           {loading ? 'Φόρτωση...' : 'Πλήρωσε τώρα'}
         </button>
       </div>
-
-      <PrintButton
-        textToPrint={`ΠΑΡΑΓΓΕΛΙΑ #123
-      Προϊόν 1 x2
-      Προϊόν 2 x1
-      -------------------
-      Σύνολο: 25€`}
-      />
 
       {/* Menu Section */}
       <section id="menu" className="py-16 bg-white">

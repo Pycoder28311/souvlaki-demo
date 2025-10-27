@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/pages/api/position-categories/[id].js", "src/pages/api/search-address.js", "src/app/offers.tsx", "src/app/api/offers/route.js", "src/pages/api/update-address.js", "src/app/api/read-all-orders/route.js", "src/app/api/socket.js", "src/pages/api/socket.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/pages/api/position-categories/[id].js", "src/pages/api/search-address.js", "src/app/offers.tsx", "src/app/api/offers/route.js", "src/pages/api/update-address.js", "src/app/api/read-all-orders/route.js", "src/app/api/socket.js", "src/pages/api/socket.js", "src/pages/api/create-payment-intent.js", "src/app/testStripe.tsx", "src/app/api/create-payment-intent/route.js"],
   "exclude": ["node_modules"]
 }

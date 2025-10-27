@@ -114,6 +114,7 @@ export default function CreatedOrderModal() {
 
       setSuccessMap((prev: { [key: number]: boolean }) => ({ ...prev, [order.id]: true }));
 
+      handlePrint(order);
 
       // Hide tick after 2 seconds
       setTimeout(() => {
@@ -281,10 +282,9 @@ export default function CreatedOrderModal() {
                   <select
                     value={deliveryTime}
                     onChange={(e) => {
-                      {/*const time = e.target.value;
+                      const time = e.target.value;
                       setDeliveryTime(time);
-                      handleAcceptOrder(time, order);*/}
-                      handlePrint(order);
+                      handleAcceptOrder(time, order);
                     }}
                     className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
                   >

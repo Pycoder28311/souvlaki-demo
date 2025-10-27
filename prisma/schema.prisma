@@ -72,6 +72,18 @@ model User {
   receivedMessages Message[] @relation("ReceivedMessages")
 }
 
+model PaymentIntent {
+  id            String   @id @default(cuid())
+  stripeId      String   @unique      // Το ID που επιστρέφει το Stripe
+  userId        String?                 // Προαιρετικά αν συνδέεται με χρήστη
+  orderId       String?                 // Προαιρετικά αν συνδέεται με παραγγελία
+  amount        Int                     // Ποσό σε cents
+  currency      String                  // Πχ "eur"
+  status        String                  // "requires_payment_method", "succeeded", "canceled", κλπ
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model PasswordReset {
   id        Int      @id @default(autoincrement())
   token     String   @unique

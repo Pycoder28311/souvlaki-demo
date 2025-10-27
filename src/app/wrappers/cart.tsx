@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { OrderItem, Option} from "../types"; 
 import { useCart } from "../wrappers/cartContext";
+import CheckOutForm from '../checkOut';
 
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
@@ -532,6 +533,8 @@ export default function OrderSidebar({
                 Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.
               </p>
             )}
+
+            <CheckOutForm />
 
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">
