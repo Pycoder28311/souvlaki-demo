@@ -119,11 +119,17 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                   {product.name}
                 </h3>
 
-                {product.offer && (
-                  <p className="text-sm text-red-500 font-semibold mb-1">
-                    Προσφορά!
-                  </p>
-                )}
+                {/* Product Availability Note */}
+                <p className="text-sm text-red-500 font-semibold mb-1">
+                  { !isClickable ? (
+                      "Μη διαθέσιμο"
+                    ) : !productAvailable ? (
+                      `Διαθέσιμο από ${product.openHour} έως ${product.closeHour}`
+                    ) : product.offer ? (
+                      <span className="text-red-500">Προσφορά!</span>
+                    ) : null
+                  }
+                </p>
 
                 <p className="font-bold text-yellow-600 text-lg mb-2 flex items-center gap-2">
                   {product.offer ? (

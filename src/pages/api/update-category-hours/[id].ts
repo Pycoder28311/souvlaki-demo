@@ -23,8 +23,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     })
 
-    console.log(`✅ Updated category ${id} -> Open: ${open}, Close: ${close}`)
-
     return res.status(200).json({
       success: true,
       message: `Hours updated for category ${id}`,

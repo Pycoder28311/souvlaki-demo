@@ -41,6 +41,7 @@ export interface Order {
   items: OrderItem[];
   user: User;
   paid: boolean;
+  paidIn?: string;
   deliveryTime: string;
 }
 
@@ -73,9 +74,7 @@ export default function MyOrdersPage() {
     evtSource.onmessage = (event: MessageEvent) => {
       try {
         const data: { orders: Order[]; products: Product[] } = JSON.parse(event.data);
-        console.log(data)
         setOrders(data.orders);
-        console.log(data)
         setProducts(data.products);
       } catch (err) {
         console.error("Error parsing SSE data:", err);

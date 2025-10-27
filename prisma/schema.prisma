@@ -211,6 +211,7 @@ model ProductOrder {
   status    String      @default("pending") // pending, preparing, delivered, cancelled
   seenRejected Boolean  @default(false)
   paid      Boolean     @default(false)
+  paidIn    String?     @default("door")
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   total     Decimal     @db.Decimal(10,2)

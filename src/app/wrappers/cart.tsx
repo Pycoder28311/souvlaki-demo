@@ -28,7 +28,7 @@ export default function OrderSidebar({
     setHydrated(true); // ✅ mark client as ready
   }, []);
 
-  const handlePayment = async () => {
+  const handlePayment = async (paidIn: string) => {
     try {
       const userId = user?.id; // Replace with current logged-in user id
       const payload = {
@@ -47,7 +47,7 @@ export default function OrderSidebar({
       const res = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({...payload, paidIn: paidIn}),
       });
 
       const data = await res.json();
@@ -96,7 +96,7 @@ export default function OrderSidebar({
       });
       const data = await res.json();
       if (data.url) {
-        sessionStorage.setItem("lastOrder", JSON.stringify(payload));
+        sessionStorage.setItem("lastOrder", JSON.stringify({...payload, paidIn: "online"}));
         orderItems.forEach((item) => removeItem(item));
 
         setIsSidebarOpen(false);
@@ -119,12 +119,12 @@ export default function OrderSidebar({
     handlePaymentStripe();
   };
 
-  const handleClickDoor = () => {
+  const handleClickDoor = (paidIn: string) => {
     if (!user) {
       router.push("/auth/login-options");
       return;
     }
-    handlePayment();
+    handlePayment(paidIn);
   };
 
   const [editingAddress, setEditingAddress] = useState(false);
@@ -226,7 +226,7 @@ export default function OrderSidebar({
       className={`flex flex-col h-full w-full md:w-80 bg-gray-100 p-4 border-l border-gray-200 border-l-2 border-yellow-400 shadow-lg transition-all duration-300
         ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
         fixed right-0 top-[55px] z-50`}
-      style={{ height: `calc(100vh - 55px)` }}
+      style={{ height: `calc(100vh)` }}
     >
       {/* Header with Close Button in same line */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-400 pb-3">
@@ -551,10 +551,17 @@ export default function OrderSidebar({
                   <>
                     <button
                       className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
-                      onClick={handleClickDoor}
+                      onClick={() => handleClickDoor("POS")}
                       disabled={isDisabled}
                     >
-                      Πληρωμή από κοντά
+                      Πληρωμή με κάρτα
+                    </button>
+                    <button
+                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      onClick={() => handleClickDoor("door")}
+                      disabled={isDisabled}
+                    >
+                      Πληρωμή με μετρητά
                     </button>
                     <button
                       className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}

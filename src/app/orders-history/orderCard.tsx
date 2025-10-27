@@ -58,6 +58,7 @@ type Order = {
   items: OrderItem[];
   user: User;
   paid: boolean;
+  paidIn?: string;
   deliveryTime: string;
 }
 

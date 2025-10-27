@@ -84,6 +84,7 @@ export interface Order {
   items: OrderItem[];
   user: User;
   paid: boolean;
+  paidIn?: string;
   deliveryTime: string;
   payment_intent_id: string;
 }
