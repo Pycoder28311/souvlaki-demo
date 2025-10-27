@@ -43,6 +43,7 @@ export interface Order {
   paid: boolean;
   paidIn?: string;
   deliveryTime: string;
+  payment_intent_id?: string;
 }
 
 export default function MyOrdersPage() {

@@ -224,13 +224,29 @@ export default function CreatedOrderModal() {
                   </ul>
                 )}
 
-                <div className="flex justify-between items-center mt-2">
-                    <p className="text-sm text-gray-700 truncate max-w-[full]">
-                    {order.user.address}
-                    </p>
-                    <p className="text-right font-semibold text-gray-800">
+                <p className="text-sm text-gray-700 truncate max-w-[full] mt-2">
+                  Διεύθυνση: {order.user.address}
+                </p>
+                <p className="text-sm text-gray-700 truncate max-w-[full]">
+                  Όροφος: <strong>{order.user.floor}</strong>
+                </p>
+
+                <div className="flex justify-between">
+                  <p className="text-sm text-gray-700 truncate max-w-[full]">
+                    Πληρωμή με:{" "}
+                    <strong>
+                      {order.paidIn === "POS"
+                        ? "POS"
+                        : order.paidIn === "door"
+                        ? "Μετρητά"
+                        : order.paidIn === "online"
+                        ? "Online"
+                        : order.paidIn}
+                    </strong>
+                  </p>
+                  <p className="text-right font-semibold text-gray-800">
                     {Number(order.total).toFixed(2)}€
-                    </p>
+                  </p>
                 </div>
               </Link>
 

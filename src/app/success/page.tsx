@@ -5,19 +5,6 @@ import React from "react";
 import { useEffect } from "react";
 
 export default function SuccessPage() {
-  useEffect(() => {
-    const createOrder = async () => {
-      await fetch("/api/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: sessionStorage.getItem("lastOrder"), // use temp saved order data
-      });
-      sessionStorage.removeItem("lastOrder");
-    };
-
-    // get last order from storage
-    createOrder();
-  }, []);
 
   return (
     <div

@@ -70,9 +70,17 @@ export default function OrderSidebar({
 
   const router = useRouter();
 
+  // frontend
   const handlePaymentStripe = async () => {
     try {
       const userId = user?.id;
+
+      if (!userId || orderItems.length === 0) {
+        alert("Δεν υπάρχουν στοιχεία παραγγελίας ή χρήστη.");
+        return;
+      }
+
+      // Δημιουργούμε το payload για το unified API
       const payload = {
         userId,
         items: orderItems.map((item) => ({
@@ -83,31 +91,33 @@ export default function OrderSidebar({
           options: item.options,
           selectedOptions: item.selectedOptions,
         })),
-        amount: total * 100, // Stripe expects cents
-        paid: true,
+        paidIn: "online",
       };
 
-      const res = await fetch("/api/create-checkout-session", {
+      // Κλήση API
+      const res = await fetch("/api/create-order-and-session", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       const data = await res.json();
-      if (data.url) {
-        sessionStorage.setItem("lastOrder", JSON.stringify({...payload, paidIn: "online"}));
-        orderItems.forEach((item) => removeItem(item));
 
-        setIsSidebarOpen(false);
-        setShowPaymentModal(false);
-
-        window.location.href = data.url;
-      } else {
+      if (!data.success || !data.url) {
         alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
+        return;
       }
-    } catch (error) {
-      console.error("Error creating checkout session:", error);
+
+      // Καθαρισμός cart και κλείσιμο sidebar
+      orderItems.forEach((item) => removeItem(item));
+      setIsSidebarOpen(false);
+      setShowPaymentModal(false);
+
+      // Ανακατεύθυνση στο Stripe Checkout
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("Error creating checkout session:", err);
+      alert("Κάτι πήγε στραβά κατά την πληρωμή.");
     }
   };
 
@@ -226,7 +236,7 @@ export default function OrderSidebar({
       className={`flex flex-col h-full w-full md:w-80 bg-gray-100 p-4 border-l border-gray-200 border-l-2 border-yellow-400 shadow-lg transition-all duration-300
         ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
         fixed right-0 top-[55px] z-50`}
-      style={{ height: `calc(100vh)` }}
+      style={{ height: `calc(100vh - 55px)` }}
     >
       {/* Header with Close Button in same line */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-400 pb-3">
@@ -534,7 +544,7 @@ export default function OrderSidebar({
               </p>
             )}
 
-            <CheckOutForm />
+            <CheckOutForm amount={total}/>{total}
 
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">

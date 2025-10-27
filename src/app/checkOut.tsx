@@ -38,7 +38,7 @@ function CheckoutForm() {
   );
 }
 
-export default function CheckoutPage() {
+export default function CheckoutPage({ amount }: { amount: number }) {
   const [clientSecret, setClientSecret] = useState("");
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function CheckoutPage() {
         const res = await fetch("/api/create-payment-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: 100, currency: "eur" }), // διόρθωση typo
+          body: JSON.stringify({ amount: Number(amount)*100, currency: "eur" }), // διόρθωση typo
         });
 
         const data = await res.json();

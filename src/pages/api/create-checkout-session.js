@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
-      const { userId, items, amount } = req.body;
+      const { userId, items, amount, orderId } = req.body;
 
       if (!items || !userId) {
         return res.status(400).json({ error: "Missing order data" });
@@ -14,10 +14,13 @@ export default async function handler(req, res) {
       if (!amount || amount <= 0) {
         return res.status(400).json({ error: "Invalid amount" });
       }
-
+      console.log(orderId)
 
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
+        payment_intent_data: {
+          metadata: { userId, orderId }, // ✅ metadata στο PaymentIntent
+        },
         line_items: [
           {
             price_data: {
@@ -35,7 +38,7 @@ export default async function handler(req, res) {
         cancel_url: `${req.headers.origin}/cancel`,
       });
 
-      res.status(200).json({ url: session.url });
+      res.status(200).json({ url: session.url, paymentIntentId: session.payment_intent });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }

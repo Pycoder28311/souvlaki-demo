@@ -60,6 +60,7 @@ type Order = {
   paid: boolean;
   paidIn?: string;
   deliveryTime: string;
+  payment_intent_id?: string;
 }
 
 interface Props {
@@ -78,6 +79,7 @@ interface Props {
 export default function OrderCard({ order, products, addToCart, setOrders }: Props) {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [currentRange, setCurrentRange] = useState<string>(order.deliveryTime);
+  const [notification, setNotification] = useState<string | null>(null);
 
   useEffect(() => {
     if (!order.deliveryTime || !order.createdAt) return;
@@ -115,25 +117,34 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
 
   const handleCancel = async () => {
     try {
-      const res = await fetch("/api/cancel-order", {
+      const res = await fetch("/api/refund-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: order.id }),
+        body: JSON.stringify({ orderId: order.id, amount: order.total }),
       });
-      if (!res.ok) throw new Error("Failed to cancel order");
-
+      
+      if (!res.ok) throw new Error("Η ακύρωση απέτυχε.");
+      
       setOrders((prev: Order[]) =>
         prev.map((o) => (o.id === order.id ? { ...o, status: "cancelled" } : o))
       );
+      setNotification(`Η πληρωμή για την παραγγελία #${order.id} ακυρώθηκε με επιτυχία.`);
+      setTimeout(() => setNotification(null), 5000); // εξαφανίζεται μετά από 5 δευτερόλεπτα
+
     } catch (err) {
       console.error(err);
-    } finally {
-      setConfirmCancel(false);
+      setNotification("Κάτι πήγε στραβά κατά την ακύρωση.");
+      setTimeout(() => setNotification(null), 5000);
     }
   };
 
   return (
     <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden">
+      {notification && (
+        <div className="bg-green-100 text-green-800 p-3 rounded mb-4">
+          {notification}
+        </div>
+      )}
       {/* Header */}
       <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <p className="text-gray-700">
