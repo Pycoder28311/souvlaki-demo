@@ -17,6 +17,9 @@ export default async function DataPage() {
     select: {
       id: true,
       name: true,
+      openHour: true,
+      closeHour: true,
+      alwaysClosed: true,
       products: {
         select: {
           id: true,
@@ -25,6 +28,9 @@ export default async function DataPage() {
           offerPrice: true,
           offer: true,
           description: true,
+          openHour: true,
+          closeHour: true,
+          alwaysClosed: true,
           image: {
             select: {
               id: true, // only fetch the image ID
@@ -38,14 +44,18 @@ export default async function DataPage() {
   // Convert Decimal to number and add imageId
   const categories = categoriesFromDb.map((category) => ({
     ...category,
+    openHour: category.openHour ?? undefined,
+    closeHour: category.closeHour ?? undefined,
     products: category.products.map((p) => ({
       ...p,
       categoryId: category.id,
       price: Number(p.price),
       offerPrice: Number(p.offerPrice),
-      imageId: p.image?.id ?? null, // only store the ID
-      image: undefined, // remove full image data
+      imageId: p.image?.id ?? null,
+      image: undefined,
       description: p.description ?? "",
+      openHour: p.openHour ?? undefined,
+      closeHour: p.closeHour ?? undefined,
     })),
   }));
 

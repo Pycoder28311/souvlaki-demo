@@ -33,6 +33,7 @@ export async function GET(req) {
                 include: {
                   product: {
                     include: {
+                      category: true,
                       ingCategories: {
                         include: {
                           ingredients: true,
@@ -53,7 +54,7 @@ export async function GET(req) {
           orders.forEach((order) => {
             order.items.forEach((item) => {
               if (!productMap[item.productId]) {
-                const { id, name, price, imageId, ingCategories } = item.product;
+                const { id, name, price, imageId, ingCategories, category,openHour, closeHour, alwaysClosed } = item.product;
                 productMap[item.productId] = {
                   id,
                   name,
@@ -68,6 +69,20 @@ export async function GET(req) {
                       price: Number(ing.price),
                     })) || [],
                   })) || [],
+                  availability: {
+                    // Κατηγορία
+                    category: {
+                      openHour: category?.openHour ?? "00:00",
+                      closeHour: category?.closeHour ?? "23:59",
+                      alwaysClosed: category?.alwaysClosed ?? false,
+                    },
+                    // Προϊόν
+                    product: {
+                      openHour: openHour ?? "00:00",
+                      closeHour: closeHour ?? "23:59",
+                      alwaysClosed: alwaysClosed ?? false,
+                    },
+                  },
                 };
               }
             });
@@ -84,6 +99,7 @@ export async function GET(req) {
                 price: Number(item.price),
                 quantity: item.quantity,
                 imageId: product.imageId ?? null,
+                availability: product.availability,
                 selectedIngredients: item.ingredients.map((ing) => ({
                   ...ing.ingredient,
                   price: Number(ing.price),

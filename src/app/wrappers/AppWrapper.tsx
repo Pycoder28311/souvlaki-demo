@@ -58,7 +58,6 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/auth/email-reset-input",
     "/auth/reset-password",
     "/live-orders",
-    "/orders-history",
     "/all-orders",
     "/profile",
   ];

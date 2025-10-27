@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE `Category` MODIFY `closeHour` VARCHAR(191) NULL DEFAULT '23:59',
+    MODIFY `openHour` VARCHAR(191) NULL DEFAULT '00:00';
+
+-- AlterTable
+ALTER TABLE `Product` MODIFY `closeHour` VARCHAR(191) NULL DEFAULT '23:59',
+    MODIFY `openHour` VARCHAR(191) NULL DEFAULT '00:00';

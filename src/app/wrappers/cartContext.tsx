@@ -93,7 +93,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           0
         );
 
-        const totalPrice = product.price + ingredientsTotal + optionsTotal;
+        const totalPrice = Number(product.price) + ingredientsTotal + optionsTotal;
 
         return [
           ...prev,

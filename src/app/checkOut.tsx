@@ -29,7 +29,7 @@ function CheckoutForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="px-4">
       <PaymentElement />
       <button disabled={!stripe || loading}>
         {loading ? "Processing..." : "Πληρωμή"}

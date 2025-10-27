@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Order, Product, Ingredient } from "../types";
+import { Product, Ingredient, User } from "../types";
 
 type Option = {
   id: number;
@@ -21,6 +21,44 @@ type IngCategory = {
 
 interface ProductMap {
   [key: number]: Product;
+}
+
+type OrderItem = {
+  id?: number;
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  imageId: number | null;
+  ingredients?: Ingredient[];
+  selectedIngredients: Ingredient[];
+  selectedIngCategories?: IngCategory[];
+  selectedOptions: Option[];
+  options?: Option[];
+  product?: Product;
+  availability?: {
+    category: {
+      openHour: string;    // e.g. "09:00"
+      closeHour: string;   // e.g. "22:00"
+      alwaysClosed: boolean;
+    };
+    product: {
+      openHour: string;
+      closeHour: string;
+      alwaysClosed: boolean;
+    };
+  };
+}
+
+type Order = {
+  id: number;
+  status: string;
+  total: number;
+  createdAt: string;
+  items: OrderItem[];
+  user: User;
+  paid: boolean;
+  deliveryTime: string;
 }
 
 interface Props {
@@ -184,77 +222,96 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       {/* Details */}
       <div className="px-4 pb-4 space-y-3">
         <ul className="space-y-2">
-          {order.items.map((item, index) => (
-            <li
-              key={`${item.productId}-${index}`}
-              className="flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden"
-            >
-              {/* Product Image */}
-              {item.imageId ? (
-                <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
-                  <Image
-                    src={`/api/images/${item.imageId}`}
-                    alt={item.name}
-                    fill
-                    style={{ objectFit: "cover", objectPosition: "top" }}
-                    className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
-                  />
-                </div>
-              ) : (
-                <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
-                  Χωρίς Εικόνα
-                </div>
-              )}
+          {order.items.map((item, index) => {
+            const now = new Date();
+            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const categoryAvailable =
+              item?.availability?.category &&
+              !item.availability.category.alwaysClosed &&
+              currentTime >= item.availability.category.openHour &&
+              currentTime <= item.availability.category.closeHour;
 
-              {/* Order Details */}
-              <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    {item.name}
-                  </h3>
+            // Έλεγχος διαθεσιμότητας προϊόντος
+            const productAvailable =
+              item?.availability?.product &&
+              !item.availability.product.alwaysClosed &&
+              currentTime >= item.availability.product.openHour &&
+              currentTime <= item.availability.product.closeHour;
 
-                  {/* Ingredients */}
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {item.selectedIngredients?.map((ing) => (
-                      <span
-                        key={ing.id}
-                        className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                      >
-                        {ing.name}
-                      </span>
-                    ))}
-                    {item.selectedOptions?.map((opt) => (
-                      <span
-                        key={opt.id}
-                        className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
-                      >
-                        {opt.comment}
-                      </span>
-                    ))}
+            const isAvailable = categoryAvailable && productAvailable;
+
+            return(
+              <li
+                key={`${item.productId}-${index}`}
+                className={`flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden ${isAvailable ? 'hover:-translate-y-2 hover:shadow-lg' : 'opacity-50 cursor-not-allowed'}`}
+              >
+                {/* Product Image */}
+                {item.imageId ? (
+                  <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
+                    <Image
+                      src={`/api/images/${item.imageId}`}
+                      alt={item.name}
+                      fill
+                      style={{ objectFit: "cover", objectPosition: "top" }}
+                      className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
+                    />
                   </div>
+                ) : (
+                  <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
+                    Χωρίς Εικόνα
+                  </div>
+                )}
+
+                {/* Order Details */}
+                <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      {item.name}
+                    </h3>
+
+                    {/* Ingredients */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {item.selectedIngredients?.map((ing) => (
+                        <span
+                          key={ing.id}
+                          className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                        >
+                          {ing.name}
+                        </span>
+                      ))}
+                      {item.selectedOptions?.map((opt) => (
+                        <span
+                          key={opt.id}
+                          className="bg-gray-100 text-gray-700 text-sm px-2 py-1 rounded-full shadow-sm"
+                        >
+                          {opt.comment}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Repeat Order Button */}
+                  <button
+                    className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                    onClick={() => {
+                      if (!isAvailable) return;
+                      const product = products[item.productId];
+                      if (!product) return;
+
+                      addToCart(
+                        product,
+                        item.selectedIngredients || [],
+                        item.selectedIngCategories || [],
+                        item.selectedOptions || [],
+                        item.options || []
+                      );
+                    }}
+                  >
+                    {isAvailable ? "Παράγγειλε ξανά" : "Μη διαθέσιμο"}
+                  </button>
                 </div>
-
-                {/* Repeat Order Button */}
-                <button
-                  className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
-                  onClick={() => {
-                    const product = products[item.productId];
-                    if (!product) return;
-
-                    addToCart(
-                      product,
-                      item.selectedIngredients || [],
-                      item.selectedIngCategories || [],
-                      item.selectedOptions || [],
-                      item.options || []
-                    );
-                  }}
-                >
-                  Παράγγειλε ξανά
-                </button>
-              </div>
-            </li>
-          ))}
+              </li>
+            )})}
         </ul>
       </div>
     </div>

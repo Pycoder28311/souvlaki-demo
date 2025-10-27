@@ -32,7 +32,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
   const [isClient, setIsClient] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
-  const { addToCart, isSidebarOpen, setIsSidebarOpen } = useCart();
+  const { addToCart, isSidebarOpen, setIsSidebarOpen, user } = useCart();
 
   useEffect(() => {
     setIsClient(true);
@@ -424,6 +424,17 @@ export default function Menu({ categories: initialCategories, business }: { cate
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [selectedAdminProduct]);
 
+  const distance = user?.distanceToDestination ?? 0; // σε km
+  const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
+  const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
+
+  // Στρογγυλοποίηση στο πλησιέστερο 5
+  const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
+
+  // Δημιουργία εύρους 5 λεπτών
+  const lower = roundTo5(travelTime);
+  const upper = lower + 5;
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -530,7 +541,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
             {/* Categories & Products */}
             <div
-              className="flex flex-col space-y-12 mt-6 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
+              className="flex flex-col space-y-12 mt-0 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
               style={{
                 transform:
                   isSidebarOpen || (isClient && screenWidth < 1024) // mobile & tablet (lg breakpoint)
@@ -538,6 +549,9 @@ export default function Menu({ categories: initialCategories, business }: { cate
                     : "translateX(20%)",
               }}
             >
+              <p className="text-lg font-semibold text-red-500 mb-4">
+                Χρόνος παράδοσης: {lower}-{upper} λεπτά
+              </p>
               {categories.map((category) => {
                 const filteredProducts = category.products.filter((product) =>
                   product.name.toLowerCase().includes(searchQuery.toLowerCase())

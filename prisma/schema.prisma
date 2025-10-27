@@ -144,6 +144,10 @@ model Category {
   id       Int       @id @default(autoincrement())
   name     String
   position Int       @default(0)
+  openHour  String?  @default("00:00")
+  closeHour String?  @default("23:59")
+  alwaysClosed Boolean      @default(false)
+  
   products Product[]
 }
 
@@ -157,6 +161,10 @@ model Product {
   image       Image?        @relation(fields: [imageId], references: [id])
   imageId     Int?          @unique
   description String?       @default("description")
+  openHour  String?  @default("00:00")
+  closeHour String?  @default("23:59")
+  alwaysClosed Boolean      @default(false)
+
   category    Category      @relation(fields: [categoryId], references: [id])
   ingCategories IngCategory[]
   orderItems  OrderItem[]
@@ -207,6 +215,7 @@ model ProductOrder {
   updatedAt DateTime    @updatedAt
   total     Decimal     @db.Decimal(10,2)
   deliveryTime String?
+  payment_intent_id String?
   user      User        @relation(fields: [userId], references: [id])
   items     OrderItem[]
 }

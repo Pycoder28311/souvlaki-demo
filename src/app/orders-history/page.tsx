@@ -3,8 +3,46 @@
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import OrderCard from "./orderCard";
-import { Order, Product } from "../types";
+import { Product, Ingredient, IngCategory, Option, User } from "../types";
 import { useCart } from "../wrappers/cartContext"; 
+
+export interface OrderItem {
+  id?: number;
+  productId: number;
+  name: string;
+  price: number;
+  quantity: number;
+  imageId: number | null;
+  ingredients?: Ingredient[];
+  selectedIngredients: Ingredient[];
+  selectedIngCategories?: IngCategory[];
+  selectedOptions: Option[];
+  options?: Option[];
+  product?: Product;
+  availability?: {
+    category: {
+      openHour: string;    // e.g. "09:00"
+      closeHour: string;   // e.g. "22:00"
+      alwaysClosed: boolean;
+    };
+    product: {
+      openHour: string;
+      closeHour: string;
+      alwaysClosed: boolean;
+    };
+  };
+}
+
+export interface Order {
+  id: number;
+  status: string;
+  total: number;
+  createdAt: string;
+  items: OrderItem[];
+  user: User;
+  paid: boolean;
+  deliveryTime: string;
+}
 
 export default function MyOrdersPage() {
   const { addToCart, isSidebarOpen } = useCart();
@@ -26,7 +64,7 @@ export default function MyOrdersPage() {
   };
 
   const { user } = useCart();
-  const userId = useState(user?.id);
+  const userId = user?.id;
 
   useEffect(() => {
     if (!userId) return;
@@ -35,7 +73,9 @@ export default function MyOrdersPage() {
     evtSource.onmessage = (event: MessageEvent) => {
       try {
         const data: { orders: Order[]; products: Product[] } = JSON.parse(event.data);
+        console.log(data)
         setOrders(data.orders);
+        console.log(data)
         setProducts(data.products);
       } catch (err) {
         console.error("Error parsing SSE data:", err);

@@ -52,6 +52,9 @@ export interface Product {
   offer: boolean;
   offerPrice?: number;
   description: string;
+  openHour?: string;   // e.g. "09:00"
+  closeHour?: string;
+  alwaysClosed?: boolean;
   image?: ImageType | null;
   imageId?: number | null;
   ingCategories?: IngCategory[];
@@ -82,6 +85,7 @@ export interface Order {
   user: User;
   paid: boolean;
   deliveryTime: string;
+  payment_intent_id: string;
 }
 
 export interface MessageItem {
@@ -94,5 +98,9 @@ export interface MessageItem {
 export interface Category {
   id: number;
   name: string;
+  position?: number;
+  openHour?: string;   // e.g. "09:00"
+  closeHour?: string;
+  alwaysClosed?: boolean;
   products: Product[];
 };
