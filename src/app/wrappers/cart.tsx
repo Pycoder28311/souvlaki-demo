@@ -544,7 +544,7 @@ export default function OrderSidebar({
               </p>
             )}
 
-            <CheckOutForm amount={total}/>{total}
+            <CheckOutForm amount={total}/>
 
             {/* Buttons at the bottom */}
             <div className="px-6 pb-6 border-gray-300 mt-auto">

@@ -29,9 +29,17 @@ function CheckoutForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-4">
-      <PaymentElement />
-      <button disabled={!stripe || loading}>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-md mx-auto p-6 rounded-lg space-y-6"
+    >
+      <PaymentElement className="w-full" />
+
+      <button
+        type="submit"
+        disabled={!stripe || loading}
+        className="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         {loading ? "Processing..." : "Πληρωμή"}
       </button>
     </form>
@@ -63,11 +71,22 @@ export default function CheckoutPage({ amount }: { amount: number }) {
     createPaymentIntent();
   }, []);
 
-  const options = { clientSecret };
+  const options = { clientSecret, 
+    appearance: {
+      variables: {
+        colorPrimary: '#1518a1ff',
+        colorBackground: '#ffffffff',
+        colorText: '#111827',
+        colorDanger: '#ef4444',
+        fontFamily: 'system-ui, sans-serif',
+        borderRadius: '0px',
+        spacingUnit: '4px',
+      },
+    }, };
 
   return (
     clientSecret && (
-      <Elements options={options} stripe={stripePromise}>
+      <Elements options={{ ...options, locale: 'el' }} stripe={stripePromise}>
         <CheckoutForm />
       </Elements>
     )
