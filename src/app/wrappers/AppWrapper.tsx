@@ -24,6 +24,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/cancel",
     "/auth/email-reset-input",
     "/auth/reset-password",
+    "/schedule-manage",
   ];
   
   const noNavbarPrefixPaths = [
@@ -45,6 +46,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/orders-history",
     "/all-orders",
     "/profile",
+    "/schedule-manage",
   ];
 
   const noCartExactPaths = [
@@ -60,6 +62,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/live-orders",
     "/all-orders",
     "/profile",
+    "/schedule-manage",
   ];
 
   const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages", "/live-orders"];

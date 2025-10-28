@@ -549,7 +549,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
                     : "translateX(20%)",
               }}
             >
-              <p className="text-lg font-semibold text-red-500 mb-4">
+              <p className="text-lg font-semibold text-yellow-500 mb-4">
                 Χρόνος παράδοσης: {lower}-{upper} λεπτά
               </p>
               {categories.map((category) => {

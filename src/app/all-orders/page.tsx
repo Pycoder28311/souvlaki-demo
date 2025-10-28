@@ -2,9 +2,21 @@
 
 import { useEffect, useState } from "react";
 import { Order } from "../types"; 
+import { useCart } from "../wrappers/cartContext";
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const { user } = useCart();
+
+  useEffect(() => {
+    if (!user?.business) {
+      // Option 1: using window
+      window.location.href = "/";
+
+      // Option 2: using Next.js router (preferred)
+      // router.push("/");
+    }
+  }, [user]);
 
   useEffect(() => {
     const evtSource = new EventSource("/api/read-all-orders");
@@ -18,6 +30,8 @@ export default function Orders() {
       evtSource.close();
     };
   }, []);
+
+  if (!user?.business) return null;
 
   if (orders.length === 0)
   return (

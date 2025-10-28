@@ -6,7 +6,7 @@ import React from "react";
 import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { OrderItem, Option} from "../types"; 
+import { OrderItem, Option, Product } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
 import CheckOutForm from '../z-components/checkOut';
 import { ArrowLeft } from "lucide-react";
@@ -14,6 +14,11 @@ import { ArrowLeft } from "lucide-react";
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
 }
+
+type ProductWithAvailability = Product & {
+  available: boolean;
+  unavailableReason: string;
+};
 
 export default function OrderSidebar({
   setEditableOrderItem,
@@ -72,65 +77,6 @@ export default function OrderSidebar({
   };
 
   const router = useRouter();
-
-  // frontend
-  const handlePaymentStripe = async () => {
-    try {
-      const userId = user?.id;
-
-      if (!userId || orderItems.length === 0) {
-        alert("Δεν υπάρχουν στοιχεία παραγγελίας ή χρήστη.");
-        return;
-      }
-
-      // Δημιουργούμε το payload για το unified API
-      const payload = {
-        userId,
-        items: orderItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-          ingredients: item.selectedIngredients || [],
-          options: item.options,
-          selectedOptions: item.selectedOptions,
-        })),
-        paidIn: "online",
-      };
-
-      // Κλήση API
-      const res = await fetch("/api/create-order-and-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (!data.success || !data.url) {
-        alert("Σφάλμα κατά τη δημιουργία παραγγελίας: " + data.error);
-        return;
-      }
-
-      // Καθαρισμός cart και κλείσιμο sidebar
-      orderItems.forEach((item) => removeItem(item));
-      setIsSidebarOpen(false);
-      setShowPaymentModal(false);
-
-      // Ανακατεύθυνση στο Stripe Checkout
-      window.location.href = data.url;
-    } catch (err) {
-      console.error("Error creating checkout session:", err);
-      alert("Κάτι πήγε στραβά κατά την πληρωμή.");
-    }
-  };
-
-  const handleClickOnline = () => {
-    if (!user) {
-      router.push("/auth/login-options");
-      return;
-    }
-    handlePaymentStripe();
-  };
 
   const handleClickDoor = (paidIn: string) => {
     if (!user) {
@@ -196,6 +142,63 @@ export default function OrderSidebar({
     }
   };
 
+  const getUnavailableMessage = (reason?: string) => {
+    switch (reason) {
+      case "alwaysClosed":
+        return "Μη διαθέσιμο";
+      case "closedNow":
+        return "Μη διαθέσιμο: εκτός ωραρίου";
+      case "noHoursSet":
+        return "Μη διαθέσιμο: δεν έχουν οριστεί ώρες";
+      default:
+        return "";
+    }
+  };
+
+  type Availability = {
+    available: boolean;
+    unavailableReason?: string;
+  };
+
+  // State
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, Availability>>({});
+
+  const handleCheckHours = async () => {
+    try {
+      setShowPaymentModal(true)
+      const res = await fetch("/api/get-order-hours", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ productIds: orderItems.map(item => item.productId) }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error(data.error);
+        return;
+      }
+
+      data.products.forEach((p: ProductWithAvailability) => {
+        availabilityMap[p.id.toString()] = {
+          available: p.available,
+          unavailableReason: !p.available ? p.unavailableReason : undefined,
+        };
+      });
+
+      setAvailabilityMap({ ...availabilityMap }); // trigger rerender
+
+      // Check if all products are available
+      const allAvailable = data.products.every((p: ProductWithAvailability) => p.available);
+
+      if (!allAvailable) {
+        setShowPaymentModal(false);
+        setPaymentWayModal(false);
+      }
+    } catch (err) {
+      console.error("Error fetching order hours:", err);
+    }
+  };
+
   if (!hydrated) {
     return null;
   }
@@ -242,15 +245,19 @@ export default function OrderSidebar({
               .join("-");
 
             const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
+            const isAvailable = availabilityMap[item.productId.toString()] ?? true;
+            const reason = availabilityMap[item.productId.toString()]?.unavailableReason;
 
             return (
               <div
                 key={key}
                 onClick={() => {
+                  if (!isAvailable) return;
                   setEditableOrderItem(item);
                   setQuantity(item.quantity);
                 }}
-                className="bg-white rounded-xl shadow hover:shadow-lg transition p-2 cursor-pointer flex flex-col gap-2 border-l-4 border-yellow-400"
+                className={`bg-white rounded-xl shadow hover:shadow-lg transition p-2 flex flex-col gap-2 border-l-4 border-yellow-400
+                  ${!isAvailable ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="w-40">
@@ -278,6 +285,7 @@ export default function OrderSidebar({
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
+                    {!isAvailable && <span className="text-red-500 text-sm">{getUnavailableMessage(reason)}</span>}
                     {((item.selectedIngredients && item.selectedIngredients.length > 0) || (item.selectedOptions && item.selectedOptions.length > 0)) && (
                       <div className="mt-1">
                         <button
@@ -342,10 +350,10 @@ export default function OrderSidebar({
       </div>
 
       {/* Total and Checkout */}
-      {orderItems.length > 0 && !user?.business  && (
+      {orderItems.length > 0 && !user?.business && (
         <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
-            onClick={() => setShowPaymentModal(true)}
+            onClick={handleCheckHours}
             className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
           >
             Πλήρωμή {total.toFixed(2)}€

@@ -126,7 +126,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                     ) : !productAvailable ? (
                       `Διαθέσιμο από ${product.openHour} έως ${product.closeHour}`
                     ) : product.offer ? (
-                      <span className="text-red-500">Προσφορά!</span>
+                      <span className="text-green-500">Προσφορά!</span>
                     ) : null
                   }
                 </p>

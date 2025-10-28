@@ -291,6 +291,9 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     />
                     Όχι
                   </label>
+                  {opt.price > 0 && (
+                    <p className="text-sm text-gray-600">Τιμή: {Number(opt.price).toFixed(2)}€</p>
+                  )}
                 </div>
               )}
             </div>

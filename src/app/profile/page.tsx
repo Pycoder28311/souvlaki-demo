@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Pencil, Check, X } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const { user, setUser, setAddress, setShowRadiusNote, validRadius, setValidRadius } = useCart();
@@ -243,6 +244,8 @@ export default function ProfilePage() {
                 Αποθήκευση
               </button>
             </div>
+
+            <Link href="/schedule-manage" >click</Link>
 
             {user?.business && (
               <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
