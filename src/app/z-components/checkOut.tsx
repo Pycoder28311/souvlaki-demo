@@ -136,7 +136,7 @@ export default function CheckoutPage({
     };
 
     createPaymentIntent();
-  }, []);
+  }, [amount, items, paidIn, router, userId]);
 
   const options = { clientSecret, 
     appearance: {

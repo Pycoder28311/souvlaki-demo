@@ -57,7 +57,6 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
     setOpenMin(o.mm)
     setCloseHour(c.hh); 
     setCloseMin(c.mm)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category?.openHour, category?.closeHour])
 
   const handleSubmit = async (e: React.FormEvent) => {

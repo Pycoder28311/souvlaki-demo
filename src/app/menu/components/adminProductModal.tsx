@@ -52,9 +52,10 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
     // if initialHours change, update state
     const o = parse(product?.openHour)
     const c = parse(product?.closeHour)
-    setOpenHour(o.hh); setOpenMin(o.mm)
-    setCloseHour(c.hh); setCloseMin(c.mm)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setOpenHour(o.hh); 
+    setOpenMin(o.mm)
+    setCloseHour(c.hh); 
+    setCloseMin(c.mm)
   }, [product?.openHour, product?.closeHour])
 
   const handleSubmit = async (e: React.FormEvent) => {
