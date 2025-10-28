@@ -148,7 +148,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       {/* Header */}
       <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <p className="text-gray-700">
-          <strong>Σύνολο:</strong> {order.total}€
+          <strong>Σύνολο:</strong> {Number(order.total/100).toFixed(2)}€
         </p>
 
         <span
@@ -235,20 +235,24 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       <div className="px-4 pb-4 space-y-3">
         <ul className="space-y-2">
           {order.items.map((item, index) => {
+            const timeToMinutes = (timeStr: string) => {
+              const [hours, minutes] = timeStr.split(":").map(Number);
+              return hours * 60 + minutes;
+            };
             const now = new Date();
-            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
             const categoryAvailable =
               item?.availability?.category &&
               !item.availability.category.alwaysClosed &&
-              currentTime >= item.availability.category.openHour &&
-              currentTime <= item.availability.category.closeHour;
+              currentMinutes >= timeToMinutes(item.availability.category.openHour) &&
+              currentMinutes <= timeToMinutes(item.availability.category.closeHour);
 
-            // Έλεγχος διαθεσιμότητας προϊόντος
             const productAvailable =
               item?.availability?.product &&
               !item.availability.product.alwaysClosed &&
-              currentTime >= item.availability.product.openHour &&
-              currentTime <= item.availability.product.closeHour;
+              currentMinutes >= timeToMinutes(item.availability.product.openHour) &&
+              currentMinutes <= timeToMinutes(item.availability.product.closeHour);
 
             const isAvailable = categoryAvailable && productAvailable;
 

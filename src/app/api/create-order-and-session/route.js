@@ -77,8 +77,6 @@ export async function POST(req) {
       data: { payment_intent_id: session.id },
     });
 
-    console.log("PaymentIntentId:", session.payment_intent, "OrderId:", newOrder.id, session, session.payment_intent);
-
     return NextResponse.json({
       success: true,
       order: newOrder,

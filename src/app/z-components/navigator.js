@@ -61,7 +61,7 @@ export default function Navbar({scrolled = false, isLive }) {
   return (
     <nav className={`navbar ${isScrolled ? 'navbar-scrolled' : 'navbar-default'}`}>
       {showRadiusNote && (
-        <div className="fixed right-4 z-50 w-80 bg-yellow-200 border-l-4 border-yellow-500 text-yellow-900 p-4 rounded shadow-lg flex justify-between items-center">
+        <div className="fixed right-4 z-50 w-80 bg-yellow-200 border-l-4 border-yellow-500 text-yellow-900 p-4 rounded shadow-lg flex justify-between items-start">
           <span className="font-semibold">
             Παρακαλώ ορίστε τη μέγιστη απόσταση delivery{" "}
             <Link href="/profile" className="underline">

@@ -20,6 +20,15 @@ export default function Orders() {
     };
   }, []);
 
+  if (orders.length === 0)
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <span className="text-gray-700 text-lg font-semibold">
+        Δεν υπάρχουν live παραγγελίες
+      </span>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="p-8 max-w-3xl mx-auto pt-24">

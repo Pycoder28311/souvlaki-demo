@@ -8,7 +8,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { OrderItem, Option} from "../types"; 
 import { useCart } from "../wrappers/cartContext";
-import CheckOutForm from '../checkOut';
+import CheckOutForm from '../z-components/checkOut';
+import { ArrowLeft } from "lucide-react"
 
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
@@ -372,7 +373,7 @@ export default function OrderSidebar({
         <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
+            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
           >
             Πλήρωμή {total.toFixed(2)}€
           </button>
@@ -394,12 +395,15 @@ export default function OrderSidebar({
       {showPaymentModal && (
         <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
-            {/* Modal Header */}
-            <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
-              Επιβεβαίωση Πληρωμής
-            </h2>
-
-            {/* Scrollable Content */}
+            <div className="flex items-center border-b border-gray-300 px-2 pt-4 pb-4">
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="p-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              <h2 className="text-xl font-bold text-gray-800 ml-3">Επιβεβαίωση πληρωμής</h2>
+            </div>
             
             {user?.address && (
               <div className="mb-4 text-gray-700 text-sm flex flex-col p-6">
@@ -503,7 +507,7 @@ export default function OrderSidebar({
                 Σύνολο: {total.toFixed(2)}€
               </p>
               <button
-                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition"
+                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
                 onClick={() => {
                   if (!selectedFloor) {
                     // User has no floor set
@@ -517,12 +521,6 @@ export default function OrderSidebar({
               >
                 Επιβεβαίωση Πληρωμής
               </button>
-              <button
-                className="mt-2 w-full bg-gray-200 text-gray-700 py-3 sm:py-2 rounded-xl hover:bg-gray-300 transition"
-                onClick={() => setShowPaymentModal(false)}
-              >
-                Πίσω
-              </button>
             </div>
           </div>
         </div>
@@ -532,49 +530,60 @@ export default function OrderSidebar({
         <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
           <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
             
-            {/* Modal Header */}
-            <h2 className="text-xl font-bold mb-4 text-gray-800 border-gray-300 pb-2 px-6 pt-6">
-              Τρόπος Πληρωμής
-            </h2>
+            {/* Header */}
+            <div className="flex items-center border-b border-gray-300 px-2 pt-4 pb-4">
+              <button
+                onClick={() => setPaymentWayModal(false)}
+                className="p-2 rounded-lg hover:bg-gray-200 transition"
+              >
+                <ArrowLeft className="w-5 h-5 text-gray-700" />
+              </button>
+              <h2 className="text-xl font-bold text-gray-800 ml-3">Τρόπος Πληρωμής</h2>
+            </div>
 
-            {/* Warning message */}
+            {/* Warning */}
             {isTooFar && (
               <p className="text-red-600 font-semibold px-6 mb-4">
                 Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.
               </p>
             )}
 
-            <CheckOutForm amount={total}/>
-
-            {/* Buttons at the bottom */}
-            <div className="px-6 pb-6 border-gray-300 mt-auto">
-              <p className="mt-4 font-bold text-gray-900 text-lg">
+            {/* Bottom Section */}
+            <div className="pb-6 border-gray-300 mt-auto px-6">
+              {/* Total */}
+              <p className="mb-4 font-bold text-gray-900 text-xl px-1">
                 Σύνολο: {total.toFixed(2)}€
               </p>
 
-              {/* Determine disabled state */}
+              {/* Checkout form directly above buttons */}
+              
+
+              {/* Buttons */}
               {(() => {
                 const isDisabled: boolean = !!(isTooFar);
                 const disabledClasses = "opacity-50 pointer-events-none";
 
                 return (
                   <>
+                    <div className="mt-0 mb-0">
+                      <CheckOutForm amount={total} userId={user?.id} items={orderItems} paidIn="online" isDisabled={isDisabled} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal}/>
+                    </div>
                     <button
-                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
                       onClick={() => handleClickDoor("POS")}
                       disabled={isDisabled}
                     >
                       Πληρωμή με κάρτα
                     </button>
                     <button
-                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
                       onClick={() => handleClickDoor("door")}
                       disabled={isDisabled}
                     >
                       Πληρωμή με μετρητά
                     </button>
                     <button
-                      className={`mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
+                      className={`hidden mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
                       onClick={handleClickOnline}
                       disabled={isDisabled}
                     >
@@ -583,13 +592,6 @@ export default function OrderSidebar({
                   </>
                 );
               })()}
-
-              <button
-                className="mt-2 w-full bg-gray-200 text-gray-700 py-3 sm:py-2 rounded-xl hover:bg-gray-300 transition"
-                onClick={() => setPaymentWayModal(false)}
-              >
-                Πίσω
-              </button>
             </div>
           </div>
         </div>

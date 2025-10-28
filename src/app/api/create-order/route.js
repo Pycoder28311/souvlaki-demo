@@ -69,7 +69,6 @@ export async function POST(req) {
       currency: "eur",
       metadata: { userId, orderId: newOrder.id },
     });
-    console.log(newOrder.id)
 
     await prisma.productOrder.update({
       where: { id: newOrder.id },

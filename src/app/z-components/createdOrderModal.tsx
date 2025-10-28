@@ -125,10 +125,29 @@ export default function CreatedOrderModal() {
     }
   };
 
+  const handleCancel = async (order: Order) => {
+    try {
+      const res = await fetch("/api/refund-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, amount: order.total, status: "rejected" }),
+      });
+      
+      if (!res.ok) throw new Error("Η ακύρωση απέτυχε.");
+      
+      setOrders((prev: Order[]) =>
+        prev.map((o) => (o.id === order.id ? { ...o, status: "cancelled" } : o))
+      );
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (!orders.length) return null;
 
   return (
-    <div className="fixed top-30 right-4 z-50 flex flex-col space-y-3 overflow-y-auto max-h-[80vh] w-full pb-4"
+    <div className="fixed top-30 right-4 z-50 flex flex-col space-y-3 overflow-y-auto max-h-[80vh] w-auto pb-4"
     style={{
         scrollbarWidth: "none", // Firefox
     }}    
@@ -273,7 +292,10 @@ export default function CreatedOrderModal() {
                       <strong className="text-lg text-gray-700">Είστε σίγουροι;</strong>
                       <div className="flex gap-2">
                           <button
-                          onClick={async () => {
+                            onClick={async () => {
+                              if (order.paidIn == "online" && order.payment_intent_id) {
+                                handleCancel(order)
+                              }
                               try {
                               const res = await fetch("/api/reject-order", {
                                   method: "POST",

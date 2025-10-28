@@ -5,7 +5,7 @@ import { Pencil, Check, X } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
 
 export default function ProfilePage() {
-  const { user, setUser, address, setAddress } = useCart();
+  const { user, setUser, address, setAddress, setShowRadiusNote } = useCart();
   const [editingName, setEditingName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -256,8 +256,8 @@ export default function ProfilePage() {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={validRadius ?? ""}
-                    onChange={(e) => setValidRadius(parseFloat(e.target.value))}
+                    value={validRadius ?? 0}
+                    onChange={(e) => setValidRadius(parseFloat(e.target.value || "0"))}
                     placeholder="Ορίστε απόσταση"
                     className={`border p-2 rounded-lg w-full text-center ${
                       !validRadius ? "border-red-500" : "border-gray-300"
@@ -289,6 +289,7 @@ export default function ProfilePage() {
 
                         const data = await res.json(); 
                         alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
+                        setShowRadiusNote(false);
                       } catch (err) {
                         console.error(err);
                         alert("Something went wrong");

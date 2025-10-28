@@ -91,7 +91,7 @@ model PasswordReset {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Message {
@@ -106,8 +106,8 @@ model Message {
   createdAt   DateTime @default(now())
   read        Boolean  @default(false)
 
-  sender   User? @relation("SentMessages", fields: [senderId], references: [id])
-  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender   User? @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
 model Image {
@@ -136,8 +136,8 @@ model Review {
   comment    String?  // προαιρετικό κείμενο
   createdAt  DateTime @default(now())
 
-  reviewer   User     @relation("UserReviewsGiven", fields: [reviewerId], references: [id])
-  reviewed   User     @relation("UserReviewsReceived", fields: [reviewedId], references: [id])
+  reviewer   User     @relation("UserReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewed   User     @relation("UserReviewsReceived", fields: [reviewedId], references: [id], onDelete: Cascade)
 }
 
 model Category {
@@ -158,14 +158,14 @@ model Product {
   offer       Boolean       @default(false)
   offerPrice  Decimal       @default(0) @db.Decimal(10,2)
   price       Decimal       @db.Decimal(10,2)
-  image       Image?        @relation(fields: [imageId], references: [id])
+  image       Image?        @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId     Int?          @unique
   description String?       @default("description")
   openHour  String?  @default("00:00")
   closeHour String?  @default("23:59")
   alwaysClosed Boolean      @default(false)
 
-  category    Category      @relation(fields: [categoryId], references: [id])
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   ingCategories IngCategory[]
   orderItems  OrderItem[]
   favorites   Favorite[]
@@ -179,7 +179,7 @@ model Options {
   comment   String?
   productId Int
   
-  product   Product   @relation(fields: [productId], references: [id])
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
   productOptions   OrderItem[] @relation("ProductOptions")
   selectedByOrders OrderItem[] @relation("OrderItemSelectedOptions")
 }
@@ -190,7 +190,7 @@ model IngCategory {
   name      String
   isRequired  Boolean      @default(false)
 
-  product   Product      @relation(fields: [productId], references: [id])
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   ingredients Ingredient[]
 }
 
@@ -200,7 +200,7 @@ model Ingredient {
   name          String
   price         Decimal   @db.Decimal(10,2)
   image         String?
-  ingCategory   IngCategory @relation(fields: [ingCategoryId], references: [id])
+  ingCategory   IngCategory @relation(fields: [ingCategoryId], references: [id], onDelete: Cascade)
   orderItems    OrderItemIngredient[]
   favoriteIngredients FavoriteIngredient[]
 }
@@ -217,7 +217,7 @@ model ProductOrder {
   total     Decimal     @db.Decimal(10,2)
   deliveryTime String?
   payment_intent_id String?
-  user      User        @relation(fields: [userId], references: [id])
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     OrderItem[]
 }
 
@@ -230,7 +230,7 @@ model OrderItem {
   price       Decimal    @db.Decimal(10,2) // snapshot of product price
   comment     String?    // <-- user comment about this product in the order
   order       ProductOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product     Product    @relation(fields: [productId], references: [id])
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   ingredients OrderItemIngredient[]
   favorites   Favorite[]
   options     Options[] @relation("ProductOptions")
@@ -243,7 +243,7 @@ model OrderItemIngredient {
   ingredientId Int
   name         String  @default("Unknown") 
   price        Decimal    @db.Decimal(10,2) // snapshot of ingredient price
-  orderItem    OrderItem  @relation(fields: [orderItemId], references: [id])
+  orderItem    OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 }
 
@@ -254,9 +254,9 @@ model Favorite {
   orderItemId Int? // optional link to original order item snapshot
   createdAt  DateTime   @default(now())
 
-  user       User       @relation(fields: [userId], references: [id])
-  product    Product    @relation(fields: [productId], references: [id])
-  orderItem  OrderItem? @relation(fields: [orderItemId], references: [id])
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItem  OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
   ingredients FavoriteIngredient[]
 }
 
@@ -264,6 +264,6 @@ model FavoriteIngredient {
   id          Int        @id @default(autoincrement())
   favoriteId  Int
   ingredientId Int
-  favorite    Favorite   @relation(fields: [favoriteId], references: [id])
+  favorite    Favorite   @relation(fields: [favoriteId], references: [id], onDelete: Cascade)
   ingredient  Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
 }

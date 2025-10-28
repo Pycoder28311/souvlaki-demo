@@ -30,6 +30,7 @@ interface CartContextType {
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   showRadiusNote: boolean;
+  setShowRadiusNote: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -302,6 +303,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         address,
         setAddress,
         showRadiusNote,
+        setShowRadiusNote,
       }}
     >
       {children}
