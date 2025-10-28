@@ -1,10 +1,8 @@
 "use client";
 
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useEffect, useContext, useCallback} from "react";
 import { OrderItem, Product, Ingredient, IngCategory, Option, User } from "../types";
 import { usePathname } from "next/navigation";
-
-type DailySchedule = string[];
 
 type Schedule = {
   open: string | null;
@@ -86,6 +84,53 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     Sunday: { open: null, close: null },
   });
 
+  const isShopOpenNow = useCallback(
+    (
+      scheduleData: Record<Weekday, Schedule> = weeklySchedule,
+      overrideData: Override[] = overrides
+    ): boolean => {
+      const now = new Date();
+      const todayStr = now.toISOString().split("T")[0]; 
+
+      // 1️⃣ Check overrides first
+      const overrideToday = overrideData.find((o) => o.date === todayStr);
+      if (overrideToday) {
+        if (!overrideToday.open || !overrideToday.close) return false;
+        const [openH, openM] = overrideToday.open.split(":").map(Number);
+        const [closeH, closeM] = overrideToday.close.split(":").map(Number);
+        const openMinutes = openH * 60 + openM;
+        const closeMinutes = closeH * 60 + closeM;
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+        if (closeMinutes < openMinutes) {
+          // Overnight
+          return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+        }
+
+        return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+      }
+
+      // 2️⃣ Fallback to regular weekly schedule
+      const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
+      const schedule = scheduleData[dayName];
+      if (!schedule?.open || !schedule?.close) return false;
+
+      const [openH, openM] = schedule.open.split(":").map(Number);
+      const [closeH, closeM] = schedule.close.split(":").map(Number);
+      const openMinutes = openH * 60 + openM;
+      const closeMinutes = closeH * 60 + closeM;
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      if (closeMinutes < openMinutes) {
+        // Overnight
+        return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+      }
+
+      return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+    },
+    [weeklySchedule, overrides]
+  );
+
   const [shopOpen, setShopOpen] = useState(true);
   // Fetch weekly schedule from API
   useEffect(() => {
@@ -123,50 +168,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchSchedule();
-  }, []);
-
-  const isShopOpenNow = (
-    scheduleData: Record<Weekday, Schedule> = weeklySchedule,
-    overrideData: Override[] = overrides
-  ): boolean => {
-    const now = new Date();
-    const todayStr = now.toISOString().split("T")[0]; 
-    // 1️⃣ Check overrides first
-    const overrideToday = overrideData.find((o) => o.date === todayStr);
-    if (overrideToday) {
-      if (!overrideToday.open || !overrideToday.close) return false;
-      const [openH, openM] = overrideToday.open.split(":").map(Number);
-      const [closeH, closeM] = overrideToday.close.split(":").map(Number);
-      const openMinutes = openH * 60 + openM;
-      const closeMinutes = closeH * 60 + closeM;
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-      if (closeMinutes < openMinutes) {
-        // Overnight
-        return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-      }
-
-      return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-    }
-
-    // 2️⃣ Fallback to regular weekly schedule
-    const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-    const schedule = scheduleData[dayName];
-    if (!schedule?.open || !schedule?.close) return false;
-
-    const [openH, openM] = schedule.open.split(":").map(Number);
-    const [closeH, closeM] = schedule.close.split(":").map(Number);
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-    if (closeMinutes < openMinutes) {
-      // Overnight
-      return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-    }
-
-    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-  };
+  }, [isShopOpenNow]);
   
   const now = new Date();
   const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;

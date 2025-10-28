@@ -36,7 +36,8 @@ export default function ScheduleManager() {
   const [errors, setErrors] = useState<string[]>([]);
   const { user } = useCart();
 
-  const weekdays: Weekday[] = [
+  useEffect(() => {
+    const weekdays: Weekday[] = [
     "Monday",
     "Tuesday",
     "Wednesday",
@@ -45,8 +46,6 @@ export default function ScheduleManager() {
     "Saturday",
     "Sunday",
     ];
-
-  useEffect(() => {
     const fetchSchedule = async () => {
       try {
         const res = await fetch("/api/schedule/get");
@@ -76,7 +75,7 @@ export default function ScheduleManager() {
     };
 
     fetchSchedule();
-  }, [weekdays]);
+  }, []);
 
   // Validate weekly schedule before saving
   const validateSchedule = () => {
