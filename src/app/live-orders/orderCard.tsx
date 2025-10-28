@@ -15,7 +15,21 @@ const OrderCard: React.FC<Props> = ({ order }) => {
   const [deliveryTime, setDeliveryTime] = useState(""); // input value
   const [successMap, setSuccessMap] = useState(false);
   const [currentRange, setCurrentRange] = useState<string>(order.deliveryTime);
-  const [deliveryTimeEdit, setDeliveryTimeEdit] = useState(""); 
+  const [deliveryTimeEdit, setDeliveryTimeEdit] = useState("");
+  
+  const distance = order.user.distanceToDestination ?? 0; // σε km
+  const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
+  const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
+
+  const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
+  const lower = roundTo5(travelTime);
+  const upper = lower + 5;
+
+  // Δημιουργία επιλογών από το πιθανότερο μέχρι 60 λεπτά
+  const options: string[] = [];
+  for (let t = 20; t <= 60; t += 5) {
+    options.push(`${t}-${t + 5}`);
+  }
 
   useEffect(() => {
     if (!order.deliveryTime || !order.createdAt) return;
@@ -151,7 +165,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
                       autoFocus
                     >
                       <option value="">Επιλέξτε χρόνο καθυστέρησης</option>
-                      {[20, 25, 30, 35, 40, 45, 50, 55].map((min) => (
+                      {[5, 15, 20, 25, 30, 35, 40, 45].map((min) => (
                         <option key={min} value={min}>
                           {min}
                         </option>
@@ -287,14 +301,16 @@ const OrderCard: React.FC<Props> = ({ order }) => {
             className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
             >
                 <option value="">Επιλέξτε χρόνο παράδοσης</option>
-                <option value="20-25">20-25 λεπτά</option>
-                <option value="25-30">25-30 λεπτά</option>
-                <option value="30-35">30-35 λεπτά</option>
-                <option value="35-40">35-40 λεπτά</option>
-                <option value="40-45">40-45 λεπτά</option>
-                <option value="45-50">45-50 λεπτά</option>
-                <option value="50-55">50-55 λεπτά</option>
-                <option value="55-60">55-60 λεπτά</option>
+                <option value={`${lower}-${upper}`}>
+                  Προτεινόμενος χρόνος: {lower}-{upper} λεπτά
+                </option>
+
+                {/* Υπόλοιπες επιλογές */}
+                {options.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt} λεπτά
+                  </option>
+                ))}
             </select>
             {successMap && (
                 <span className="absolute right-2 top-2 text-green-600 font-bold">✓</span>

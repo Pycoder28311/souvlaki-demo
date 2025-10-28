@@ -7,29 +7,37 @@ import { useCart } from "../wrappers/cartContext";
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const { user } = useCart();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!user?.business) {
-      // Option 1: using window
-      window.location.href = "/";
 
-      // Option 2: using Next.js router (preferred)
-      // router.push("/");
-    }
-  }, [user]);
-
-  useEffect(() => {
     const evtSource = new EventSource("/api/read-all-orders");
 
     evtSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       setOrders(data);
+      setLoading(false);
+    };
+
+    evtSource.onerror = () => {
+      setLoading(false);
+      evtSource.close();
     };
 
     return () => {
       evtSource.close();
     };
-  }, []);
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="text-gray-700 text-lg font-semibold">
+          Φόρτωση παραγγελιών...
+        </span>
+      </div>
+    );
+  }
 
   if (!user?.business) return null;
 
@@ -56,15 +64,15 @@ export default function Orders() {
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
               <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
               <span
-                className={`px-3 py-1 font-medium rounded-full ${
+                className={`px-3 py-1 font-medium rounded-xl ${
                   order.status === "completed"
                     ? "bg-green-500 text-white"
                     : order.status === "pending"
                     ? "bg-yellow-500 text-white"
                     : order.status === "rejected"
-                    ? "bg-red-600 text-white"
+                    ? "bg-red-500 text-white"
                     : order.status === "cancelled"
-                    ? "bg-gray-400 text-white"
+                    ? "bg-red-400 text-white"
                     : order.status === "requested"
                     ? "bg-green-500 text-white"
                     : "bg-gray-300 text-white"
@@ -82,13 +90,6 @@ export default function Orders() {
                   ? "Αιτήθηκε"
                   : "Άγνωστο"}
               </span>
-              <div
-                className={`px-3 py-1 rounded-full text-white ${
-                  order?.paid ? "bg-green-500" : "bg-red-500"
-                }`}
-              >
-                {order?.paid ? "Πληρωμή Online" : "Πληρωμή Κατά την Παραλαβή"}
-              </div>
             </div>
 
             {/* Order Details */}
@@ -111,6 +112,25 @@ export default function Orders() {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
+              </p>
+              <p
+                className="mb-4 text-gray-700"
+              >
+                {order.paidIn === "POS" ? (
+                  <>
+                    <strong>Πληρωμή με:</strong> POS
+                  </>
+                ) : order.paidIn === "door" ? (
+                  <>
+                    <strong>Πληρωμή με: </strong>Μετρητά
+                  </>
+                ) : order.paidIn === "online" ? (
+                  <>
+                    <strong>Πληρωμή Online</strong>
+                  </>
+                ) : (
+                  <>{order.paidIn}</>
+                )}
               </p>
 
               {/* Items */}

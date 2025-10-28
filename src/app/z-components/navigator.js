@@ -196,28 +196,28 @@ export default function Navbar({scrolled = false, isLive }) {
         <div className="px-4 pt-10 pb-6 space-y-4 sm:px-3">
           <Link
             href="/"
-            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Αρχική
           </Link>
           <Link
             href="/menu"
-            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Μενού
           </Link>
           <Link
             href="/about"
-            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Σχετικά
           </Link>
           <Link
             href="/contact"
-            className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+            className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
             onClick={() => setMobileOpen(false)}
           >
             Επικοινωνία
@@ -225,7 +225,7 @@ export default function Navbar({scrolled = false, isLive }) {
           {business && (
             <Link 
               href="/live-orders" 
-              className="block px-3 py-2 rounded-md text-xl font-medium hover:bg-gray-600"
+              className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
               onClick={() => setMobileOpen(false)}
             >
               Παραγγελίες Live

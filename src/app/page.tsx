@@ -294,7 +294,7 @@ export default function Home() {
                 <div className="h-16 w-16 mx-auto mb-4 flex items-center justify-center">
                   <span className="text-white">{card.icon}</span>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{card.title}</h3>
+                <h3 className="text-xl font-bold mb-2 text-gray-700">{card.title}</h3>
                 {card.description.split("\n").map((line, idx) => (
                   <p key={idx} className="text-gray-600">
                     {line}

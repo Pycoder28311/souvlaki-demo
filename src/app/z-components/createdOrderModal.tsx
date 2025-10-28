@@ -190,7 +190,6 @@ export default function CreatedOrderModal() {
                       // Optionally remove from local state
                       setOrders((prev) => prev.filter((o) => o.id !== order.id));
 
-                      alert("Η παραγγελία απορρίφθηκε!");
                     } catch (err) {
                       console.error(err);
                       alert("Κάτι πήγε στραβά. Προσπάθησε ξανά.");

@@ -22,16 +22,6 @@ export default function Orders() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!user?.business) {
-      // Option 1: using window
-      window.location.href = "/";
-
-      // Option 2: using Next.js router (preferred)
-      // router.push("/");
-    }
-  }, [user]);
-
   if (!user?.business) return null;
 
   if (orders.length === 0)
