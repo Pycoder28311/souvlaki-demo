@@ -66,7 +66,7 @@ export default function CartToggleButton() {
           onClick={() => setIsSidebarOpen(true)}
           aria-label="Άνοιγμα καλαθιού"
         >
-          <ShoppingCart className="w-9 h-9" />
+          <ShoppingCart className="w-9 h-9" />s
         </button>
       )}
 

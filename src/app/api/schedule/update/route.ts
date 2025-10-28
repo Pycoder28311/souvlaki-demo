@@ -33,7 +33,7 @@ export async function POST(request: Request) {
         .filter(o => o.date && !isNaN(Date.parse(o.date)))
         .map(o => ({
             ...o,
-            date: new Date(o.date), // Μετατρέπουμε το string σε Date
+            date: new Date(o.date),
         }));
 
         if (validOverrides.length > 0) {

@@ -130,12 +130,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     overrideData: Override[] = overrides
   ): boolean => {
     const now = new Date();
-    const todayStr = now.toISOString().split("T")[0]; // "YYYY-MM-DD"
-
+    const todayStr = now.toISOString().split("T")[0]; 
     // 1️⃣ Check overrides first
-    const overrideToday = overrides.find((o) => o.date === todayStr);
+    const overrideToday = overrideData.find((o) => o.date === todayStr);
     if (overrideToday) {
-      if (!overrideToday.open || !overrideToday.close) return false; // closed today
+      if (!overrideToday.open || !overrideToday.close) return false;
       const [openH, openM] = overrideToday.open.split(":").map(Number);
       const [closeH, closeM] = overrideToday.close.split(":").map(Number);
       const openMinutes = openH * 60 + openM;
@@ -152,7 +151,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // 2️⃣ Fallback to regular weekly schedule
     const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-    const schedule = weeklySchedule[dayName];
+    const schedule = scheduleData[dayName];
     if (!schedule?.open || !schedule?.close) return false;
 
     const [openH, openM] = schedule.open.split(":").map(Number);
