@@ -52,23 +52,27 @@ function CheckoutForm({
 
     if (!stripe || !elements) return;
 
-    const { error } = await stripe.confirmPayment({
+    const { error, paymentIntent } = await stripe.confirmPayment({
       elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/success`,
-      },
+      confirmParams: {},
+      redirect: "if_required",
     });
 
     if (error) {
+      console.log(error);
       setLoading(false);
-      return; // stop execution
+      return;
     }
 
-    items.forEach((item) => removeItem(item));
-    setIsSidebarOpen(false);
-    setShowPaymentModal(false);
+    if (paymentIntent?.status === "succeeded") {
+      // Only execute cleanup if payment succeeded
+      items.forEach((item) => removeItem(item));
+      setIsSidebarOpen(false);
+      setShowPaymentModal(false);
+      setLoading(false);
 
-    setLoading(false);
+      window.location.href = "/success";
+    }
   };
   const [showPaymentElement, setShowPaymentElement] = useState(false);
 

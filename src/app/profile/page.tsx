@@ -5,7 +5,7 @@ import { Pencil, Check, X } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
 
 export default function ProfilePage() {
-  const { user, setUser, address, setAddress, setShowRadiusNote, validRadius, setValidRadius } = useCart();
+  const { user, setUser, setAddress, setShowRadiusNote, validRadius, setValidRadius } = useCart();
   const [editingName, setEditingName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -27,7 +27,7 @@ export default function ProfilePage() {
     if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
       setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
     }
-  }, [user, setAddress]);
+  }, [user, setAddress, setValidRadius, validRadius]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);

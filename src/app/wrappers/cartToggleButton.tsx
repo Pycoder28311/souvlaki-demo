@@ -31,7 +31,7 @@ export default function CartToggleButton() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [isSidebarOpen]);
+  }, [isSidebarOpen, setIsSidebarOpen]);
 
   if (isSidebarOpen) return;
 

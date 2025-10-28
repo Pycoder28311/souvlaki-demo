@@ -148,7 +148,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       {/* Header */}
       <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
         <p className="text-gray-700">
-          <strong>Σύνολο:</strong> {Number(order.total/100).toFixed(2)}€
+          <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
         </p>
 
         <span

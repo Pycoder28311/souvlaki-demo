@@ -147,10 +147,13 @@ export default function CreatedOrderModal() {
   if (!orders.length) return null;
 
   return (
-    <div className="fixed top-30 right-4 z-50 flex flex-col space-y-3 overflow-y-auto max-h-[80vh] w-auto pb-4"
-    style={{
-        scrollbarWidth: "none", // Firefox
-    }}    
+    <div 
+      className={`fixed top-30 right-4 z-50 flex flex-col space-y-3 overflow-y-auto max-h-[80vh] pb-4
+        ${deliveryModalOpen === null ? "w-auto" : "w-[50%]"} 
+        sm:w-[50%] w-auto`}
+      style={{
+          scrollbarWidth: "none", // Firefox
+      }}    
     >
       {orders.map((order) => {
         const distance = order.user.distanceToDestination ?? 0; // σε km
@@ -187,7 +190,7 @@ export default function CreatedOrderModal() {
                       // Optionally remove from local state
                       setOrders((prev) => prev.filter((o) => o.id !== order.id));
 
-                      alert("Η παραγγελία επισημάνθηκε ως απορριφθείσα!");
+                      alert("Η παραγγελία απορρίφθηκε!");
                     } catch (err) {
                       console.error(err);
                       alert("Κάτι πήγε στραβά. Προσπάθησε ξανά.");
@@ -251,17 +254,22 @@ export default function CreatedOrderModal() {
                 </p>
 
                 <div className="flex justify-between">
-                  <p className="text-sm text-gray-700 truncate max-w-[full]">
-                    Πληρωμή με:{" "}
-                    <strong>
-                      {order.paidIn === "POS"
-                        ? "POS"
-                        : order.paidIn === "door"
-                        ? "Μετρητά"
-                        : order.paidIn === "online"
-                        ? "Online"
-                        : order.paidIn}
-                    </strong>
+                  <p className="text-sm text-gray-700 truncate max-w-full">
+                    {order.paidIn === "POS" ? (
+                      <>
+                        Πληρωμή με: <strong>POS</strong>
+                      </>
+                    ) : order.paidIn === "door" ? (
+                      <>
+                        Πληρωμή με: <strong>Μετρητά</strong>
+                      </>
+                    ) : order.paidIn === "online" ? (
+                      <>
+                        Πληρωμή <strong>Online</strong>
+                      </>
+                    ) : (
+                      <>{order.paidIn}</>
+                    )}
                   </p>
                   <p className="text-right font-semibold text-gray-800">
                     {Number(order.total).toFixed(2)}€
@@ -275,7 +283,7 @@ export default function CreatedOrderModal() {
                   {confirmReject !== order.id ? (
                       <div className="flex gap-2 mt-3">
                       <button
-                        onClick={() => setDeliveryModalOpen((prev) => (prev === order.id ? null : order.id))}
+                        onClick={() => {setDeliveryModalOpen((prev) => (prev === order.id ? null : order.id))}}
                         className="w-1/2 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition"
                       >
                         Αποδοχή
@@ -284,7 +292,7 @@ export default function CreatedOrderModal() {
                           onClick={() => setConfirmReject(order.id)}
                           className="w-1/2 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm transition"
                       >
-                          Απόρριψη
+                        Απόρριψη
                       </button>
                       </div>
                   ) : (
