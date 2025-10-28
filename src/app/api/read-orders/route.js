@@ -128,6 +128,7 @@ export async function GET(req) {
           // Only send if data changed
           if (sseData !== lastData) {
             lastData = sseData;
+            if (!controller.desiredSize || controller.closed) return;
             controller.enqueue(new TextEncoder().encode(`data: ${sseData}\n\n`));
           }
         } catch (err) {
