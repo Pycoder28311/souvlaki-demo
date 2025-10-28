@@ -23,11 +23,18 @@ export default async function handler(req, res) {
         return res.status(200).json({});
       }
 
+      const businessUser = await prisma.user.findFirst({
+        where: { business: true },
+        select: { validRadius: true },
+      });
+
       // Merge session with user data (without images)
       session.user = { 
         ...session.user, 
         ...user,
       };
+
+      session.validRadius = businessUser?.validRadius ?? null
 
       return res.status(200).json(session);
     } catch (error) {

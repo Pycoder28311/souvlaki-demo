@@ -17,6 +17,7 @@ type CheckoutPageProps = {
   removeItem: (item: OrderItem) => void;
   setIsSidebarOpen: (open: boolean) => void;
   setShowPaymentModal: (show: boolean) => void;
+  onLoaded?: () => void;
 };
 
 type CheckoutFormProps = {
@@ -25,6 +26,7 @@ type CheckoutFormProps = {
   removeItem: (item: OrderItem) => void;
   setIsSidebarOpen: (open: boolean) => void;
   setShowPaymentModal: (show: boolean) => void;
+  onLoaded?: () => void;
 };
 
 
@@ -33,10 +35,16 @@ function CheckoutForm({
   isDisabled, 
   removeItem,
   setIsSidebarOpen,
-  setShowPaymentModal }: CheckoutFormProps) {
+  setShowPaymentModal,
+  onLoaded,
+ }: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (onLoaded) onLoaded(); // 🟢 tell parent when loaded
+  }, [onLoaded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,10 +59,15 @@ function CheckoutForm({
       },
     });
 
-    if (error) alert(error.message);
+    if (error) {
+      setLoading(false);
+      return; // stop execution
+    }
+
     items.forEach((item) => removeItem(item));
     setIsSidebarOpen(false);
     setShowPaymentModal(false);
+
     setLoading(false);
   };
   const [showPaymentElement, setShowPaymentElement] = useState(false);
@@ -69,7 +82,7 @@ function CheckoutForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-md mx-auto p-0 rounded-lg flex flex-col space-y-2 max-h-[50vh] overflow-y-auto overflow-x-hidden"
+      className="max-w-md mx-auto p-0 rounded-lg flex flex-col space-y-2"
     >
       <PaymentElement className="w-full" />
 
@@ -106,7 +119,8 @@ export default function CheckoutPage({
   isDisabled,
   removeItem,
   setIsSidebarOpen,
-  setShowPaymentModal
+  setShowPaymentModal,
+  onLoaded,
 }: CheckoutPageProps) {
   const [clientSecret, setClientSecret] = useState("");
   const router = useRouter();
@@ -154,7 +168,7 @@ export default function CheckoutPage({
   return (
     clientSecret && (
       <Elements options={{ ...options, locale: 'el' }} stripe={stripePromise}>
-        <CheckoutForm isDisabled={isDisabled} items={items} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal}/>
+        <CheckoutForm isDisabled={isDisabled} items={items} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal} onLoaded={onLoaded}/>
       </Elements>
     )
   );

@@ -1,9 +1,37 @@
+"use client"
+
 import React from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "./cartContext";
+import { useEffect } from "react";
 
 export default function CartToggleButton() {
   const { isSidebarOpen, setIsSidebarOpen } = useCart();
+
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+
+    // Only run on mobile (e.g., width <= 768px)
+    if (typeof window !== "undefined" && window.innerWidth > 768) return;
+
+    // Push a dummy state when the sidebar opens
+    window.history.pushState({ sidebar: true }, "");
+
+    const handlePopState = () => {
+      if (isSidebarOpen) {
+        // Close sidebar instead of going back
+        setIsSidebarOpen(false);
+        // Optionally re-push state if needed
+        // window.history.pushState({ sidebar: true }, "");
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isSidebarOpen]);
 
   if (isSidebarOpen) return;
 

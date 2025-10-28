@@ -9,7 +9,7 @@ import Image from "next/image";
 import { OrderItem, Option} from "../types"; 
 import { useCart } from "../wrappers/cartContext";
 import CheckOutForm from '../z-components/checkOut';
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react";
 
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
@@ -24,6 +24,8 @@ export default function OrderSidebar({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentWayModal, setPaymentWayModal] = useState(false);
   const { user, setUser, address, setAddress, selectedFloor, setSelectedFloor } = useCart();
+  const [warning, setWarning] = useState("");
+  const [formLoaded, setFormLoaded] = useState(false);
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
@@ -160,26 +162,6 @@ export default function OrderSidebar({
     }
   }, [user, setAddress, user?.business, setSelectedFloor]);
 
-  useEffect(() => {
-    const fetchRadius = async () => {
-      try {
-        const res = await fetch("/api/business-valid-radius");
-        if (!res.ok) throw new Error("Failed to fetch valid radius");
-
-        const radius: number = await res.json();
-        setValidRadius(radius);
-        if (user?.distanceToDestination != null) {
-          setIsTooFar(user.distanceToDestination > radius);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    if (!user?.business) {
-      fetchRadius();
-    }
-  }, [user?.business, user?.distanceToDestination]);
-
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
 
@@ -194,34 +176,21 @@ export default function OrderSidebar({
 
   const handleUpdate = async () => {
     try {
-      const distanceRes = await fetch("/api/get-distance", {
+
+      const payload = { address: address, email: user?.email };
+      const response = await fetch("/api/update-address", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: address }),
-      });
-
-      const distanceData = await distanceRes.json();
-      const distanceToDestination = distanceData.distanceValue;
-      if (validRadius != null && distanceToDestination > Number(validRadius)) {
-        setIsTooFar(true)
-        alert(
-          `Προειδοποίηση: Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.`
-        );
-      } else {
-        setIsTooFar(false)
-      }
-
-      const payload = { address: address,  distanceToDestination:  distanceToDestination };
-      const response = await fetch("/api/update-user", {
-        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       if (!response.ok) throw new Error("Failed to update user");
 
-      const updatedUser = await response.json();
-      setUser(updatedUser);
+      const data = await response.json();
+      setUser(data.updatedUser);
       setEditingAddress(false);
+      if (validRadius && data.distanceValue > validRadius) {
+        setIsTooFar(true)
+      }
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -236,8 +205,12 @@ export default function OrderSidebar({
    <div
       className={`flex flex-col h-full w-full md:w-80 bg-gray-100 p-4 border-l border-gray-200 border-l-2 border-yellow-400 shadow-lg transition-all duration-300
         ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
-        fixed right-0 top-[55px] z-50`}
-      style={{ height: `calc(100vh - 55px)` }}
+        fixed right-0 top-[55px] z-50 ${showPaymentModal ? "overflow-y-auto overflow-x-hidden" : ""}`}
+      style={{
+        height: `calc(100vh - 55px)`,
+        scrollbarWidth: "thin", // Firefox
+        scrollbarColor: "#a8a8a8ff #e5e7eb", // thumb yellow-400, track gray-200 for Firefox
+      }}
     >
       {/* Header with Close Button in same line */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-400 pb-3">
@@ -394,10 +367,10 @@ export default function OrderSidebar({
 
       {showPaymentModal && (
         <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">
-          <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
+          <div className="bg-gray-100 w-full h-full max-h-full flex flex-col">
             <div className="flex items-center border-b border-gray-300 px-2 pt-4 pb-4">
               <button
-                onClick={() => setShowPaymentModal(false)}
+                onClick={() => {setShowPaymentModal(false); setFormLoaded(false);}}
                 className="p-2 rounded-lg hover:bg-gray-200 transition"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -487,7 +460,7 @@ export default function OrderSidebar({
                           body: JSON.stringify({ floor: selectedFloor, userEmail: user.email }),
                         });
                         if (!res.ok) throw new Error("Failed to update floor");
-                        alert("Ο όροφος ενημερώθηκε επιτυχώς!");
+                        setWarning("Ο όροφος ενημερώθηκε επιτυχώς!");
                       } catch (err) {
                         console.error(err);
                         alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
@@ -498,6 +471,12 @@ export default function OrderSidebar({
                     Αποθήκευση
                   </button>
                 </div>
+
+                {warning && (
+                  <div className="text-red-600 font-semibold mt-4 mb-4">
+                    {warning}
+                  </div>
+                )}
               </div>
             )}
 
@@ -507,14 +486,29 @@ export default function OrderSidebar({
                 Σύνολο: {total.toFixed(2)}€
               </p>
               <button
-                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
+                className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-xl sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
                 onClick={() => {
-                  if (!selectedFloor) {
-                    // User has no floor set
-                    alert("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
+                  if (!user) {
+                    router.push("/auth/signin");
                     return;
                   }
 
+                  if (!selectedFloor) {
+                    setWarning("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
+                    return;
+                  }
+
+                  if (!user?.address) {
+                    setWarning("Παρακαλώ επίλεξε διεύθυνση πριν την πληρωμή.");
+                    return;
+                  } 
+
+                  if (isTooFar) {
+                    setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.");
+                    return;
+                  }
+
+                  setWarning("");
                   // ✅ Proceed if floor exists
                   setPaymentWayModal(true);
                 }}
@@ -528,12 +522,12 @@ export default function OrderSidebar({
 
       {paymentWayModal && (
         <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
-          <div className="bg-gray-100 shadow-lg w-full h-full max-h-full flex flex-col">
+          <div className="bg-gray-100 w-full h-full max-h-full flex flex-col">
             
             {/* Header */}
             <div className="flex items-center border-b border-gray-300 px-2 pt-4 pb-4">
               <button
-                onClick={() => setPaymentWayModal(false)}
+                onClick={() => {setPaymentWayModal(false); setFormLoaded(false)}}
                 className="p-2 rounded-lg hover:bg-gray-200 transition"
               >
                 <ArrowLeft className="w-5 h-5 text-gray-700" />
@@ -541,33 +535,50 @@ export default function OrderSidebar({
               <h2 className="text-xl font-bold text-gray-800 ml-3">Τρόπος Πληρωμής</h2>
             </div>
 
-            {/* Warning */}
-            {isTooFar && (
-              <p className="text-red-600 font-semibold px-6 mb-4">
-                Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.
-              </p>
-            )}
-
             {/* Bottom Section */}
             <div className="pb-6 border-gray-300 mt-auto px-6">
               {/* Total */}
-              <p className="mb-4 font-bold text-gray-900 text-xl px-1">
+              <p className="mb-4 font-bold text-gray-900 text-xl px-1 pt-4">
                 Σύνολο: {total.toFixed(2)}€
               </p>
 
-              {/* Checkout form directly above buttons */}
-              
-
-              {/* Buttons */}
               {(() => {
                 const isDisabled: boolean = !!(isTooFar);
                 const disabledClasses = "opacity-50 pointer-events-none";
 
                 return (
-                  <>
+                  <div>
                     <div className="mt-0 mb-0">
-                      <CheckOutForm amount={total} userId={user?.id} items={orderItems} paidIn="online" isDisabled={isDisabled} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal}/>
+                      <CheckOutForm amount={total} userId={user?.id} items={orderItems} paidIn="online" isDisabled={isDisabled} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal} onLoaded={() => setFormLoaded(true)}/>
                     </div>
+                    {!formLoaded && (
+                      <button
+                        className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold flex items-center justify-center space-x-2 opacity-50 pointer-events-none`}
+                        disabled
+                      >
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                          ></path>
+                        </svg>
+                        <span>Φόρτωση...</span>
+                      </button>
+                    )}
                     <button
                       className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
                       onClick={() => handleClickDoor("POS")}
@@ -582,14 +593,7 @@ export default function OrderSidebar({
                     >
                       Πληρωμή με μετρητά
                     </button>
-                    <button
-                      className={`hidden mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base rounded-xl font-semibold hover:bg-yellow-500 transition ${isDisabled ? disabledClasses : ""}`}
-                      onClick={handleClickOnline}
-                      disabled={isDisabled}
-                    >
-                      Πληρωμή Online
-                    </button>
-                  </>
+                  </div>
                 );
               })()}
             </div>

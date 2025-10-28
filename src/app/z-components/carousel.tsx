@@ -1,7 +1,7 @@
 // src/components/InfiniteRedSquareCarousel.tsx
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import './OfferCard.css';
 
 const RedSquareCarousel: React.FC = () => {
@@ -28,7 +28,7 @@ const RedSquareCarousel: React.FC = () => {
   // Track current index
   const currentIndexRef = useRef(0);
 
-  const moveToIndex = (index: number) => {
+  const moveToIndex = useCallback((index: number) => {
     const container = containerRef.current;
     if (!container) return;
 
@@ -44,9 +44,8 @@ const RedSquareCarousel: React.FC = () => {
         container.style.transform = `translateX(0px)`;
       }, transitionDuration);
     }
-  };
+  }, [squares.length, squareWidth, transitionDuration]);
 
-  // Automatic carousel effect
   useEffect(() => {
     if (isPaused) return;
 
@@ -57,7 +56,7 @@ const RedSquareCarousel: React.FC = () => {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [squares.length, squareWidth, isPaused]);
+  }, [moveToIndex, isPaused, transitionDuration, pauseDuration]);
 
   // Handlers for buttons
   const handlePrev = () => {

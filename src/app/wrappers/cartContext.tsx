@@ -31,6 +31,8 @@ interface CartContextType {
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   showRadiusNote: boolean;
   setShowRadiusNote: React.Dispatch<React.SetStateAction<boolean>>;
+  validRadius: number | null;
+  setValidRadius: React.Dispatch<React.SetStateAction<number | null>>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -182,25 +184,38 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [address, setAddress] = useState("");
   const [showRadiusNote, setShowRadiusNote] = useState(false);
   const [validRadius, setValidRadius] = useState<number | null>(null);
-
+  
   useEffect(() => {
-    const fetchRadius = async () => {
+    const fetchSession = async () => {
       try {
-        const res = await fetch("/api/business-valid-radius");
-        if (!res.ok) throw new Error("Failed to fetch valid radius");
+        const response = await fetch("/api/session");
+        if (!response.ok) throw new Error("Failed to fetch session data");
 
-        const radius: number = await res.json();
-        setValidRadius(radius);
-      } catch (err) {
-        console.error(err);
+        const session = await response.json();
+        if (session?.user) {
+          setUser(session.user);
+
+          if (typeof session.user.address === "string") {
+            setAddress(session.user.address.split(",")[0]);
+          }
+
+          if (session.user.validRadius == null && session.user.business) {
+            setShowRadiusNote(true);
+          }
+        }
+
+        if (session.validRadius) {
+          setValidRadius(session.validRadius)
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
       }
     };
-    if (!user?.business) {
-      fetchRadius();
-    }
-  }, [user?.business, validRadius]);
 
-  const getUserAddress = async () => {
+    fetchSession();
+  }, []);
+
+  const getUserAddress = async (): Promise<string | null> => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       return null;
     }
@@ -228,57 +243,37 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  // 2️⃣ When user exists but has no address → fetch geolocation
   useEffect(() => {
-    const fetchSession = async () => {
+    if (!user || user.address) return;
+
+    const resolveAddress = async () => {
+      const geoAddress = await getUserAddress();
+      if (!geoAddress) return;
+
+      setAddress(geoAddress.split(",")[0]);
+
       try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
+        const response = await fetch("/api/update-address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            address: geoAddress,
+          }),
+        });
 
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-          setAddress(session.user.address ? session.user.address.split(",")[0] : "");
+        if (!response.ok) throw new Error("Failed to update user");
 
-          if (session.user.validRadius == null && session.user.business) {
-            setShowRadiusNote(true);
-          }
-
-          if (!session.user.address) {
-            const address = await getUserAddress();
-            if (address) {
-              const distanceRes = await fetch("/api/get-distance", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ origin: address }),
-              });
-
-              const distanceData = await distanceRes.json();
-              const distanceToDestination = distanceData.distanceValue; 
-
-              if (validRadius != null && distanceToDestination > Number(validRadius)) {
-                alert(
-                  `Προειδοποίηση: Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.`
-                );
-              }
-
-              // Then, update the user with the distance included
-              await fetch("/api/update-address", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: session.user.email, address, distanceToDestination }),
-              });
-              
-              setAddress((session.user.address as string)?.split(",")[0] ?? "");
-            }
-          }
-        }
+        const data = await response.json();
+        setUser(data.updatedUser); // update user state
       } catch (error) {
-        console.error("Error fetching session:", error);
+        console.error("Error updating user:", error);
       }
     };
 
-    fetchSession();
-  }, [validRadius]);
+    resolveAddress();
+  }, [user]);
 
   return (
     <CartContext.Provider
@@ -304,6 +299,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAddress,
         showRadiusNote,
         setShowRadiusNote,
+        validRadius,
+        setValidRadius,
       }}
     >
       {children}

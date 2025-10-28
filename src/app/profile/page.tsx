@@ -5,14 +5,14 @@ import { Pencil, Check, X } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
 
 export default function ProfilePage() {
-  const { user, setUser, address, setAddress, setShowRadiusNote } = useCart();
+  const { user, setUser, address, setAddress, setShowRadiusNote, validRadius, setValidRadius } = useCart();
   const [editingName, setEditingName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [nameInput, setNameInput] = useState("");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<string | undefined>("");
-  const [validRadius, setValidRadius] = useState<number | null>(null);
+  const [warning, setWarning] = useState("");
 
   // 🧠 When user changes (loaded later), update the dependent states
   useEffect(() => {
@@ -24,25 +24,10 @@ export default function ProfilePage() {
       }
       setAddress(user.address ?? "");
     }
-  }, [user, setAddress]);
-
-  useEffect(() => {
-    const fetchRadius = async () => {
-      try {
-        const res = await fetch("/api/business-valid-radius");
-        if (!res.ok) throw new Error("Failed to fetch valid radius");
-
-        const radius: number = await res.json();
-        setValidRadius(radius);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    if (!user?.business) {
-      fetchRadius();
+    if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
+      setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
     }
-  }, [user?.business]);
+  }, [user, setAddress]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -56,45 +41,54 @@ export default function ProfilePage() {
     setResults(data.suggestions || []);
   };
 
-  const handleUpdate = async (field: "name" | "address") => {
+  const handleUpdate = async () => {
     try {
-      const payload =
-        field === "name"
-          ? { name: nameInput }
-          : { address: address };
-
-      // First, get the distance
-      const distanceRes = await fetch("/api/get-distance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ origin: address }),
-      });
-
-      const distanceData = await distanceRes.json();
-      const distanceToDestination = distanceData.distanceValue; 
-
-      if (validRadius != null && distanceToDestination > Number(validRadius)) {
-        alert(
-          `Προειδοποίηση: Η απόσταση προς τον προορισμό υπερβαίνει την δυνατή απόσταση παραγγελίας.`
-        );
-      }
+      const payload = { name: nameInput }
 
       // Then, update the user with the distance included
       const response = await fetch("/api/update-user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...payload,
-          distanceToDestination, // add the distance
-        }),
+        body: JSON.stringify({...payload,}),
       });
 
       const updatedUser = await response.json();
 
       setUser(updatedUser);
+      setEditingName(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
 
-      if (field === "name") setEditingName(false);
-      else setEditingAddress(false);
+  const handleUpdateAddress = async () => {
+    try {
+      const addressToSend = query?.trim() || results[0]?.trim();
+
+      if (!addressToSend || addressToSend.trim().length === 0) {
+        setWarning("Παρακαλώ εισάγετε μια έγκυρη διεύθυνση.");
+        return;
+      }
+
+      const payload = { address: addressToSend, email: user?.email };
+      const response = await fetch("/api/update-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to update user");
+
+      const data = await response.json();
+      
+      setUser(data.updatedUser);
+      setAddress(data.updatedUser.address)
+      setEditingAddress(false);
+      setWarning("");
+      setQuery("")
+      if (validRadius && data.distanceValue > validRadius) {
+        setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
+      }
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -130,7 +124,7 @@ export default function ProfilePage() {
                 className="border border-gray-300 rounded-xl p-3 w-auto text-center focus:ring-2 focus:ring-blue-400"
                 />
                 <button
-                onClick={() => handleUpdate("name")}
+                onClick={handleUpdate}
                 className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
                 >
                 <Check className="w-5 h-5" />
@@ -166,7 +160,7 @@ export default function ProfilePage() {
                     className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-400"
                 />
                 <button
-                    onClick={() => handleUpdate("address")}
+                    onClick={handleUpdateAddress}
                     className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
                 >
                     <Check className="w-5 h-5" />
@@ -197,8 +191,6 @@ export default function ProfilePage() {
                     ))}
                 </ul>
                 )}
-
-                {user?.address && <p className="mt-2 text-gray-700">Επιλεγμένη Διεύθυνση: {user?.address}</p>}
             </div>
             ) : (
             <div className="flex items-center justify-center gap-2 max-w-full mb-4">
@@ -210,6 +202,12 @@ export default function ProfilePage() {
                 <Pencil className="w-5 h-5" />
                 </button>
             </div>
+            )}
+
+            {warning && (
+              <div className="text-red-600 font-semibold mt-4 mb-4">
+                {warning}
+              </div>
             )}
             <div className="flex items-center gap-2 mt-4">
               <select
