@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Product, Ingredient, User } from "../types";
+import { useCart } from "../wrappers/cartContext";
 
 type Option = {
   id: number;
@@ -80,6 +81,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [currentRange, setCurrentRange] = useState<string>(order.deliveryTime);
   const [notification, setNotification] = useState<string | null>(null);
+  const { shopOpen } =useCart();
 
   useEffect(() => {
     if (!order.deliveryTime || !order.createdAt) return;
@@ -310,7 +312,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                   <button
                     className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                     onClick={() => {
-                      if (!isAvailable) return;
+                      if (!isAvailable || shopOpen) return;
                       const product = products[item.productId];
                       if (!product) return;
 
@@ -323,7 +325,11 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                       );
                     }}
                   >
-                    {isAvailable ? "Παράγγειλε ξανά" : "Μη διαθέσιμο"}
+                    {shopOpen
+                      ? isAvailable
+                        ? "Παράγγειλε ξανά"
+                        : "Μη διαθέσιμο"
+                      : "Το κατάστημα είναι κλειστό"}
                   </button>
                 </div>
               </li>

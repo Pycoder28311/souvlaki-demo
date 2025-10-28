@@ -23,7 +23,7 @@ type ProductWithAvailability = Product & {
 export default function OrderSidebar({
   setEditableOrderItem,
 }: OrderSidebarProps) {
-  const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen } = useCart();
+  const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen, shopOpen } = useCart();
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -35,6 +35,13 @@ export default function OrderSidebar({
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
   }, []);
+
+  useEffect(() => {
+    if (!shopOpen) {
+      setShowPaymentModal(false);
+      setPaymentWayModal(false);
+    }
+  }, [shopOpen]);
 
   const handlePayment = async (paidIn: string) => {
     try {

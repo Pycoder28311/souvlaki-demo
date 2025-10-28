@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Minus, Plus, X } from "lucide-react"
 import { Ingredient, IngCategory, Option, Product } from "../types";
 import ProductDetail from "./components/productDetails";
+import { useCart } from "../wrappers/cartContext";
 
 type ModalProps = {
   business?: boolean;
@@ -26,6 +27,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
   const [message, setMessage] = useState("");
   const [openCategories, setOpenCategories] = useState<Record<number, boolean>>({});
   const [openOptions, setOpenOptions] = useState<Record<number, boolean>>({});
+  const { shopOpen } = useCart();
 
   // Toggle function
   const toggleCategory = (catId: number) => {
@@ -551,7 +553,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
           {/* Add to cart button */}
           <button
             onClick={() => {
-              if (!product) return;
+              if (!product ||!shopOpen) return;
 
               // Find the first required category missing selection
               const missingCat = (ingCategories ?? []).find(
@@ -587,8 +589,17 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
             }}
             className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
           >
-            <span className="sm:hidden">Προσθήκη</span>
-            <span className="hidden sm:inline">Προσθήκη στο Καλάθι</span>
+            {shopOpen ? (
+              <>
+                <span className="sm:hidden">Προσθήκη</span>
+                <span className="hidden sm:inline">Προσθήκη στο Καλάθι</span>
+              </>
+            ) : (
+              <>
+                <span className="sm:hidden">Κλειστό</span>
+                <span className="hidden sm:inline">Το κατάστημα είναι κλειστό</span>
+              </>
+            )}
           </button>
         </div>
       </div>

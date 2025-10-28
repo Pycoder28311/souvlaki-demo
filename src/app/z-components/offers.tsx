@@ -37,7 +37,7 @@ export default function MenuGrid({
 }: ProductModalProps) {
   const [menuItems, setMenuItems] = useState<ProductWithCategory[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user } = useCart();
+  const { user, shopOpen } = useCart();
 
   useEffect(() => {
     async function fetchProducts() {
@@ -127,13 +127,18 @@ export default function MenuGrid({
               {/* Button */}
               <button
                 onClick={() => {
+                  if (!shopOpen || !isAvailable) return;
                   if (user?.business && isAvailable) setSelectedProduct(item);
                 }}
                 disabled={!isAvailable}
                 className={`mt-auto w-full rounded-lg text-white px-4 py-2 font-semibold transition-colors
                             ${isAvailable ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
               >
-                {isAvailable ? 'Προσθήκη στο Καλάθι' : 'Μη διαθέσιμο'}
+                {shopOpen
+                  ? isAvailable
+                    ? 'Προσθήκη στο Καλάθι'
+                    : 'Μη διαθέσιμο'
+                  : 'Το κατάστημα είναι κλειστό'}
               </button>
             </div>
           </div>

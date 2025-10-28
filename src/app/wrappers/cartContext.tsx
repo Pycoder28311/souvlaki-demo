@@ -4,6 +4,13 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { OrderItem, Product, Ingredient, IngCategory, Option, User } from "../types";
 import { usePathname } from "next/navigation";
 
+type DailySchedule = string[];
+
+type Schedule = {
+  open: string | null;
+  close: string | null;
+};
+
 interface CartContextType {
   orderItems: OrderItem[];
   addToCart: (
@@ -33,7 +40,32 @@ interface CartContextType {
   setShowRadiusNote: React.Dispatch<React.SetStateAction<boolean>>;
   validRadius: number | null;
   setValidRadius: React.Dispatch<React.SetStateAction<number | null>>;
+  shopOpen: boolean;      // ✅ probably better as boolean
+  schedule: Schedule;
 }
+
+type Weekday =
+  | "Monday"
+  | "Tuesday"
+  | "Wednesday"
+  | "Thursday"
+  | "Friday"
+  | "Saturday"
+  | "Sunday";
+
+type DayFromAPI = {
+  id: number;
+  dayOfWeek: Weekday;
+  openHour: string | null;
+  closeHour: string | null;
+  alwaysClosed: boolean;
+};
+
+type Override = {
+  date: string;       // ISO string "YYYY-MM-DD"
+  open: string | null;
+  close: string | null;
+};
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -42,6 +74,104 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw ?? ""; // default to empty string
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
+  const [overrides, setOverrides] = useState<Override[]>([])
+
+  const [weeklySchedule, setWeeklySchedule] = useState<Record<Weekday, Schedule>>({
+    Monday: { open: null, close: null },
+    Tuesday: { open: null, close: null },
+    Wednesday: { open: null, close: null },
+    Thursday: { open: null, close: null },
+    Friday: { open: null, close: null },
+    Saturday: { open: null, close: null },
+    Sunday: { open: null, close: null },
+  });
+
+  const [shopOpen, setShopOpen] = useState(true);
+  // Fetch weekly schedule from API
+  useEffect(() => {
+    const fetchSchedule = async () => {
+      try {
+        const res = await fetch("/api/schedule/get");
+        const data = await res.json();
+
+        if (data.weekly) {
+          const scheduleMap: Record<Weekday, Schedule> = {
+            Monday: { open: null, close: null },
+            Tuesday: { open: null, close: null },
+            Wednesday: { open: null, close: null },
+            Thursday: { open: null, close: null },
+            Friday: { open: null, close: null },
+            Saturday: { open: null, close: null },
+            Sunday: { open: null, close: null },
+          };
+
+          data.weekly.forEach((day: DayFromAPI) => {
+            scheduleMap[day.dayOfWeek as Weekday] = {
+              open: day.openHour || null,
+              close: day.closeHour || null,
+            };
+          });
+
+          setWeeklySchedule(scheduleMap);
+          setOverrides(data.overrides);
+          setShopOpen(isShopOpenNow(scheduleMap, data.overrides));
+        }
+      } catch (err) {
+        console.error("Failed to fetch schedule:", err);
+        setShopOpen(false);
+      }
+    };
+
+    fetchSchedule();
+  }, []);
+
+  const isShopOpenNow = (
+    scheduleData: Record<Weekday, Schedule> = weeklySchedule,
+    overrideData: Override[] = overrides
+  ): boolean => {
+    const now = new Date();
+    const todayStr = now.toISOString().split("T")[0]; // "YYYY-MM-DD"
+
+    // 1️⃣ Check overrides first
+    const overrideToday = overrides.find((o) => o.date === todayStr);
+    if (overrideToday) {
+      if (!overrideToday.open || !overrideToday.close) return false; // closed today
+      const [openH, openM] = overrideToday.open.split(":").map(Number);
+      const [closeH, closeM] = overrideToday.close.split(":").map(Number);
+      const openMinutes = openH * 60 + openM;
+      const closeMinutes = closeH * 60 + closeM;
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      if (closeMinutes < openMinutes) {
+        // Overnight
+        return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+      }
+
+      return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+    }
+
+    // 2️⃣ Fallback to regular weekly schedule
+    const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
+    const schedule = weeklySchedule[dayName];
+    if (!schedule?.open || !schedule?.close) return false;
+
+    const [openH, openM] = schedule.open.split(":").map(Number);
+    const [closeH, closeM] = schedule.close.split(":").map(Number);
+    const openMinutes = openH * 60 + openM;
+    const closeMinutes = closeH * 60 + closeM;
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    if (closeMinutes < openMinutes) {
+      // Overnight
+      return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
+    }
+
+    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
+  };
+  
+  const now = new Date();
+  const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
+  const todaySchedule: Schedule = weeklySchedule[dayName];
 
   useEffect(() => {
     try {
@@ -63,6 +193,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     selectedOptions: Option[],
     options: Option[]
   ) => {
+    if (!shopOpen) return;
     setOrderItems((prev) => {
       const existing = prev.find((item) => {
         if (item.productId !== product.id) return false;
@@ -301,6 +432,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setShowRadiusNote,
         validRadius,
         setValidRadius,
+
+        shopOpen,               // keep as is
+        schedule: todaySchedule,
       }}
     >
       {children}

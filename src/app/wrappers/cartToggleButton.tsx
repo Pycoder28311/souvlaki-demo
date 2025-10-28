@@ -3,76 +3,10 @@
 import React from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "./cartContext";
-import { useEffect, useState } from "react";
-
-type Weekday =
-  | "Monday"
-  | "Tuesday"
-  | "Wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday"
-  | "Sunday";
-
-type Schedule = {
-  open: string | null;
-  close: string | null;
-};
-
-type DayFromAPI = {
-  id: number;
-  dayOfWeek: Weekday;
-  openHour: string | null;
-  closeHour: string | null;
-  alwaysClosed: boolean;
-};
+import { useEffect } from "react";
 
 export default function CartToggleButton() {
-  const { isSidebarOpen, setIsSidebarOpen } = useCart();
-  const [weeklySchedule, setWeeklySchedule] = useState<Record<Weekday, Schedule>>({
-    Monday: { open: null, close: null },
-    Tuesday: { open: null, close: null },
-    Wednesday: { open: null, close: null },
-    Thursday: { open: null, close: null },
-    Friday: { open: null, close: null },
-    Saturday: { open: null, close: null },
-    Sunday: { open: null, close: null },
-  });
-
-  // Fetch weekly schedule from API
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const res = await fetch("/api/schedule/get");
-        const data = await res.json();
-
-        if (data.weekly) {
-          const scheduleMap: Record<Weekday, Schedule> = {
-            Monday: { open: null, close: null },
-            Tuesday: { open: null, close: null },
-            Wednesday: { open: null, close: null },
-            Thursday: { open: null, close: null },
-            Friday: { open: null, close: null },
-            Saturday: { open: null, close: null },
-            Sunday: { open: null, close: null },
-          };
-
-          data.weekly.forEach((day: DayFromAPI) => {
-            scheduleMap[day.dayOfWeek as Weekday] = {
-              open: day.openHour || null,
-              close: day.closeHour || null,
-            };
-          });
-
-          setWeeklySchedule(scheduleMap);
-        }
-      } catch (err) {
-        console.error("Failed to fetch schedule:", err);
-      }
-    };
-
-    fetchSchedule();
-  }, []);
+  const { isSidebarOpen, setIsSidebarOpen, shopOpen, schedule  } = useCart();
 
   useEffect(() => {
     if (!isSidebarOpen) return;
@@ -99,31 +33,6 @@ export default function CartToggleButton() {
     };
   }, [isSidebarOpen, setIsSidebarOpen]);
 
-  const isShopOpenNow = (): boolean => {
-    const now = new Date();
-    const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-    const schedule = weeklySchedule[dayName];
-    if (!schedule?.open || !schedule?.close) return false;
-
-    const [openH, openM] = schedule.open.split(":").map(Number);
-    const [closeH, closeM] = schedule.close.split(":").map(Number);
-    const openMinutes = openH * 60 + openM;
-    const closeMinutes = closeH * 60 + closeM;
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-    if (closeMinutes < openMinutes) {
-      // Overnight
-      return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-    }
-
-    return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-  };
-  
-  const shopOpen = isShopOpenNow();
-  const now = new Date();
-  const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-  const todaySchedule = weeklySchedule[dayName];
-
   if (isSidebarOpen) return;
 
   return (
@@ -136,11 +45,11 @@ export default function CartToggleButton() {
               <span className="text-red-600">🚫 Το κατάστημα είναι κλειστό</span>
             </h3>
 
-            {todaySchedule?.open ? (
+            {schedule?.open ? (
               <p className="text-sm text-gray-600">
                 Ώρες λειτουργίας σήμερα:{" "}
                 <span className="font-medium text-gray-800">
-                  {todaySchedule.open} - {todaySchedule.close}
+                  {schedule.open} - {schedule.close}
                 </span>
               </p>
             ) : (
@@ -167,7 +76,7 @@ export default function CartToggleButton() {
           className="
             md:hidden fixed bottom-4 left-4 right-4 px-6 py-3 bg-green-600 text-white
             flex items-center justify-center rounded-lg z-40
-            text-lg font-semibold shadow-lg hover:bg-green-700 active:bg-green-800
+            text-xl font-semibold shadow-lg hover:bg-green-700 active:bg-green-800
             transition-colors duration-200
           "
           onClick={() => setIsSidebarOpen(true)}
@@ -178,12 +87,13 @@ export default function CartToggleButton() {
       ) : (
         <div
           className="
-            md:hidden fixed bottom-4 left-4 right-4 px-6 py-3 bg-red-600 text-white
+            md:hidden fixed bottom-4 left-4 right-4 px-6 py-3 bg-gray-400 text-white
             flex items-center justify-center rounded-lg z-40
-            text-lg font-semibold shadow-lg
+            text-xl font-semibold shadow-lg
           "
         >
-          🚫 Το κατάστημα είναι κλειστό
+          Το κατάστημα είναι κλειστό
+          <ShoppingCart className="w-8 h-8 ml-2" />
         </div>
       )}
     </>

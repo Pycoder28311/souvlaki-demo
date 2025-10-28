@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Pencil, Check, X } from "lucide-react";
+import { Pencil, Check, X, Calendar } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
 import Link from "next/link";
 
@@ -210,6 +210,7 @@ export default function ProfilePage() {
                 {warning}
               </div>
             )}
+
             <div className="flex items-center gap-2 mt-4">
               <select
                 value={selectedFloor || ""}
@@ -244,8 +245,6 @@ export default function ProfilePage() {
                 Αποθήκευση
               </button>
             </div>
-
-            <Link href="/schedule-manage" >click</Link>
 
             {user?.business && (
               <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
@@ -301,6 +300,14 @@ export default function ProfilePage() {
                     Αποθήκευση
                   </button>
                 </div>
+                <Link
+                  href="/schedule-manage"
+                  title="Επεξεργασία ωρών λειτουργίας του καταστήματος"
+                  className="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors mt-4"
+                >
+                  Επεξεργασία ωρών λειτουργίας
+                  <Calendar className="w-5 h-5 ml-2" />
+                </Link>
               </div>
             )}
         </div>
