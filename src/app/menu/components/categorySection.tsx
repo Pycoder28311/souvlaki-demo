@@ -61,7 +61,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
       <div className="flex flex-col mb-4">
         {/* Header: όνομα + κουμπί */}
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">{category.name}</h2>
+          <h2 className="text-2xl font-bold text-black">{category.name}</h2>
 
           {business && (
             <button
