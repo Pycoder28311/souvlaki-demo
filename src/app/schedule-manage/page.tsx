@@ -26,6 +26,9 @@ interface Override {
   date: string;
   openHour: string | null;
   closeHour: string | null;
+  prevOpenHour: string | null,   // keep these so logic is consistent
+  prevCloseHour: string | null,
+  recurringYearly?: boolean; 
   alwaysClosed: boolean;
 }
 
@@ -35,6 +38,7 @@ export default function ScheduleManager() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const { user } = useCart();
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
     const weekdays: Weekday[] = [
@@ -91,24 +95,67 @@ export default function ScheduleManager() {
     return missing.length === 0;
   };
 
+  const checkDuplicateOverrides = (): boolean => { 
+    const dates = overrides.map((o) => o.date); 
+    const uniqueDates = new Set(dates); 
+    if (uniqueDates.size !== dates.length) { 
+      setError("⚠️ Υπάρχουν δύο ή περισσότερες επιλογές με την ίδια ημερομηνία. Αλλάξτε την."); 
+      return true; // duplicates exist 
+    } 
+    setError(""); // no duplicates 
+    return false; 
+  };
+
   const handleSave = async () => {
-    if (!validateSchedule()) return alert("⚠️ Συμπλήρωσε τις ώρες για όλες τις ημέρες.");
+    // Clear previous error
+    setError("");
+
+    if (checkDuplicateOverrides()) return;
+
+    if (!validateSchedule()) {
+      setError("⚠️ Συμπλήρωσε τις ώρες για όλες τις ημέρες.");
+      return;
+    }
 
     setLoading(true);
-    const res = await fetch("/api/schedule/update", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ weekly, overrides }),
-    });
-    setLoading(false);
-    if (res.ok) alert("✅ Το ωράριο αποθηκεύτηκε!");
-    else alert("❌ Σφάλμα κατά την αποθήκευση.");
+
+    try {
+      // ✅ Clean overrides before saving
+      const cleanedOverrides = overrides.map(({ prevOpenHour: _1, prevCloseHour: _2, ...rest }) => rest);
+
+      const res = await fetch("/api/schedule/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weekly, overrides: cleanedOverrides }),
+      });
+
+      if (!res.ok) {
+        setError("❌ Σφάλμα κατά την αποθήκευση.");
+      } else {
+        // ✅ Optionally show a success message in HTML
+        setError(""); // clear any previous error
+        alert("✅ Το ωράριο αποθηκεύτηκε!"); // or you can replace alert with a UI message
+      }
+    } catch (err) {
+      console.error(err);
+      setError("❌ Σφάλμα κατά την αποθήκευση.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addOverride = () =>
     setOverrides([
       ...overrides,
-      { date: new Date().toISOString().split("T")[0], openHour: "", closeHour: "", alwaysClosed: false },
+      {
+        date: new Date().toISOString().split("T")[0],
+        openHour: "",
+        closeHour: "",
+        prevOpenHour: "",   // keep these so logic is consistent
+        prevCloseHour: "",
+        alwaysClosed: true, // ✅ start as closed by default   // closed by default
+        recurringYearly: false, 
+      },
     ]);
 
   const removeOverride = (index: number) =>
@@ -207,6 +254,7 @@ export default function ScheduleManager() {
             + Προσθήκη
           </button>
         </h3>
+        {error && <div className="text-red-600 py-2">{error}</div>}
         <div className="space-y-3">
           {overrides.map((o, i) => (
             <div key={i} className="flex flex-wrap items-center gap-3 border-b pb-2">
@@ -254,15 +302,42 @@ export default function ScheduleManager() {
                   checked={o.alwaysClosed}
                   onChange={(e) =>
                     setOverrides((list) =>
-                      list.map((d, idx) =>
-                        idx === i
-                          ? { ...d, alwaysClosed: e.target.checked }
-                          : d
-                      )
+                      list.map((d, idx) => {
+                        if (idx !== i) return d;
+
+                        const nowClosed = e.target.checked;
+
+                        // Closing: save any existing hours to prev* and clear the visible fields
+                        if (nowClosed) {
+                          return {
+                            ...d,
+                            alwaysClosed: true,
+                            prevOpenHour: d.openHour || d.prevOpenHour || "",
+                            prevCloseHour: d.closeHour || d.prevCloseHour || "",
+                            openHour: "",
+                            closeHour: "",
+                          };
+                        }
+
+                        // Re-opening: restore prev* if present, otherwise use defaults,
+                        // but don't overwrite if some hours were already present.
+                        const restoredOpen = d.prevOpenHour || d.openHour || "09:00";
+                        const restoredClose = d.prevCloseHour || d.closeHour || "17:00";
+
+                        return {
+                          ...d,
+                          alwaysClosed: false,
+                          openHour: restoredOpen,
+                          closeHour: restoredClose,
+                          // optionally clear prev* if you no longer need them:
+                          // prevOpenHour: "",
+                          // prevCloseHour: "",
+                        };
+                      })
                     )
                   }
                 />
-                <span>Κλειστό</span>
+                <span>Κλειστό όλη μέρα</span>
               </label>
               <button
                 onClick={() => removeOverride(i)}

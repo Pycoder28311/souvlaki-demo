@@ -35,6 +35,7 @@ export async function POST(request: Request) {
             ...o,
             date: new Date(o.date),
         }));
+        console.log(validOverrides, overrides)
 
         if (validOverrides.length > 0) {
         await prisma.dateScheduleOverride.deleteMany({});

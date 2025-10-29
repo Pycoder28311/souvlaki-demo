@@ -93,7 +93,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const todayStr = now.toISOString().split("T")[0]; 
 
       // 1️⃣ Check overrides first
-      const overrideToday = overrideData.find((o) => o.date === todayStr);
+      const overrideToday = overrideData.find((o) => {
+        const overrideDate = new Date(o.date);
+        return (
+          overrideDate.getFullYear() === now.getFullYear() &&
+          overrideDate.getMonth() === now.getMonth() &&
+          overrideDate.getDate() === now.getDate()
+        );
+      });
       if (overrideToday) {
         if (!overrideToday.open || !overrideToday.close) return false;
         const [openH, openM] = overrideToday.open.split(":").map(Number);

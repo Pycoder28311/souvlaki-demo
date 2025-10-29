@@ -285,6 +285,7 @@ model DateScheduleOverride {
   openHour    String?  // null = κλειστό
   closeHour   String?
   alwaysClosed Boolean  @default(false)
+  recurringYearly Boolean @default(false)
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
