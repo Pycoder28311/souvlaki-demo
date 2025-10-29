@@ -117,7 +117,7 @@ export default function ScheduleManager() {
   if (!user?.business) return null;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-6">
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-6 pt-24">
       <h2 className="text-2xl font-bold text-gray-800">🕓 Διαχείριση Ωραρίου</h2>
 
       {/* Weekly schedule */}
@@ -202,7 +202,7 @@ export default function ScheduleManager() {
           <span>Ειδικές ημερομηνίες</span>
           <button
             onClick={addOverride}
-            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+            className="bg-green-600 text-white px-3 py-1 rounded-lg hover:bg-green-700"
           >
             + Προσθήκη
           </button>
@@ -282,7 +282,7 @@ export default function ScheduleManager() {
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50"
         >
-          {loading ? "Αποθήκευση..." : "💾 Αποθήκευση"}
+          {loading ? "Αποθήκευση..." : "Αποθήκευση αλλαγών"}
         </button>
       </div>
     </div>

@@ -211,40 +211,42 @@ export default function ProfilePage() {
               </div>
             )}
 
-            <div className="flex items-center gap-2 mt-4">
-              <select
-                value={selectedFloor || ""}
-                onChange={(e) => setSelectedFloor(e.target.value)}
-                className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
-              >
-                <option value="">Επίλεξε όροφο</option>
-                <option value="Ισόγειο">Ισόγειο</option>
-                <option value="1ος">1ος όροφος</option>
-                <option value="2ος">2ος όροφος</option>
-                <option value="3ος">3ος όροφος</option>
-                <option value="4ος">4ος όροφος</option>
-                <option value="5ος">5ος όροφος</option>
-              </select>
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/update-floor", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
-                    });
-                    if (!res.ok) throw new Error("Failed to update floor");
-                    alert("Ο όροφος ενημερώθηκε επιτυχώς!");
-                  } catch (err) {
-                    console.error(err);
-                    alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
-                  }
-                }}
-                className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
-              >
-                Αποθήκευση
-              </button>
-            </div>
+            {!user?.business && (
+              <div className="flex items-center gap-2 mt-4">
+                <select
+                  value={selectedFloor || ""}
+                  onChange={(e) => setSelectedFloor(e.target.value)}
+                  className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                >
+                  <option value="">Επίλεξε όροφο</option>
+                  <option value="Ισόγειο">Ισόγειο</option>
+                  <option value="1ος">1ος όροφος</option>
+                  <option value="2ος">2ος όροφος</option>
+                  <option value="3ος">3ος όροφος</option>
+                  <option value="4ος">4ος όροφος</option>
+                  <option value="5ος">5ος όροφος</option>
+                </select>
+                <button
+                  onClick={async () => {
+                    try {
+                      const res = await fetch("/api/update-floor", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
+                      });
+                      if (!res.ok) throw new Error("Failed to update floor");
+                      alert("Ο όροφος ενημερώθηκε επιτυχώς!");
+                    } catch (err) {
+                      console.error(err);
+                      alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
+                    }
+                  }}
+                  className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  Αποθήκευση
+                </button>
+              </div>
+            )}
 
             {user?.business && (
               <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">

@@ -159,7 +159,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           setWeeklySchedule(scheduleMap);
           setOverrides(data.overrides);
-          setShopOpen(isShopOpenNow(scheduleMap, data.overrides));
         }
       } catch (err) {
         console.error("Failed to fetch schedule:", err);
@@ -168,8 +167,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     fetchSchedule();
-  }, [isShopOpenNow]);
-  
+  }, []);
+
+  useEffect(() => {
+    setShopOpen(isShopOpenNow());
+  }, [weeklySchedule, overrides, isShopOpenNow]);
+    
   const now = new Date();
   const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
   const todaySchedule: Schedule = weeklySchedule[dayName];

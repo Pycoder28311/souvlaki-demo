@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Order } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
+import FiltersSidebar from "./filter";
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const { user } = useCart();
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
+  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [selectedPaidIn, setSelectedPaidIn] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [sortOption, setSortOption] = useState<string>("newest");
 
   useEffect(() => {
 
@@ -28,6 +35,94 @@ export default function Orders() {
       evtSource.close();
     };
   }, [user]);
+
+  const allProducts = useMemo(() => {
+    const productSet = new Set<string>();
+    orders.forEach((order) => {
+      order.items?.forEach((item) => {
+        if (item.product?.name) productSet.add(item.product.name);
+      });
+    });
+    return Array.from(productSet);
+  }, [orders]);
+
+  const allAddresses = useMemo(() => {
+    const addressSet = new Set<string>();
+    orders.forEach((order) => {
+      if (order.user?.address) addressSet.add(order.user.address);
+    });
+    return Array.from(addressSet);
+  }, [orders]);
+
+  const allPaidInValues = useMemo(() => {
+    const paidSet = new Set<string>();
+    orders.forEach((order) => {
+      if (order.paidIn) paidSet.add(order.paidIn);
+    });
+    return Array.from(paidSet);
+  }, [orders]);
+
+  const allStatuses = useMemo(() => {
+    const statusSet = new Set<string>();
+    orders.forEach((order) => {
+      if (order.status) statusSet.add(order.status);
+    });
+    return Array.from(statusSet);
+  }, [orders]);
+
+  const filteredOrders = useMemo(() => {
+    const filtered = orders.filter((order) => {
+      const matchesProduct =
+        !selectedProduct ||
+        order.items?.some(
+          (item) => item.product?.name === selectedProduct
+        );
+      const matchesAddress =
+        !selectedAddress || order.user?.address === selectedAddress;
+      const matchesPaidIn =
+        !selectedPaidIn || order.paidIn === selectedPaidIn;
+      const matchesStatus =
+        !selectedStatus || order.status === selectedStatus;
+      const matchesDate =
+        !selectedDate ||
+        new Date(order.createdAt).toISOString().slice(0, 10) === selectedDate;
+
+      return (
+        matchesProduct &&
+        matchesAddress &&
+        matchesPaidIn &&
+        matchesStatus &&
+        matchesDate
+      );
+    });
+
+    // 🔹 Sorting
+    filtered.sort((a, b) => {
+      switch (sortOption) {
+        case "newest":
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case "oldest":
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case "highest":
+          return (b.total || 0) - (a.total || 0);
+        case "lowest":
+          return (a.total|| 0) - (b.total || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return filtered;
+  }, [
+    orders,
+    selectedProduct,
+    selectedAddress,
+    selectedPaidIn,
+    selectedStatus,
+    selectedDate,
+    sortOption,
+  ]);
+  const [isOpen, setIsOpen] = useState(false);
 
   if (loading) {
     return (
@@ -51,11 +146,64 @@ export default function Orders() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-8 max-w-3xl mx-auto pt-24">
-        <h1 className="text-3xl font-bold mb-8 text-gray-800">Λίστα Παραγγελιών</h1>
+    <div className="flex flex-col md:flex-row bg-gray-50 pt-14 bg-gray-100">
+      {/* Sidebar */}
+      <div
+        className={`absolute md:static md:w-80 w-full h-full shadow-r-lg z-50 transform transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0 md:shadow-none md:bg-white`}
+        style={{ height: 'calc(100vh - 3.5rem)', overflowX: "hidden" }}
+      >
+        {/* Scrollable content */}
+        <div className="h-full overflow-y-auto overflow-x-hidden bg-white">
 
-        {orders.map((order) => (
+          <FiltersSidebar
+            selectedProduct={selectedProduct}
+            setSelectedProduct={setSelectedProduct}
+            allProducts={allProducts}
+            selectedAddress={selectedAddress}
+            setSelectedAddress={setSelectedAddress}
+            allAddresses={allAddresses}
+            selectedPaidIn={selectedPaidIn}
+            setSelectedPaidIn={setSelectedPaidIn}
+            allPaidInValues={allPaidInValues}
+            selectedStatus={selectedStatus}
+            setSelectedStatus={setSelectedStatus}
+            allStatuses={allStatuses}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            resetFilters={() => {
+              setSelectedProduct("");
+              setSelectedAddress("");
+              setSelectedPaidIn("");
+              setSelectedStatus("");
+              setSelectedDate("");
+              setSortOption("newest");
+            }}
+            setIsOpen={setIsOpen}
+          />
+        </div>
+      </div>
+
+      {/* Right content */}
+      <div
+        className="flex-1 p-8 pt-0 max-w-5xl mx-auto overflow-y-auto"
+        style={{ height: 'calc(100vh - 3.5rem)', overflowX: 'hidden' }}
+      >
+        <h1 className="text-3xl font-bold mb-4 md:mb-8 text-gray-800 pt-8">Λίστα Παραγγελιών</h1>
+
+        <div className="md:hidden mb-4">
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold w-full"
+          >
+            {isOpen ? "Κλείσιμο φίλτρων" : "Άνοιγμα φίλτρων"}
+          </button>
+        </div>
+
+        {filteredOrders.map((order) => (
           <div
             key={order.id}
             className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden"
@@ -64,7 +212,7 @@ export default function Orders() {
             <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
               <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
               <span
-                className={`px-3 py-1 font-medium rounded-xl ${
+                className={`px-3 py-1 font-medium rounded-lg ${
                   order.status === "completed"
                     ? "bg-green-500 text-white"
                     : order.status === "pending"

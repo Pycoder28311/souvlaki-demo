@@ -24,7 +24,6 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/cancel",
     "/auth/email-reset-input",
     "/auth/reset-password",
-    "/schedule-manage",
   ];
   
   const noNavbarPrefixPaths = [
@@ -65,7 +64,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/schedule-manage",
   ];
 
-  const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages", "/live-orders"];
+  const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages", "/live-orders", "/schedule-manage",];
   const scrolled = scrolledPaths.includes(pathname);
 
   const hideFooterExact = noFooterExactPaths.includes(pathname);

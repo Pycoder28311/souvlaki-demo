@@ -223,6 +223,7 @@ export default function Navbar({scrolled = false, isLive }) {
             Επικοινωνία
           </Link>
           {business && (
+            <>
             <Link 
               href="/live-orders" 
               className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
@@ -230,6 +231,7 @@ export default function Navbar({scrolled = false, isLive }) {
             >
               Παραγγελίες Live
             </Link>
+            </>
           )}
         </div>
       </div>
@@ -311,6 +313,14 @@ export default function Navbar({scrolled = false, isLive }) {
                     className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
                   >
                     Μηνύματα
+                  </Link>
+                </li>
+                <li>
+                  <Link 
+                    href="/schedule-manage" 
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                  >
+                    Διαχείρηση Ωραρίου
                   </Link>
                 </li>
               </>
