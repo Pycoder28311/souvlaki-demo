@@ -224,7 +224,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
             {openHour === '00' && openMin === '00' && closeHour === '23' && closeMin === '59' && !product.alwaysClosed && (
               <p className="text-green-600 text-sm font-medium">
-                Η κατηγορία είναι διαθέσιμη όλες τις ώρες
+                Το προϊόν είναι διαθέσιμο όλες τις ώρες
               </p>
             )}
 
