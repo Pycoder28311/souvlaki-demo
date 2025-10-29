@@ -28,8 +28,8 @@ interface Override {
   closeHour: string | null;
   prevOpenHour: string | null,   // keep these so logic is consistent
   prevCloseHour: string | null,
-  recurringYearly?: boolean; 
   alwaysClosed: boolean;
+  recurringYearly: boolean;
 }
 
 export default function ScheduleManager() {
@@ -121,7 +121,10 @@ export default function ScheduleManager() {
 
     try {
       // ✅ Clean overrides before saving
-      const cleanedOverrides = overrides.map(({ prevOpenHour: _1, prevCloseHour: _2, ...rest }) => rest);
+      const cleanedOverrides = overrides.map((o) => {
+        const { prevOpenHour: _, prevCloseHour: __, ...rest } = o;
+        return rest;
+      });
 
       const res = await fetch("/api/schedule/update", {
         method: "POST",
@@ -153,18 +156,18 @@ export default function ScheduleManager() {
         closeHour: "",
         prevOpenHour: "",   // keep these so logic is consistent
         prevCloseHour: "",
-        alwaysClosed: true, // ✅ start as closed by default   // closed by default
-        recurringYearly: false, 
+        alwaysClosed: true, 
+        recurringYearly: false,
       },
     ]);
 
-  const removeOverride = (index: number) =>
-    setOverrides(overrides.filter((_, i) => i !== index));
+  const removeOverride = (index: number) => 
+    setOverrides(overrides.filter((_, i) => i !== index))
 
   if (!user?.business) return null;
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 space-y-6 pt-24">
+    <div className="max-w-4xl mx-auto bg-white shadow-lg p-6 space-y-6 pt-24">
       <h2 className="text-2xl font-bold text-gray-800">🕓 Διαχείριση Ωραρίου</h2>
 
       {/* Weekly schedule */}
@@ -229,7 +232,7 @@ export default function ScheduleManager() {
                         )
                       }
                     />
-                    <span>Κλειστό</span>
+                    <span>Κλειστό όλη μέρα</span>
                   </label>
                 </div>
                 {hasError && (
@@ -338,6 +341,22 @@ export default function ScheduleManager() {
                   }
                 />
                 <span>Κλειστό όλη μέρα</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  checked={o.recurringYearly}
+                  onChange={(e) =>
+                    setOverrides((list) =>
+                      list.map((d, idx) =>
+                        idx === i
+                          ? { ...d, recurringYearly: e.target.checked }
+                          : d
+                      )
+                    )
+                  }
+                />
+                <span>Κάθε χρόνο</span>
               </label>
               <button
                 onClick={() => removeOverride(i)}

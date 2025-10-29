@@ -38,8 +38,8 @@ interface CartContextType {
   setShowRadiusNote: React.Dispatch<React.SetStateAction<boolean>>;
   validRadius: number | null;
   setValidRadius: React.Dispatch<React.SetStateAction<number | null>>;
-  shopOpen: boolean;      // ✅ probably better as boolean
-  schedule: Schedule;
+  shopOpen: boolean;
+  cartMessage: string;
 }
 
 type Weekday =
@@ -61,8 +61,9 @@ type DayFromAPI = {
 
 type Override = {
   date: string;       // ISO string "YYYY-MM-DD"
-  open: string | null;
-  close: string | null;
+  openHour: string | null;
+  closeHour: string | null;
+  recurringYearly: boolean;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -72,7 +73,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw ?? ""; // default to empty string
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [overrides, setOverrides] = useState<Override[]>([])
+  const [overrides, setOverrides] = useState<Override[]>([]);
+  const [cartMessage, setCartMessage] = useState("Φόρτωση...");
 
   const [weeklySchedule, setWeeklySchedule] = useState<Record<Weekday, Schedule>>({
     Monday: { open: null, close: null },
@@ -90,21 +92,30 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       overrideData: Override[] = overrides
     ): boolean => {
       const now = new Date();
-      const todayStr = now.toISOString().split("T")[0]; 
-
-      // 1️⃣ Check overrides first
+        // 1️⃣ Check overrides first
       const overrideToday = overrideData.find((o) => {
         const overrideDate = new Date(o.date);
+
+        // If override is rejected yearly, compare only month and day
+        if (o.recurringYearly) {
+          return (
+            overrideDate.getMonth() === now.getMonth() &&
+            overrideDate.getDate() === now.getDate()
+          );
+        }
+
+        // Otherwise compare full date (year, month, day)
         return (
           overrideDate.getFullYear() === now.getFullYear() &&
           overrideDate.getMonth() === now.getMonth() &&
           overrideDate.getDate() === now.getDate()
         );
       });
+      
       if (overrideToday) {
-        if (!overrideToday.open || !overrideToday.close) return false;
-        const [openH, openM] = overrideToday.open.split(":").map(Number);
-        const [closeH, closeM] = overrideToday.close.split(":").map(Number);
+        if (!overrideToday.openHour || !overrideToday.closeHour) return false;
+        const [openH, openM] = overrideToday.openHour.split(":").map(Number);
+        const [closeH, closeM] = overrideToday.closeHour.split(":").map(Number);
         const openMinutes = openH * 60 + openM;
         const closeMinutes = closeH * 60 + closeM;
         const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -166,6 +177,44 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
           setWeeklySchedule(scheduleMap);
           setOverrides(data.overrides);
+    
+          const now = new Date();
+          const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
+          
+          const todayOverride = data.overrides?.find((o: Override) => {
+            const overrideDate = new Date(o.date);
+
+            if (o.recurringYearly) {
+              return (
+                overrideDate.getMonth() === now.getMonth() &&
+                overrideDate.getDate() === now.getDate()
+              );
+            }
+
+            return (
+              overrideDate.getFullYear() === now.getFullYear() &&
+              overrideDate.getMonth() === now.getMonth() &&
+              overrideDate.getDate() === now.getDate()
+            );
+          });
+
+          if (todayOverride) {
+            if (todayOverride.alwaysClosed) {
+              setCartMessage("Το κατάστημα είναι κλειστό σήμερα");
+            } else if (todayOverride.openHour && todayOverride.closeHour) {
+              setCartMessage(
+                `Ώρες λειτουργίας σήμερα: ${todayOverride.openHour} - ${todayOverride.closeHour}`
+              );
+            } else {
+              setCartMessage("Το κατάστημα έχει ειδικό ωράριο σήμερα");
+            }
+          } else if (scheduleMap[dayName]?.open) {
+            setCartMessage(
+              `Ώρες λειτουργίας σήμερα: ${scheduleMap[dayName].open} - ${scheduleMap[dayName].close}`
+            );
+          } else {
+            setCartMessage("Το κατάστημα είναι κλειστό σήμερα");
+          }
         }
       } catch (err) {
         console.error("Failed to fetch schedule:", err);
@@ -178,11 +227,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     setShopOpen(isShopOpenNow());
-  }, [weeklySchedule, overrides, isShopOpenNow]);
-    
-  const now = new Date();
-  const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-  const todaySchedule: Schedule = weeklySchedule[dayName];
+  }, [weeklySchedule, overrides, isShopOpenNow, cartMessage]);
 
   useEffect(() => {
     try {
@@ -443,9 +488,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setShowRadiusNote,
         validRadius,
         setValidRadius,
-
-        shopOpen,               // keep as is
-        schedule: todaySchedule,
+        shopOpen,            
+        cartMessage,
       }}
     >
       {children}

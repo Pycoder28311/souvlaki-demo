@@ -122,6 +122,7 @@ export default function Orders() {
     selectedDate,
     sortOption,
   ]);
+
   const [isOpen, setIsOpen] = useState(false);
 
   if (loading) {
@@ -151,12 +152,11 @@ export default function Orders() {
       <div
         className={`absolute md:static md:w-80 w-full h-full shadow-r-lg z-50 transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:shadow-none md:bg-white`}
+          md:translate-x-0 md:shadow-none md:bg-white border-t`}
         style={{ height: 'calc(100vh - 3.5rem)', overflowX: "hidden" }}
       >
         {/* Scrollable content */}
         <div className="h-full overflow-y-auto overflow-x-hidden bg-white">
-
           <FiltersSidebar
             selectedProduct={selectedProduct}
             setSelectedProduct={setSelectedProduct}

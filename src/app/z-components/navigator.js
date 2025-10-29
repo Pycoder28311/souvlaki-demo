@@ -97,14 +97,15 @@ export default function Navbar({scrolled = false, isLive }) {
             <Link href="/" className={linkClass}>Αρχική</Link>
             <Link href="/menu" className={linkClass}>Μενού</Link>
             <Link href="/about" className={linkClass}>Σχετικά</Link>
-            <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
-            {business && (
+            {business ? (
               <Link 
                 href="/live-orders" 
                 className={linkClass}
               >
                 Παραγγελίες Live
               </Link>
+            ) : (
+              <Link href="/contact" className={linkClass}>Επικοινωνία</Link>
             )}
           </div>
 
@@ -215,15 +216,7 @@ export default function Navbar({scrolled = false, isLive }) {
           >
             Σχετικά
           </Link>
-          <Link
-            href="/contact"
-            className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
-            onClick={() => setMobileOpen(false)}
-          >
-            Επικοινωνία
-          </Link>
-          {business && (
-            <>
+          {business ? (
             <Link 
               href="/live-orders" 
               className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
@@ -231,7 +224,14 @@ export default function Navbar({scrolled = false, isLive }) {
             >
               Παραγγελίες Live
             </Link>
-            </>
+          ) : (
+            <Link
+              href="/contact"
+              className="block px-3 py-2 rounded-md text-xl font-medium text-gray-700 hover:bg-gray-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Επικοινωνία
+            </Link>
           )}
         </div>
       </div>
