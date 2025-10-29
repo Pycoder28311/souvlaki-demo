@@ -504,6 +504,7 @@ export default function OrderSidebar({
                 className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-xl sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
                 onClick={() => {
                   if (!user) {
+                    setIsSidebarOpen(false)
                     router.push("/auth/signin");
                     return;
                   }
