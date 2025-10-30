@@ -318,7 +318,6 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                   <button
                     className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                     onClick={() => {
-                      console.log(isAvailable,shopOpen)
                       const product = products[item.productId];
                       if (!isAvailable || !shopOpen || !product) return;
 

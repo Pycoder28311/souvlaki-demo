@@ -177,7 +177,6 @@ export default function Home() {
 
   const handleConfirmAddress = () => {
     setWarning("")
-    setAddress(query);      // ενημέρωσε την διεύθυνση
     //setEditingAddress(false); 
   };
 
@@ -203,7 +202,7 @@ export default function Home() {
                     className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-400"
                   />
                   <button
-                    onClick={() => {handleConfirmAddress(); handleUpdateAddress();}}
+                    onClick={() => {setAddress(query); handleConfirmAddress(); handleUpdateAddress();}}
                     className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
                   >
                     <span className="hidden sm:block">Επεξεργασία</span>
