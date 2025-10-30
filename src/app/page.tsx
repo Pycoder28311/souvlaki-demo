@@ -29,7 +29,7 @@ export default function Home() {
 
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState<boolean[]>([false, false, false]);
-  const { addToCart } = useCart();
+  const { addToCart, showWelcome, user } = useCart();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -121,6 +121,14 @@ export default function Home() {
         <meta name="description" content="Αυθεντικά ελληνικά σουβλάκια με παραδοσιακές γεύσεις" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <div>
+        {showWelcome && user && user?.business && (
+          <div className="fixed top-4 left-3/4 -translate-x-1/2 bg-green-100 text-green-800 p-3 rounded shadow z-50">
+            Welcome
+          </div>
+        )}
+      </div>
 
       {/* Hero Section */}
       <section className="relative h-screen flex items-center justify-center">

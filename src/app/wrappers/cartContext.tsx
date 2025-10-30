@@ -10,6 +10,7 @@ type Schedule = {
 };
 
 interface CartContextType {
+  showWelcome: boolean;
   orderItems: OrderItem[];
   addToCart: (
     product: Product,
@@ -462,9 +463,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resolveAddress();
   }, [user]);
 
+  const [showWelcome, setShowWelcome] = useState(false);
+  useEffect(() => {
+    setShowWelcome(true);
+    // Optionally hide after 3s
+    const timer = setTimeout(() => setShowWelcome(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <CartContext.Provider
       value={{
+        showWelcome,
         orderItems,
         addToCart,
         setOrderItems,

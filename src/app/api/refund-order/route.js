@@ -12,24 +12,26 @@ export async function POST(req) {
     const order = await prisma.productOrder.findUnique({ where: { id: orderId } });
     const statusToPut = status? status : "cancelled"
 
-    if (!order?.payment_intent_id) {
-      return NextResponse.json({ error: "No payment to refund" }, { status: 400 });
+    if (order?.payment_intent_id) {
+      const paymentIntent = await stripe.paymentIntents.retrieve(order.payment_intent_id);
+      if (paymentIntent.status !== "succeeded") {
+        return NextResponse.json(
+          { error: "Payment not completed, cannot refund" },
+          { status: 400 }
+        );
+      }
+      await stripe.refunds.create({
+        payment_intent: order.payment_intent_id,
+        amount: amount ? Math.round(amount * 100) : undefined, // optional partial refund
+      });
     }
-
-    //const session = await stripe.checkout.sessions.retrieve(order.payment_intent_id);
-    //const paymentIntentId = session.payment_intent;
-
-    const refund = await stripe.refunds.create({
-      payment_intent: order.payment_intent_id,
-      amount: amount ? Math.round(amount * 100) : undefined, // optional partial refund
-    });
 
     await prisma.productOrder.update({
       where: { id: orderId },
       data: { status: statusToPut },
     });
 
-    return NextResponse.json({ success: true, refund });
+    return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

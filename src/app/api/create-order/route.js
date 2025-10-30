@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 
 export async function POST(req) {
   try {
@@ -63,25 +60,13 @@ export async function POST(req) {
       },
     });
 
-    // 1️⃣ Δημιουργία Stripe PaymentIntent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: total * 100, // Stripe expects cents
-      currency: "eur",
-      metadata: { userId, orderId: newOrder.id },
-    });
-
-    await prisma.productOrder.update({
-      where: { id: newOrder.id },
-      data: { payment_intent_id: paymentIntent.id },
-    });
-
     // Emit event μέσω Socket.io αν υπάρχει
     const io = globalThis.io || req?.socket?.server?.io;
     if (io) {
       io.emit("orderUpdated", newOrder);
     }
 
-    return NextResponse.json({ success: true, order: newOrder, clientSecret: paymentIntent.client_secret });
+    return NextResponse.json({ success: true, order: newOrder });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ error: "Failed to create order" }, { status: 500 });

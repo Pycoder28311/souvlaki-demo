@@ -100,6 +100,7 @@ export default function OrderSidebar({
   const [results, setResults] = useState<string[]>([]);
   const [validRadius, setValidRadius] = useState<number | null>(null);
   const [isTooFar, setIsTooFar] = useState(false);
+  const [paymentWay, setPaymentWay] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -565,7 +566,17 @@ export default function OrderSidebar({
                 return (
                   <div>
                     <div className="mt-0 mb-0">
-                      <CheckOutForm amount={total} userId={user?.id} items={orderItems} paidIn="online" isDisabled={isDisabled} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal} onLoaded={() => setFormLoaded(true)}/>
+                      <CheckOutForm 
+                        amount={total} 
+                        userId={user?.id} 
+                        items={orderItems} 
+                        paidIn={paymentWay} 
+                        isDisabled={isDisabled} 
+                        removeItem={removeItem} 
+                        setIsSidebarOpen={setIsSidebarOpen} 
+                        setShowPaymentModal={setShowPaymentModal} 
+                        onLoaded={() => setFormLoaded(true)} 
+                      />
                     </div>
                     {!formLoaded && (
                       <button
@@ -597,14 +608,14 @@ export default function OrderSidebar({
                     )}
                     <button
                       className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
-                      onClick={() => handleClickDoor("POS")}
+                      onClick={() => {handleClickDoor("POS"); setPaymentWay("POS")}}
                       disabled={isDisabled}
                     >
-                      Πληρωμή με κάρτα
+                      Πληρωμή με POS
                     </button>
                     <button
                       className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
-                      onClick={() => handleClickDoor("door")}
+                      onClick={() => {handleClickDoor("door"); setPaymentWay("door")}}
                       disabled={isDisabled}
                     >
                       Πληρωμή με μετρητά

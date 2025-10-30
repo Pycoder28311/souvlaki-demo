@@ -122,7 +122,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       const res = await fetch("/api/refund-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId: order.id, amount: order.total }),
+        body: JSON.stringify({ orderId: order.id, amount: order.total, status: "cancelled" }),
       });
       
       if (!res.ok) throw new Error("Η ακύρωση απέτυχε.");
@@ -143,7 +143,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
   return (
     <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden">
       {notification && (
-        <div className="bg-green-100 text-green-800 p-3 rounded mb-4">
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 p-3 rounded shadow-lg z-50">
           {notification}
         </div>
       )}

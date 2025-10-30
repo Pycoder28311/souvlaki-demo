@@ -21,6 +21,9 @@ type CheckoutPageProps = {
 };
 
 type CheckoutFormProps = {
+  amount: number;
+  userId?: number;
+  paidIn: string;
   items: OrderItem[];
   isDisabled: boolean;
   removeItem: (item: OrderItem) => void;
@@ -31,6 +34,8 @@ type CheckoutFormProps = {
 
 
 function CheckoutForm({ 
+  amount,
+  userId,
   items,
   isDisabled, 
   removeItem,
@@ -58,8 +63,20 @@ function CheckoutForm({
       redirect: "if_required",
     });
 
+    if (paymentIntent) {
+      try {
+        await fetch("/api/create-payment-intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: Number(amount)*100, currency: "eur", userId, items, paymentIntentId: paymentIntent.id }), // διόρθωση typo
+        });
+
+      } catch (err) {
+        console.error("Error creating payment intent:", err);
+      }
+    }
+
     if (error) {
-      console.log(error);
       setLoading(false);
       return;
     }
@@ -130,7 +147,6 @@ export default function CheckoutPage({
   const router = useRouter();
 
   useEffect(() => {
-    // Δημιουργούμε async function μέσα στο useEffect
     if (!userId) {
       router.push("/auth/signin");
       return;
@@ -138,10 +154,10 @@ export default function CheckoutPage({
 
     const createPaymentIntent = async () => {
       try {
-        const res = await fetch("/api/create-payment-intent", {
+        const res = await fetch("/api/create-client-secret", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: Number(amount)*100, currency: "eur", userId, items, paidIn }), // διόρθωση typo
+          body: JSON.stringify({ amount: Number(amount)*100, currency: "eur", userId }), // διόρθωση typo
         });
 
         const data = await res.json();
@@ -154,7 +170,7 @@ export default function CheckoutPage({
     };
 
     createPaymentIntent();
-  }, [amount, items, paidIn, router, userId]);
+  }, []);
 
   const options = { clientSecret, 
     appearance: {
@@ -172,7 +188,17 @@ export default function CheckoutPage({
   return (
     clientSecret && (
       <Elements options={{ ...options, locale: 'el' }} stripe={stripePromise}>
-        <CheckoutForm isDisabled={isDisabled} items={items} removeItem={removeItem} setIsSidebarOpen={setIsSidebarOpen} setShowPaymentModal={setShowPaymentModal} onLoaded={onLoaded}/>
+        <CheckoutForm 
+          userId={userId}
+          amount={amount}
+          paidIn={paidIn}
+          isDisabled={isDisabled} 
+          items={items} 
+          removeItem={removeItem} 
+          setIsSidebarOpen={setIsSidebarOpen} 
+          setShowPaymentModal={setShowPaymentModal} 
+          onLoaded={onLoaded}
+        />
       </Elements>
     )
   );
