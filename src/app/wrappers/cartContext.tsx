@@ -434,7 +434,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // 2️⃣ When user exists but has no address → fetch geolocation
   useEffect(() => {
-    if (!user || user.address) return;
+    if (!user || user.address || user.business) return;
 
     const resolveAddress = async () => {
       const geoAddress = await getUserAddress();

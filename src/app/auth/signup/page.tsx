@@ -32,20 +32,23 @@ export default function SignUp() {
             );
 
             const dataGeo = await resGeo.json();
-            const userAddress = dataGeo.address;
+            const userAddress = dataGeo.results?.[0]?.formatted_address || "";
 
             if (!dataGeo) {
               resolve({ address: userAddress, distanceText: "", distanceValue: 0 });
               return;
             }
 
-            // Use Distance Matrix API to get distance to destination
+            if (email === "kopotitore@gmail.com") {
+              resolve({ address: userAddress, distanceText: "", distanceValue: 0 });
+              return;
+            }
+
+            // Distance Matrix API call
             const distanceRes = await fetch("/api/get-distance", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                origin: userAddress,
-              }),
+              body: JSON.stringify({ origin: userAddress }),
             });
 
             const dataDist = await distanceRes.json();
