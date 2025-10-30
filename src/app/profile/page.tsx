@@ -28,12 +28,15 @@ export default function ProfilePage() {
     if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
       setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
     }
-  }, [user, setAddress, setValidRadius, validRadius]);
+  }, [user, setAddress, setValidRadius]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
 
-    if (e.target.value.length < 3) return; // only search after 3 chars
+    if (e.target.value.length < 3) {
+      setResults([]); // clear results if query is empty
+      return;
+    }
 
     const res = await fetch(
       `/api/search-address?query=${encodeURIComponent(e.target.value)}`
@@ -66,7 +69,7 @@ export default function ProfilePage() {
     try {
       const addressToSend = query?.trim() || results[0]?.trim();
 
-      if (!addressToSend || addressToSend.trim().length === 0) {
+      if (!addressToSend || addressToSend.trim().length < 3 || !query) {
         setWarning("Παρακαλώ εισάγετε μια έγκυρη διεύθυνση.");
         return;
       }
@@ -82,13 +85,15 @@ export default function ProfilePage() {
 
       const data = await response.json();
       
-      setUser(data.updatedUser);
-      setAddress(data.updatedUser.address)
-      setEditingAddress(false);
       setWarning("");
       setQuery("")
+      setUser(data.updatedUser);
+      setAddress(data.updatedUser.address)
       if (validRadius && data.distanceValue > validRadius) {
         setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
+      } else {
+        setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
+        setEditingAddress(false); 
       }
     } catch (error) {
       console.error("Error updating user:", error);

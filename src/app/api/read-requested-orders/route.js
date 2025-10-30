@@ -47,7 +47,7 @@ export async function GET(req) {
       };
 
       // Poll every 2 seconds (or less)
-      const interval = setInterval(sendOrders, 2000);
+      const interval = setInterval(sendOrders, 5000);
 
       req.signal.addEventListener("abort", () => {
         clearInterval(interval);

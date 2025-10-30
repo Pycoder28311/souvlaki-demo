@@ -124,6 +124,7 @@ export async function GET(req) {
           }));
 
           const sseData = JSON.stringify({ orders: formattedOrders, products: productMap });
+          console.log(formattedOrders)
 
           // Only send if data changed
           if (sseData !== lastData) {
@@ -146,7 +147,6 @@ export async function GET(req) {
       });
     },
   });
-
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",

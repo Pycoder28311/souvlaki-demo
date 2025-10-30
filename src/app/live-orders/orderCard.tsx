@@ -27,7 +27,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
 
   // Δημιουργία επιλογών από το πιθανότερο μέχρι 60 λεπτά
   const options: string[] = [];
-  for (let t = 20; t <= 60; t += 5) {
+  for (let t = lower - 5; t <= 70; t += 5) {
     options.push(`${t}-${t + 5}`);
   }
 
@@ -45,7 +45,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
       const diffMs = endTime - now;
 
       if (diffMs <= 0) {
-        setCurrentRange("Έτοιμο");
+        setCurrentRange("Έτοιμη");
         return;
       }
 
@@ -118,7 +118,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
       {/* Order Header */}
       <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
         <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
-        {currentRange !== "Έτοιμο" ? (
+        {currentRange !== "Έτοιμη" ? (
           <>
             <span
               className={`px-3 py-1 font-medium rounded-lg ${
@@ -131,7 +131,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
                   : order.status === "cancelled"
                   ? "bg-gray-400 text-white"
                   : order.status === "requested"
-                  ? "bg-green-500 text-white"
+                  ? "bg-yellow-500 text-white"
                   : "bg-gray-300 text-white"
               }`}
             >
@@ -146,33 +146,35 @@ const OrderCard: React.FC<Props> = ({ order }) => {
                 : order.status === "requested"
                 ? "Αιτήθηκε "
                 : "Άγνωστο "}
-                <div className="relative inline-block">
-                  <span
-                    onClick={() => setShowSelect((prev) => !prev)}
-                    className="cursor-pointer"
-                  >
-                    {" "}
-                    {currentRange || "Επιλέξτε καθυστέρηση (λεπτά)"}
-                  </span>
-
-                  {showSelect && (
-                    <select
-                      ref={selectRef}
-                      value={deliveryTimeEdit}
-                      onChange={handleSelectChange}
-                      className="absolute right-0 top-4 mt-1 w-auto border border-gray-300 rounded-md p-2 bg-white text-gray-800 z-10"
-                      onBlur={() => setShowSelect(false)}
-                      autoFocus
+                {order.status === "pending" && (
+                  <div className="relative inline-block">
+                    <span
+                      onClick={() => setShowSelect((prev) => !prev)}
+                      className="cursor-pointer underline"
                     >
-                      <option value="">Επιλέξτε χρόνο καθυστέρησης</option>
-                      {[5, 15, 20, 25, 30, 35, 40, 45].map((min) => (
-                        <option key={min} value={min}>
-                          {min}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
+                      {" "}
+                      {currentRange || "Επιλέξτε λεπτά καθυστέρηση"}
+                    </span>
+
+                    {showSelect && (
+                      <select
+                        ref={selectRef}
+                        value={deliveryTimeEdit}
+                        onChange={handleSelectChange}
+                        className="absolute right-0 top-4 mt-1 w-auto border border-gray-300 rounded-md p-2 bg-white text-gray-800 z-10"
+                        onBlur={() => setShowSelect(false)}
+                        autoFocus
+                      >
+                        <option value="">Επιλέξτε χρόνο καθυστέρησης</option>
+                        {[5, 10, 15, 20, 25, 30, 35, 40, 45].map((min) => (
+                          <option key={min} value={min}>
+                            {min}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                )}
             </span>
           </>
         ) : (
@@ -203,7 +205,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
                   }}
                   className="cursor-pointer text-white font-semibold hover:underline"
                 >
-                  <span>Έτοιμο </span>
+                  <span>Επιβεβαίωση παράδοσης </span>
                 </span>
               )}
             </span>

@@ -80,7 +80,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
 
   return (
     <CartProvider>
-      {showNavbar && <Navbar scrolled={scrolled} isLive={pathname === "/live-orders"}/>}
+      {showNavbar && <Navbar scrolled={scrolled} isLive={pathname === "/live-orders" || pathname === "/all-orders"}/>}
       <main>{children}</main>
       <>
         <OrderSidebar setEditableOrderItem={setEditableOrderItem}/>

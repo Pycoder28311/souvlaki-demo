@@ -119,7 +119,10 @@ export default function OrderSidebar({
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
 
-    if (e.target.value.length < 3) return; // only search after 3 chars
+    if (e.target.value.length < 3) {
+      setResults([]); // clear results if query is empty
+      return;
+    }
 
     const res = await fetch(
       `/api/search-address?query=${encodeURIComponent(e.target.value)}`
@@ -130,8 +133,14 @@ export default function OrderSidebar({
 
   const handleUpdate = async () => {
     try {
+      const addressToSend = results[0]?.trim() ? results[0] : address;
 
-      const payload = { address: address, email: user?.email };
+      if (!addressToSend || addressToSend.trim().length < 3  || !query) {
+        setWarning("Παρακαλώ εισάγετε μια έγκυρη διεύθυνση.");
+        return;
+      }
+
+      const payload = { address: addressToSend, email: user?.email };
       const response = await fetch("/api/update-address", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,10 +149,15 @@ export default function OrderSidebar({
       if (!response.ok) throw new Error("Failed to update user");
 
       const data = await response.json();
+      setWarning("");
+      setQuery("")
       setUser(data.updatedUser);
-      setEditingAddress(false);
+      setAddress(data.updatedUser.address)
       if (validRadius && data.distanceValue > validRadius) {
-        setIsTooFar(true)
+        setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
+      } else {
+        setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
+        setEditingAddress(false); 
       }
     } catch (error) {
       console.error("Error updating user:", error);

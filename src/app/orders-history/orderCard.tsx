@@ -97,7 +97,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       const diffMs = endTime - now;
 
       if (diffMs <= 0) {
-        setCurrentRange("Έτοιμο");
+        setCurrentRange("Έτοιμη");
         return;
       }
 
@@ -130,7 +130,13 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
       setOrders((prev: Order[]) =>
         prev.map((o) => (o.id === order.id ? { ...o, status: "cancelled" } : o))
       );
-      setNotification(`Η πληρωμή για την παραγγελία #${order.id} ακυρώθηκε με επιτυχία.`);
+      if (order.payment_intent_id) {
+        setNotification(
+          `Η παραγγελία #${order.id} ακυρώθηκε με επιτυχία. Τα χρήματά σας θα επιστραφούν εντός λίγων λεπτών.`
+        );
+      } else {
+        setNotification(`Η παραγγελία #${order.id} ακυρώθηκε με επιτυχία.`);
+      }
       setTimeout(() => setNotification(null), 5000); // εξαφανίζεται μετά από 5 δευτερόλεπτα
 
     } catch (err) {
@@ -143,7 +149,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
   return (
     <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden">
       {notification && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 bg-green-100 text-green-800 p-3 rounded shadow-lg z-50">
+        <div>
           {notification}
         </div>
       )}
@@ -164,7 +170,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                 : order.status === "cancelled"
                 ? "bg-gray-400 text-white"
                 : order.status === "requested"
-                ? "bg-green-500 text-white"
+                ? "bg-yellow-500 text-white"
                 : "bg-gray-300 text-white"
             }`}
             >
@@ -187,7 +193,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
         <div className="flex justify-between">
           {order.deliveryTime && order.status === "pending" && (
             <p className="text-gray-700 text-lg font-semibold">
-              Παράδοση σε: <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμο" && "λεπτά"}</span>
+              {currentRange !== "Έτοιμη" ? "Παράδοση σε:" : "Η παραγγελία είναι"} <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμη" && "λεπτά"}</span>
             </p>
           )}
 
@@ -199,7 +205,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
         </div>
 
         {/* Cancel Button */}
-        {order.status === "pending" && (
+        {((order.status === "pending" && currentRange !== "Έτοιμη") || order.status === "requested") && (
           <div>
             {!confirmCancel ? (
               <button
@@ -312,9 +318,9 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                   <button
                     className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
                     onClick={() => {
-                      if (!isAvailable || shopOpen) return;
+                      console.log(isAvailable,shopOpen)
                       const product = products[item.productId];
-                      if (!product) return;
+                      if (!isAvailable || !shopOpen || !product) return;
 
                       addToCart(
                         product,

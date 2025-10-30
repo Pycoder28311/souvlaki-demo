@@ -55,7 +55,7 @@ export default async function MyOrdersPage() {
                     : order.status === "cancelled"
                     ? "bg-gray-400 text-white"
                     : order.status === "requested"
-                    ? "bg-green-500 text-white"
+                    ? "bg-yellow-500 text-white"
                     : "bg-gray-300 text-white"
                 }`}
               >

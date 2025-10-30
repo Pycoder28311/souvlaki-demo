@@ -164,9 +164,8 @@ export default function CreatedOrderModal() {
         const lower = roundTo5(travelTime);
         const upper = lower + 5;
 
-        // Δημιουργία επιλογών από το πιθανότερο μέχρι 60 λεπτά
         const options: string[] = [];
-        for (let t = 20; t <= 60; t += 5) {
+        for (let t = lower - 5; t <= 70; t += 5) {
           options.push(`${t}-${t + 5}`);
         }
         

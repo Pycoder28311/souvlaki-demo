@@ -9,6 +9,7 @@ import RedSquareCarousel from './z-components/carousel';
 import MenuGrid from "./z-components/offers";
 import { Product } from "./types"; 
 import { useCart } from './wrappers/cartContext';
+import { Pencil, X } from 'lucide-react';
 
 export default function Home() {
 
@@ -29,7 +30,7 @@ export default function Home() {
 
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const [visible, setVisible] = useState<boolean[]>([false, false, false]);
-  const { addToCart, showWelcome, user } = useCart();
+  const { addToCart, showWelcome, user, setUser, address, setAddress, validRadius, setShowWelcome } = useCart();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -80,6 +81,66 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  const [warning, setWarning] = useState("");
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<string[]>([]);
+  const [editingAddress, setEditingAddress] = useState(false);
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    if (e.target.value.length < 3) {
+      setResults([]); // clear results if query is empty
+      return;
+    }
+
+    const res = await fetch(
+      `/api/search-address?query=${encodeURIComponent(e.target.value)}`
+    );
+    const data = await res.json();
+    setResults(data.suggestions || []);
+  };
+
+  const handleUpdateAddress = async () => {
+    try {
+      
+      const addressToSend = results[0]?.trim() ? results[0] : address;
+
+      if (!addressToSend || addressToSend.trim().length < 3 || !query) {
+        setWarning("Παρακαλώ εισάγετε μια έγκυρη διεύθυνση.");
+        return;
+      }
+
+      const payload = { address: addressToSend, email: user?.email };
+      const response = await fetch("/api/update-address", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Failed to update user");
+
+      const data = await response.json();
+      
+      //setEditingAddress(false);
+      setWarning("");
+      setQuery("")
+      setUser(data.updatedUser);
+      setAddress(data.updatedUser.address)
+      if (validRadius && data.distanceValue > validRadius) {
+        setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
+      } else {
+        setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
+        setEditingAddress(false); 
+        setTimeout(() => {
+          setWarning("");
+          setShowWelcome(false)  
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+  };
 
   const handlePayment = async () => {
     setLoading(true);
@@ -114,6 +175,12 @@ export default function Home() {
     }
   };
 
+  const handleConfirmAddress = () => {
+    setWarning("")
+    setAddress(query);      // ενημέρωσε την διεύθυνση
+    //setEditingAddress(false); 
+  };
+
   return (
     <div className="min-h-screen bg-white overflow-hidden">
       <Head>
@@ -123,9 +190,81 @@ export default function Home() {
       </Head>
 
       <div>
-        {showWelcome && user && user?.business && (
-          <div className="fixed top-4 left-3/4 -translate-x-1/2 bg-green-100 text-green-800 p-3 rounded shadow z-50">
-            Welcome
+        {showWelcome && user && (
+          <div className="fixed top-20 left-0 bg-gray-100 p-3 rounded-r-xl shadow z-50 w-auto max-w-full">
+            {editingAddress ? (
+              <div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={handleSearch}
+                    placeholder="Πληκτρολογήστε τη διεύθυνσή σας..."
+                    className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-blue-400"
+                  />
+                  <button
+                    onClick={() => {handleConfirmAddress(); handleUpdateAddress();}}
+                    className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
+                  >
+                    <span className="hidden sm:block">Επεξεργασία</span>
+
+                    {/* Icon σε μικρές οθόνες */}
+                    <Pencil className="w-5 h-6 sm:hidden" />
+                  </button>
+                  <button
+                    onClick={() => setEditingAddress(false)}
+                    className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition flex items-center justify-center"
+                  >
+                    <X className="w-5 h-6" />
+                  </button>
+                </div>
+
+                {/* Dropdown Results */}
+                {results.length > 0 && (
+                  <ul className="absolute top-full left-0 bg-white border rounded-xl max-h-52 overflow-y-auto mt-1 shadow-lg z-20">
+                    {results.map((r, i) => (
+                      <li
+                        key={i}
+                        onClick={() => {
+                          setAddress(r);
+                          setQuery(r);
+                          setResults([]);
+                        }}
+                        className="p-3 hover:bg-gray-100 cursor-pointer text-left"
+                      >
+                        {r}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center gap-2 max-w-full">
+                <strong className="text-gray-500 text-lg truncate">{user.business ? "Είναι αυτή η διεύθυνσή της επιχείρησης;" : "Είναι αυτή η διεύθυνσή σας;"} </strong>
+                <p className="text-gray-500 text-lg truncate">{user?.address}</p>
+                <div className="flex flex-row items-center gap-4">
+                  <button
+                    onClick={() => {handleConfirmAddress(); setShowWelcome(false)}}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                  >
+                    Ναι
+                  </button>
+                  <button
+                    onClick={() => setEditingAddress(true)}
+                    className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition flex-shrink-0"
+                  >
+                    Όχι, επεξεργασία
+                  </button>
+                </div>
+              </div>
+
+            )}
+
+            {warning && (
+              <div className="flex-wrap max-w-80 text-red-600 font-semibold mt-4 mb-4">
+                {warning}
+              </div>
+            )}
           </div>
         )}
       </div>

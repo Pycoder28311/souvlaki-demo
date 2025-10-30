@@ -8,6 +8,7 @@ import { useCart } from "../wrappers/cartContext";
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const { user } = useCart();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const evtSource = new EventSource("/api/read-live-orders");
@@ -15,12 +16,23 @@ export default function Orders() {
     evtSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
       setOrders(data);
+      setLoading(false);
     };
 
     return () => {
       evtSource.close();
     };
   }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <span className="text-gray-700 text-lg font-semibold">
+          Φόρτωση παραγγελιών...
+        </span>
+      </div>
+    );
+  }
 
   if (!user?.business) return null;
 

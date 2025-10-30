@@ -137,11 +137,11 @@ export default function MyOrdersPage() {
 
         <div className="space-y-8">
           {/* Pending Orders */}
-          {orders.some((order) => order.status === "pending") && (
+          {orders.some((order) => order.status === "pending" || order.status === "requested") && (
             <div ref={pendingRef}>
               <h2 className="text-xl font-bold text-yellow-600 mb-4">🕒 Εκκρεμείς Παραγγελίες</h2>
               {orders
-                .filter((order) => order.status === "pending")
+                .filter((order) => order.status === "pending" || order.status === "requested")
                 .map((order) => (
                   <OrderCard
                     key={order.id}

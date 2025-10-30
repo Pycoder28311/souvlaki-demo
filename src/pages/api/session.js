@@ -13,6 +13,7 @@ const getUser = async (session) => {
 export default async function handler(req, res) {
   if (req.method === 'GET') {
     try {
+
       const session = await getServerSession(req, res, authOptions);
       if (!session) {
         return res.status(200).json({});
@@ -28,13 +29,9 @@ export default async function handler(req, res) {
         select: { validRadius: true },
       });
 
-      // Merge session with user data (without images)
-      session.user = { 
-        ...session.user, 
-        ...user,
-      };
-
-      session.validRadius = businessUser?.validRadius ?? null
+      // Merge session with user data
+      session.user = { ...session.user, ...user };
+      session.validRadius = businessUser?.validRadius ?? null;
 
       return res.status(200).json(session);
     } catch (error) {

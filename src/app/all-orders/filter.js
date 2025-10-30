@@ -96,7 +96,7 @@ export default function FiltersSidebar({
               <option value="">Όλοι οι τρόποι</option>
               {allPaidInValues.map((val) => (
                 <option key={val} value={val}>
-                  {val}
+                  {val === "door" ? "Μετρητά" : val}
                 </option>
               ))}
             </select>
