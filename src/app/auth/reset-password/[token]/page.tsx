@@ -57,7 +57,7 @@ const ResetPassword = () => {
 
       if (res.ok) {
         setMessage('Ο κωδικός επαναφέρθηκε με επιτυχία. Μπορείτε τώρα να συνδεθείτε.');
-        const data = await res.json(); // assuming you return the email in the response
+        const data = await res.json(); 
         await signIn("credentials", {
           redirect: true,
           email: data.email,

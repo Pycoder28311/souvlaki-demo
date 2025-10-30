@@ -16,9 +16,8 @@ export const POST = async (req) => {
     if (!resetRequest) {
       return NextResponse.json({ message: 'Invalid or expired token.' }, { status: 400 });
     }
-
     // Update the user's password in the database (without hashing)
-    await prisma.user.update({
+    const user = await prisma.user.update({
       where: { id: resetRequest.userId },
       data: { password: hashedPassword }, // Store plain text password (not recommended in production)
     });
@@ -28,7 +27,7 @@ export const POST = async (req) => {
       where: { id: resetRequest.id },
     });
 
-    return NextResponse.json({ message: 'Password successfully reset.' });
+    return NextResponse.json({ message: 'Password successfully reset.', email: user.email });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ message: 'An error occurred while resetting your password.' }, { status: 500 });
