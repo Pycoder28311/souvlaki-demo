@@ -14,67 +14,158 @@ export default function CreatedOrderModal() {
   const printRef = useRef<HTMLDivElement>(null);
   const textToPrint = "lets try here again";
 
-  const handlePrint = (order: Order) => {
-    if (!printRef.current) return;
+  const handlePrint = (order: Order): Promise<void> => {
+    return new Promise((resolve, reject) => {
+    if (!printRef.current) return reject();
 
     const printWindow = window.open("", "", "width=700,height=600");
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-        <head>
-          <title>Print</title>
-          <style>
-            @media print {
-              @page { margin: 0; }
-              body {
-                margin: 0;
-                font-family: Arial, sans-serif;
-                white-space: pre-wrap;
-                font-size: 18px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-              }
-              .receipt {
-                text-align: center;
-                border: 1px solid #000;
-                padding: 20px;
-                width: 400px;
-              }
-            }
+    if (!printWindow) return reject();
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Print</title>
+        <style>
+          @media print {
+            @page { margin: 0; }
             body {
+              margin: 0;
               font-family: Arial, sans-serif;
               white-space: pre-wrap;
-              font-size: 18px;
+              font-size: 10px;
               display: flex;
               justify-content: center;
-              align-items: center;
+              align-items: flex-start;
               height: 100vh;
             }
             .receipt {
               text-align: center;
               border: 1px solid #000;
-              padding: 20px;
-              width: 400px;
+              padding: 3px;
+              width: 280px;
+              line-height: 1;
             }
-            .logo {
-              max-width: 150px;
-              margin-bottom: 10px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="receipt">
-            <img src="${window.location.origin}/cover.jpg" class="logo" />
-            <div>${textToPrint} ${order.id}</div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      setTimeout(() => printWindow.print(), 400);
-    }
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            white-space: pre-wrap;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+          }
+
+          .receipt {
+            text-align: center;
+            border: 1px solid #000;
+            padding: 3px;
+            width: 280px;
+            line-height: 1;
+          }
+
+          .receipt h2 {
+            font-size: 10px;
+            margin: 2px 0 4px 0;
+          }
+
+          .receipt h3 {
+            font-size: 10px;
+            margin: 4px 0 2px 0;
+          }
+
+          .receipt p {
+            margin: 1px 0;
+          }
+
+          .logo {
+            max-width: 80px;
+            margin-bottom: px;
+          }
+
+          hr {
+            margin: 4px 0;
+            border: none;
+            border-top: 1px dashed #000;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <img src="${window.location.origin}/favicon.jpg" class="logo" />
+          <h2>Απόδειξη Παραγγελίας</h2>
+
+          <p><strong>Αριθμός Παραγγελίας:</strong> ${order.id}</p>
+          <p><strong>Ημερομηνίαd:</strong> ${new Date(order.createdAt).toLocaleDateString('el-GR')} ${new Date(order.createdAt).toLocaleTimeString('el-GR')}</p>
+          <p><strong>Ώρα Παράδοσης:</strong> ${order.deliveryTime || '-'}</p>
+          <p><strong>Κατάσταση:</strong> ${order.status}</p>
+          <hr />
+
+          <div style="text-align:left; margin-top:15px;">
+            <h3>Πελάτης</h3>
+            <p><strong>Όνομα:</strong> ${order.user?.name || '—'}</p>
+            <p><strong>Email:</strong> ${order.user?.email || '—'}</p>
+            <hr />
+
+            <h3>Περιεχόμενο Παραγγελίας</h3>
+            ${order.items
+              .map(
+                (item, index) => `
+                <div style="margin-bottom:10px;">
+                  <p><strong>${index + 1}. ${item.product?.name}</strong> (x${item.quantity})</p>
+                  <p>Τιμή Μονάδας: €${Number(item.price).toFixed(2)}</p>
+                  ${
+                    item.selectedIngredients && item.selectedIngredients.length > 0
+                      ? `<p>+ Υλικά: ${item.selectedIngredients
+                          .map((ing) => ing.name)
+                          .join(', ')}</p>`
+                      : ''
+                  }
+                  ${
+                    item.selectedOptions && item.selectedOptions.length > 0
+                      ? `<p>+ Επιλογές: ${item.selectedOptions
+                          .map((opt) => opt.comment)
+                          .join(', ')}</p>`
+                      : ''
+                  }
+                </div>
+              `
+              )
+              .join('')}
+          </div>
+
+          <hr />
+          <p><strong>Σύνολο:</strong> €${Number(order.total).toFixed(2)}</p>
+          <p><strong>Πληρωμή:</strong> ${order.paid ? 'Εξοφλημένη' : 'Μη εξοφλημένη'}</p>
+          ${order.paid && order.paidIn ? `<p><strong>Τρόπος Πληρωμής:</strong> ${order.paidIn}</p>` : ''}
+          <hr />
+
+          <p style="margin-top:20px; text-align:center;">Ευχαριστούμε για την προτίμησή σας!</p>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+
+    // Resolve when the user clicks "Print"
+    printWindow.onafterprint = () => {
+      printWindow.close();
+      resolve();
+    };
+
+    // Reject if the user closes the window without printing
+    const interval = setInterval(() => {
+      if (printWindow.closed) {
+        clearInterval(interval);
+        reject(); // do NOT accept the order
+      }
+    }, 200);
+
+    setTimeout(() => printWindow.print(), 400);
+  });
+
   };
   
   useEffect(() => {
@@ -92,6 +183,12 @@ export default function CreatedOrderModal() {
 
   const handleAcceptOrder = async (time: string, order: Order) => {
     if (!time) return;
+
+    try {
+      await handlePrint(order); // waits for actual printing
+    } catch {
+      return; // stop execution, don't call API
+    }
 
     try {
       const res = await fetch("/api/accept-order", {
@@ -113,8 +210,6 @@ export default function CreatedOrderModal() {
       );
 
       setSuccessMap((prev: { [key: number]: boolean }) => ({ ...prev, [order.id]: true }));
-
-      handlePrint(order);
 
       // Hide tick after 2 seconds
       setTimeout(() => {
