@@ -343,7 +343,6 @@ export default function CreatedOrderModal() {
                       onChange={(e) => {
                         const time = e.target.value;
                         setDeliveryTime(time);
-                        handleAcceptOrder(time, order);
                       }}
                       className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
                     >
@@ -372,13 +371,8 @@ export default function CreatedOrderModal() {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await fetch("/api/accept-order", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ id: order.id, deliveryTime }),
-                            });
-                            if (!res.ok) throw new Error("Failed to accept order");
-                            setOrders((prev) => prev.filter((o) => o.id !== order.id));
+                            handleAcceptOrder(deliveryTime, order); 
+                            //setOrders((prev) => prev.filter((o) => o.id !== order.id));
                             setDeliveryModalOpen(null);
                             setDeliveryTime("");
                           } catch (err) {
