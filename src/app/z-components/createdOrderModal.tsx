@@ -73,7 +73,7 @@ export default function CreatedOrderModal() {
       `);
       printWindow.document.close();
       printWindow.focus();
-      setTimeout(() => printWindow.print(), 100);
+      setTimeout(() => printWindow.print(), 400);
     }
   };
   
