@@ -5,29 +5,21 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import './OfferCard.css';
 
 const RedSquareCarousel: React.FC = () => {
-  const squares = Array.from({ length: 3 }, (_, i) => i);
-  const [squareWidth, setSquareWidth] = useState(0);
-  const [isPaused, setIsPaused] = useState(false); // track if auto-scroll is paused
-
-  useEffect(() => {
-    setSquareWidth(window.innerWidth - 16);
-  }, []);
-
   const offers = [
     { id: 1, badge: "Έκπτωση 20%", title: "Σαββατιάτικη Προσφορά", description: "Κάθε Σάββατο από τις 18:00 έως τις 22:00, απολαύστε 20% έκπτωση σε όλα τα σουβλάκια μας." },
     { id: 2, badge: "1+1 Δώρο", title: "Προσφορά Ομάδας", description: "Παραγγείλετε 10 σουβλάκια και πάρτε το 11ο εντελώς δωρεάν!" },
     { id: 3, badge: "3+1", title: "Οικογενειακή Προσφορά", description: "Ιδανική για παρέες και οικογένειες – παραγγείλετε 3 σουβλάκια και το 4ο είναι δώρο!" },
   ];
 
+  const squares = Array.from({ length: 3 }, (_, i) => i);
+  const [squareWidth, setSquareWidth] = useState(0);
+  const [isPaused, setIsPaused] = useState(false); // track if auto-scroll is paused
   const containerRef = useRef<HTMLDivElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const transitionDuration = 500; // ms
   const pauseDuration = 2000; // ms
-
-  // Track current index
   const currentIndexRef = useRef(0);
-
   const moveToIndex = useCallback((index: number) => {
     const container = containerRef.current;
     if (!container) return;
@@ -45,6 +37,10 @@ const RedSquareCarousel: React.FC = () => {
       }, transitionDuration);
     }
   }, [squares.length, squareWidth, transitionDuration]);
+
+  useEffect(() => {
+    setSquareWidth(window.innerWidth - 16);
+  }, []);
 
   useEffect(() => {
     if (isPaused) return;

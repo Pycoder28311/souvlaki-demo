@@ -29,6 +29,48 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
   const [openOptions, setOpenOptions] = useState<Record<number, boolean>>({});
   const { shopOpen } = useCart();
 
+  const [ingCategories, setIngCategories] = useState<IngCategory[]>([]);
+  const [options, setOptions] = useState<Option[]>([]);
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    if (!product) return;
+
+    const fetchProductDetails = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/products/${product.id}`);
+        const data: Product = await res.json();
+
+        setFullProduct(data);
+
+        // ✅ Αποθηκεύουμε απευθείας τις κατηγορίες υλικών σε ξεχωρισμένο state
+        setIngCategories(data.ingCategories ?? []);
+        setOptions(data.options ?? []);
+      } catch (err) {
+        console.error("Αποτυχία ανάκτησης λεπτομερειών προϊόντος:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductDetails();
+  }, [product]);
+
+  useEffect(() => {
+      document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
+      // Trigger animation on next tick
+      const timer = setTimeout(() => setAnimate(true), 10);
+      return () => clearTimeout(timer);
+  }, []);
+
   // Toggle function
   const toggleCategory = (catId: number) => {
     setOpenCategories((prev) => ({
@@ -92,49 +134,6 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
         : [...prev, option] // add αν δεν υπάρχει
     );
   };
-
-  const [ingCategories, setIngCategories] = useState<IngCategory[]>([]);
-  const [options, setOptions] = useState<Option[]>([]);
-
-  useEffect(() => {
-    if (!product) return;
-
-    const fetchProductDetails = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/products/${product.id}`);
-        const data: Product = await res.json();
-
-        setFullProduct(data);
-
-        // ✅ Αποθηκεύουμε απευθείας τις κατηγορίες υλικών σε ξεχωρισμένο state
-        setIngCategories(data.ingCategories ?? []);
-        setOptions(data.options ?? []);
-      } catch (err) {
-        console.error("Αποτυχία ανάκτησης λεπτομερειών προϊόντος:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductDetails();
-  }, [product]);
-
-  useEffect(() => {
-      document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
-
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-      // Trigger animation on next tick
-      const timer = setTimeout(() => setAnimate(true), 10);
-      return () => clearTimeout(timer);
-  }, []);
 
   const handleEditIngredientName = (catId: number, ingId: number) => {
     const cat = fullProduct?.ingCategories?.find((c) => c.id === catId);

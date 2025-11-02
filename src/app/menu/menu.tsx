@@ -26,13 +26,38 @@ function useIsMobile(breakpoint = 768) {
 export default function Menu({ categories: initialCategories, business }: { categories: Category[], email?: string, business?: boolean }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
   const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
-
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
 
   const [isClient, setIsClient] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
   const { addToCart, isSidebarOpen, setIsSidebarOpen, user } = useCart();
+  const visibleCategories = categories.slice(0, visibleCount);
+  const hiddenCategories = categories.slice(visibleCount);
+  const isMobile = useIsMobile();
+  
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
+  const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const [selectedAdminProduct, setSelectedAdminProduct] = useState<Product | null>(null);
+  const modalProdRef = useRef<HTMLDivElement>(null);
+
+  const distance = user?.distanceToDestination ?? 0; // σε km
+  const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
+  const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
+
+  // Στρογγυλοποίηση στο πλησιέστερο 5
+  const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
+
+  // Δημιουργία εύρους 5 λεπτών
+  const lower = roundTo5(travelTime);
+  const upper = lower + 5;
 
   useEffect(() => {
     setIsClient(true);
@@ -73,11 +98,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
     return () => window.removeEventListener("resize", updateVisibleCount);
   }, [categories, isSidebarOpen]); // add sidebarOpen to deps
 
-  const visibleCategories = categories.slice(0, visibleCount);
-  const hiddenCategories = categories.slice(visibleCount);
-
-  const isMobile = useIsMobile();
-
   useEffect(() => {
     // Set initial value on client
     const handleResize = () => {
@@ -101,11 +121,64 @@ export default function Menu({ categories: initialCategories, business }: { cate
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [setIsSidebarOpen]);
-  
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
-  const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
-  const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    // If user.business changes dynamically, close the sidebar
+    if (user?.business) {
+      setIsSidebarOpen(false);
+    }
+  }, [user?.business]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, []);
+
+  // Close modal on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalRef.current &&
+        !modalRef.current.contains(event.target as Node)
+      ) {
+        setSelectedCategory(null);
+      }
+    }
+
+    if (selectedCategory) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedCategory]);
+
+  // Close modal on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        modalProdRef.current &&
+        !modalProdRef.current.contains(event.target as Node)
+      ) {
+        setSelectedAdminProduct(null);
+      }
+    }
+
+    if (selectedAdminProduct) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [selectedAdminProduct]);
 
   const handleCategoryClick = (id: number) => {
     setActiveCategory(id);
@@ -363,77 +436,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
     window.location.reload();
     // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
   };
-
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, []);
-
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // Close modal on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
-        setSelectedCategory(null);
-      }
-    }
-
-    if (selectedCategory) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selectedCategory]);
-
-  const [selectedAdminProduct, setSelectedAdminProduct] = useState<Product | null>(null);
-  const modalProdRef = useRef<HTMLDivElement>(null);
-
-  // Close modal on outside click
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        modalProdRef.current &&
-        !modalProdRef.current.contains(event.target as Node)
-      ) {
-        setSelectedAdminProduct(null);
-      }
-    }
-
-    if (selectedAdminProduct) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [selectedAdminProduct]);
-
-  const distance = user?.distanceToDestination ?? 0; // σε km
-  const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
-  const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
-
-  // Στρογγυλοποίηση στο πλησιέστερο 5
-  const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
-
-  // Δημιουργία εύρους 5 λεπτών
-  const lower = roundTo5(travelTime);
-  const upper = lower + 5;
 
   return (
     <div className="min-h-screen bg-white">

@@ -20,6 +20,11 @@ type ProductWithAvailability = Product & {
   unavailableReason: string;
 };
 
+type Availability = {
+  available: boolean;
+  unavailableReason?: string;
+};
+
 export default function OrderSidebar({
   setEditableOrderItem,
 }: OrderSidebarProps) {
@@ -32,6 +37,20 @@ export default function OrderSidebar({
   const [warning, setWarning] = useState("");
   const [formLoaded, setFormLoaded] = useState(false);
 
+  const [editingAddress, setEditingAddress] = useState(false);
+  const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<string[]>([]);
+  const [validRadius, setValidRadius] = useState<number | null>(null);
+  const [isTooFar, setIsTooFar] = useState(false);
+  const [paymentWay, setPaymentWay] = useState("");
+  const [userComment, setUserComment] = useState<string | undefined>(user?.comment);
+  const [bellName, setBellName] = useState<string | undefined>(user?.bellName);
+  const [showDetails, setShowDetails] = useState(false);
+  const [availabilityMap, setAvailabilityMap] = useState<Record<string, Availability>>({});
+  
+  const router = useRouter();
+
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
   }, []);
@@ -42,6 +61,22 @@ export default function OrderSidebar({
       setPaymentWayModal(false);
     }
   }, [shopOpen]);
+
+  useEffect(() => {
+    if (user) {
+      setSelectedFloor(user.floor ?? "");
+      setAddress(user.address ?? "");
+      setBellName(user.bellName ?? "");
+      setUserComment(user.comment ?? "");
+
+      // If user is a business, use their own validRadius
+      if (user.business) {
+        const radius = user.validRadius ?? 0;
+        setValidRadius(radius);
+        setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
+      }
+    }
+  }, [user, setAddress, user?.business, setSelectedFloor]);
 
   const handlePayment = async (paidIn: string) => {
     try {
@@ -83,8 +118,6 @@ export default function OrderSidebar({
     }
   };
 
-  const router = useRouter();
-
   const handleClickDoor = (paidIn: string) => {
     if (!user) {
       router.push("/auth/login-options");
@@ -92,34 +125,6 @@ export default function OrderSidebar({
     }
     handlePayment(paidIn);
   };
-
-  const [editingAddress, setEditingAddress] = useState(false);
-  const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
-
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<string[]>([]);
-  const [validRadius, setValidRadius] = useState<number | null>(null);
-  const [isTooFar, setIsTooFar] = useState(false);
-  const [paymentWay, setPaymentWay] = useState("");
-  const [userComment, setUserComment] = useState<string | undefined>(user?.comment);
-  const [bellName, setBellName] = useState<string | undefined>(user?.bellName);
-  const [showDetails, setShowDetails] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setSelectedFloor(user.floor ?? "");
-      setAddress(user.address ?? "");
-      setBellName(user.bellName ?? "");
-      setUserComment(user.comment ?? "");
-
-      // If user is a business, use their own validRadius
-      if (user.business) {
-        const radius = user.validRadius ?? 0;
-        setValidRadius(radius);
-        setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
-      }
-    }
-  }, [user, setAddress, user?.business, setSelectedFloor]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -181,14 +186,6 @@ export default function OrderSidebar({
         return "";
     }
   };
-
-  type Availability = {
-    available: boolean;
-    unavailableReason?: string;
-  };
-
-  // State
-  const [availabilityMap, setAvailabilityMap] = useState<Record<string, Availability>>({});
 
   const handleCheckHours = async () => {
     try {

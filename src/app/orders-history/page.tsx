@@ -54,17 +54,6 @@ export default function MyOrdersPage() {
   const pendingRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef<HTMLDivElement>(null);
   const cancelledRef = useRef<HTMLDivElement>(null);
-
-  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
-    if (ref.current) {
-      const topOffset = ref.current.getBoundingClientRect().top + window.scrollY - 70; // 60px above
-      window.scrollTo({
-        top: topOffset,
-        behavior: "smooth",
-      });
-    }
-  };
-
   const { user } = useCart();
   const userId = user?.id;
 
@@ -91,6 +80,16 @@ export default function MyOrdersPage() {
       evtSource.close();
     };
   }, [userId]);
+
+  const scrollToSection = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      const topOffset = ref.current.getBoundingClientRect().top + window.scrollY - 70; // 60px above
+      window.scrollTo({
+        top: topOffset,
+        behavior: "smooth",
+      });
+    }
+  };
 
   if (orders.length === 0) return 
     <div className="text-center py-10 pt-30">

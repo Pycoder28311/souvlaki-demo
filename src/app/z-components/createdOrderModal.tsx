@@ -17,6 +17,20 @@ export default function CreatedOrderModal() {
   const textToPrint = "";
   const { user } = useCart();
   const [defaultTime, setDefaultTime] = useState(user?.defaultTime ?? 0);
+  
+  useEffect(() => {
+      setDefaultTime(user?.defaultTime ?? 0)
+      const evtSource = new EventSource("/api/read-requested-orders");
+  
+      evtSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setOrders(data);
+      };
+  
+      return () => {
+        evtSource.close();
+      };
+  }, []);
 
   const handlePrint = (order: Order): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -171,20 +185,6 @@ export default function CreatedOrderModal() {
   });
 
   };
-  
-  useEffect(() => {
-      setDefaultTime(user?.defaultTime ?? 0)
-      const evtSource = new EventSource("/api/read-requested-orders");
-  
-      evtSource.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        setOrders(data);
-      };
-  
-      return () => {
-        evtSource.close();
-      };
-  }, []);
 
   const handleAcceptOrder = async (time: string, order: Order) => {
     if (!time) return;

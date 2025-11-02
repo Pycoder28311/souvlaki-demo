@@ -64,18 +64,24 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/schedule-manage",
   ];
 
-  const scrolledPaths = ["/all-orders", "/orders-history", "/profile", "/messages", "/live-orders", "/schedule-manage",];
-  const scrolled = scrolledPaths.includes(pathname);
+  const scrolledPaths = [
+    "/all-orders", 
+    "/orders-history", 
+    "/profile", 
+    "/messages", 
+    "/live-orders", 
+    "/schedule-manage",
+  ];
 
+  const scrolled = scrolledPaths.includes(pathname);
   const hideFooterExact = noFooterExactPaths.includes(pathname);
   const hideNavbarExact = noNavbarExactPaths.includes(pathname);
   const hidePrefix = noNavbarPrefixPaths.some(prefix => pathname.startsWith(prefix));
 
   const showNavbar = !(hideNavbarExact || hidePrefix);
   const showFooter = !(hideFooterExact || hidePrefix);
-
   const hideCartPaths = noCartExactPaths.includes(pathname);
-
+  
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
 
   return (

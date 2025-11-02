@@ -18,13 +18,6 @@ export default function Orders() {
   const [sortOption, setSortOption] = useState<string>("newest");
   const [expandedItems, setExpandedItems] = useState<{ [key: number]: boolean }>({});
 
-  const toggleItem = (id: number) => {
-    setExpandedItems((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
   useEffect(() => {
 
     const evtSource = new EventSource("/api/read-all-orders");
@@ -44,6 +37,13 @@ export default function Orders() {
       evtSource.close();
     };
   }, [user]);
+
+  const toggleItem = (id: number) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   const allProducts = useMemo(() => {
     const productSet = new Set<string>();

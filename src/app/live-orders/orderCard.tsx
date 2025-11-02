@@ -34,6 +34,9 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
     }
   }
 
+  const [showSelect, setShowSelect] = useState(false);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
+
   useEffect(() => {
     if (!order.deliveryTime || !order.createdAt) return;
 
@@ -68,8 +71,25 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
     return () => clearInterval(timer);
   }, [order.deliveryTime, order.createdAt]);
 
-  const [showSelect, setShowSelect] = useState(false);
-  const selectRef = useRef<HTMLSelectElement | null>(null);
+  useEffect(() => {
+    if (showSelect && selectRef.current) {
+      selectRef.current.focus();
+      selectRef.current.size = 8; // opens it visually like a dropdown list
+    } else if (selectRef.current) {
+      selectRef.current.size = 0;
+    }
+  }, [showSelect]);
+
+  // Optional: close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
+        setShowSelect(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSelectChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const time = e.target.value;
@@ -95,26 +115,6 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    if (showSelect && selectRef.current) {
-      selectRef.current.focus();
-      selectRef.current.size = 8; // opens it visually like a dropdown list
-    } else if (selectRef.current) {
-      selectRef.current.size = 0;
-    }
-  }, [showSelect]);
-
-  // Optional: close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
-        setShowSelect(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   return (
     <div className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">

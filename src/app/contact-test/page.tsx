@@ -16,7 +16,6 @@ export default function Home() {
     setEmail(event.target.value);
   };
  
-
   const onFormSubmitted  =(event: React.FormEvent) => {
       event.preventDefault();
       setLoading(true);

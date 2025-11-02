@@ -77,6 +77,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [overrides, setOverrides] = useState<Override[]>([]);
   const [cartMessage, setCartMessage] = useState("Φόρτωση...");
+  
+  const [user, setUser] = useState<User | null>(null);
+  const [selected, setSelected] = useState("");
+  const [selectedFloor, setSelectedFloor] = useState("");
+  const [address, setAddress] = useState("");
+  const [showRadiusNote, setShowRadiusNote] = useState(false);
+  const [validRadius, setValidRadius] = useState<number | null>(null);
+
+  const OpenSidebarPaths = ["/menu"];
+  const Open = OpenSidebarPaths.includes(pathname);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (user?.business) return false;
+    return Open;
+  });
+  const [shopOpen, setShopOpen] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   const [weeklySchedule, setWeeklySchedule] = useState<Record<Weekday, Schedule>>({
     Monday: { open: null, close: null },
@@ -151,7 +167,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [weeklySchedule, overrides]
   );
 
-  const [shopOpen, setShopOpen] = useState(true);
   // Fetch weekly schedule from API
   useEffect(() => {
     const fetchSchedule = async () => {
@@ -243,6 +258,75 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem("orderItems", JSON.stringify(orderItems));
   }, [orderItems]);
+  
+  useEffect(() => {
+    // If user.business changes dynamically, close the sidebar
+    if (user?.business) {
+      setIsSidebarOpen(false);
+    }
+  }, [user?.business]);
+  
+  useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const response = await fetch("/api/session");
+        if (!response.ok) throw new Error("Failed to fetch session data");
+
+        const session = await response.json();
+        if (session?.user) {
+          setUser(session.user);
+
+          if (typeof session.user.address === "string") {
+            setAddress(session.user.address.split(",")[0]);
+          }
+
+          if (session.user.validRadius == null && session.user.business) {
+            setShowRadiusNote(true);
+          }
+        }
+
+        if (session.validRadius) {
+          setValidRadius(session.validRadius)
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+      }
+    };
+
+    fetchSession();
+  }, []);
+
+  // 2️⃣ When user exists but has no address → fetch geolocation
+  useEffect(() => {
+    if (!user || user.address || user.business) return;
+
+    const resolveAddress = async () => {
+      const geoAddress = await getUserAddress();
+      if (!geoAddress) return;
+
+      setAddress(geoAddress.split(",")[0]);
+
+      try {
+        const response = await fetch("/api/update-address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: user.email,
+            address: geoAddress,
+          }),
+        });
+
+        if (!response.ok) throw new Error("Failed to update user");
+
+        const data = await response.json();
+        setUser(data.updatedUser); // update user state
+      } catch (error) {
+        console.error("Error updating user:", error);
+      }
+    };
+
+    resolveAddress();
+  }, [user]);
 
   const addToCart = (
     product: Product,
@@ -346,58 +430,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }
 
-  const [user, setUser] = useState<User | null>(null);
-  const [selected, setSelected] = useState("");
-  const [selectedFloor, setSelectedFloor] = useState("");
-  const [address, setAddress] = useState("");
-  const [showRadiusNote, setShowRadiusNote] = useState(false);
-  const [validRadius, setValidRadius] = useState<number | null>(null);
-
-  const OpenSidebarPaths = ["/menu"];
-  const Open = OpenSidebarPaths.includes(pathname);
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    if (user?.business) return false;
-    return Open;
-  });
-
-  useEffect(() => {
-    // If user.business changes dynamically, close the sidebar
-    if (user?.business) {
-      setIsSidebarOpen(false);
-    }
-  }, [user?.business]);
-  
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await fetch("/api/session");
-        if (!response.ok) throw new Error("Failed to fetch session data");
-
-        const session = await response.json();
-        if (session?.user) {
-          setUser(session.user);
-
-          if (typeof session.user.address === "string") {
-            setAddress(session.user.address.split(",")[0]);
-          }
-
-          if (session.user.validRadius == null && session.user.business) {
-            setShowRadiusNote(true);
-          }
-        }
-
-        if (session.validRadius) {
-          setValidRadius(session.validRadius)
-        }
-      } catch (error) {
-        console.error("Error fetching session:", error);
-      }
-    };
-
-    fetchSession();
-  }, []);
-
   const getUserAddress = async (): Promise<string | null> => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       return null;
@@ -425,40 +457,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
     });
   };
-
-  // 2️⃣ When user exists but has no address → fetch geolocation
-  useEffect(() => {
-    if (!user || user.address || user.business) return;
-
-    const resolveAddress = async () => {
-      const geoAddress = await getUserAddress();
-      if (!geoAddress) return;
-
-      setAddress(geoAddress.split(",")[0]);
-
-      try {
-        const response = await fetch("/api/update-address", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: user.email,
-            address: geoAddress,
-          }),
-        });
-
-        if (!response.ok) throw new Error("Failed to update user");
-
-        const data = await response.json();
-        setUser(data.updatedUser); // update user state
-      } catch (error) {
-        console.error("Error updating user:", error);
-      }
-    };
-
-    resolveAddress();
-  }, [user]);
-
-  const [showWelcome, setShowWelcome] = useState(true);
 
   return (
     <CartContext.Provider
