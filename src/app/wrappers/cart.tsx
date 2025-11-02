@@ -246,7 +246,7 @@ export default function OrderSidebar({
     }
   };
 
-  if (!hydrated) {
+  if (!hydrated || user?.business) {
     return null;
   }
 

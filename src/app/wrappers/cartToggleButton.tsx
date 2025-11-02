@@ -6,7 +6,7 @@ import { useCart } from "./cartContext";
 import { useEffect } from "react";
 
 export default function CartToggleButton() {
-  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage  } = useCart();
+  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user  } = useCart();
 
   useEffect(() => {
     if (!isSidebarOpen) return;
@@ -33,7 +33,7 @@ export default function CartToggleButton() {
     };
   }, [isSidebarOpen, setIsSidebarOpen]);
 
-  if (isSidebarOpen || cartMessage === "Φόρτωση...") return;
+  if (isSidebarOpen || cartMessage === "Φόρτωση..." || user?.business) return;
 
   return (
     <>

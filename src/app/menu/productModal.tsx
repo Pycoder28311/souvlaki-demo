@@ -72,12 +72,17 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
     setUploading(false);
   };
 
-  const toggleIngredient = (ingredient: Ingredient) => {
-    setSelectedIngredients((prev) =>
-        prev.some((i) => i.id === ingredient.id)
-        ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected
-        : [...prev, ingredient] // add if not selected
-    );
+  const toggleIngredient = (ingredient: Ingredient, ingCategory: IngCategory) => {
+    setSelectedIngredients((prev) => {
+      if (ingCategory.onlyOne) {
+        // Αν η κατηγορία έχει onlyOne, κρατάμε μόνο το ingredient που κλικάρησες
+        return [ingredient];
+      } else {
+        // Κανονικό toggle για πολλαπλές επιλογές
+        const exists = prev.some((i) => i.id === ingredient.id);
+        return exists ? prev.filter((i) => i.id !== ingredient.id) : [...prev, ingredient];
+      }
+    });
   };
 
   const toggleOption = (option: Option) => {

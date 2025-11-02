@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Image from 'next/image';
 import { Minus, Plus, ChevronDown, ChevronRight, X } from "lucide-react";
-import { Ingredient, Option, OrderItem } from "../types"
+import { Ingredient, Option, OrderItem, IngCategory } from "../types"
 import { useCart } from "../wrappers/cartContext";
 
 // types.ts or inside EditModal.tsx
@@ -43,12 +43,18 @@ export default function EditModal({
     });
   };
 
-  const toggleIngredient = (ingredient: Ingredient) => {
-    setSelectedIngredients((prev) =>
-        prev.some((i) => i.id === ingredient.id)
-        ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected
-        : [...prev, ingredient] // add if not selected
-    );
+  const toggleIngredient = (ingredient: Ingredient, ingCategory: IngCategory) => {
+    setSelectedIngredients((prev) => {
+      if (ingCategory.onlyOne) {
+        // Αν η κατηγορία έχει onlyOne, κρατάμε μόνο το ingredient που κλικάραμε
+        return [ingredient];
+      } else {
+        // Κανονικό toggle για πολλαπλές επιλογές
+        return prev.some((i) => i.id === ingredient.id)
+          ? prev.filter((i) => i.id !== ingredient.id) // remove if already selected
+          : [...prev, ingredient]; // add if not selected
+      }
+    });
   };
 
   const handleContentClick = (e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation();
@@ -191,7 +197,7 @@ export default function EditModal({
                             <input
                               type="checkbox"
                               checked={selectedIngredients.some((i) => i.id === ing.id)}
-                              onChange={() => toggleIngredient(ing)}
+                              onChange={() => toggleIngredient(ing, ingCat)}
                               className="h-4 w-4"
                             />
 

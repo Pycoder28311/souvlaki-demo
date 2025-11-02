@@ -1,6 +1,6 @@
 import React from "react";
 import { ChevronDown, ChevronRight, Trash2, Edit2 } from "lucide-react";
-import { Product, Ingredient, Option } from "../../types";
+import { Product, Ingredient, Option, IngCategory } from "../../types";
 
 interface ProductDetailProps {
   fullProduct: Product;
@@ -11,7 +11,7 @@ interface ProductDetailProps {
   openOptions: Record<number, boolean>;
   setOpenOptions: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   toggleCategory: (catId: number) => void;
-  toggleIngredient: (ingredient: Ingredient) => void;
+  toggleIngredient: (ingredient: Ingredient, ingCategory: IngCategory) => void;
   toggleOption: (option: Option) => void;
   handleEditCategoryName: (catId: number) => void;
   handleMakeRequiredCat: (catId: number) => void;
@@ -182,7 +182,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       <input
                         type="checkbox"
                         checked={selectedIngredients.some((i) => i.id === ing.id)}
-                        onChange={() => toggleIngredient(ing)}
+                        onChange={() => toggleIngredient(ing, ingCat)}
                         className="h-4 w-4"
                       />
                       <div className="flex-1">
