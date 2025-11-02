@@ -4,6 +4,8 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { Order } from "../types"; 
 import { OrderItem } from "../types";
+import { useCart } from "../wrappers/cartContext";
+import { Bell } from "lucide-react";
 
 export default function CreatedOrderModal() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -12,7 +14,9 @@ export default function CreatedOrderModal() {
   const [deliveryTime, setDeliveryTime] = useState(""); // input value
   const [successMap, setSuccessMap] = useState<{ [key: number]: boolean }>({});
   const printRef = useRef<HTMLDivElement>(null);
-  const textToPrint = "lets try here again";
+  const textToPrint = "";
+  const { user } = useCart();
+  const [defaultTime, setDefaultTime] = useState(user?.defaultTime ?? 0);
 
   const handlePrint = (order: Order): Promise<void> => {
     return new Promise((resolve, reject) => {
@@ -169,6 +173,7 @@ export default function CreatedOrderModal() {
   };
   
   useEffect(() => {
+      setDefaultTime(user?.defaultTime ?? 0)
       const evtSource = new EventSource("/api/read-requested-orders");
   
       evtSource.onmessage = (event) => {
@@ -253,7 +258,7 @@ export default function CreatedOrderModal() {
       {orders.map((order) => {
         const distance = order.user.distanceToDestination ?? 0; // σε km
         const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
-        const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
+        const travelTime = distance / deliverySpeedKmPerMin + defaultTime; // +10 λεπτά προετοιμασίας
 
         const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
         const lower = roundTo5(travelTime);
@@ -261,7 +266,9 @@ export default function CreatedOrderModal() {
 
         const options: string[] = [];
         for (let t = lower - 5; t <= 70; t += 5) {
-          options.push(`${t}-${t + 5}`);
+          if (t >= 0) {
+            options.push(`${t}-${t + 5}`);
+          }
         }
         
         return(
@@ -315,12 +322,6 @@ export default function CreatedOrderModal() {
                   )}
                 </div>
 
-                <div className="text-sm text-gray-700">
-                    <p>
-                    <strong>{order.user.name}</strong>
-                    </p>
-                </div>
-
                 {/* Mini Items list */}
                 {order.status !== "cancelled" && (
                   <ul className="mt-1 space-y-1 text-sm text-gray-600 list-disc ml-4">
@@ -339,12 +340,36 @@ export default function CreatedOrderModal() {
                   </ul>
                 )}
 
-                <p className="text-sm text-gray-700 truncate max-w-[full] mt-2">
-                  Διεύθυνση: {order.user.address}
+                <p className="text-sm text-gray-700 truncate max-w-full mt-2">
+                  <strong>
+                    {order.user.address
+                      ? order.user.address.split(",").slice(0, 2).join(",")
+                      : "—"}
+                  </strong>
                 </p>
-                <p className="text-sm text-gray-700 truncate max-w-[full]">
-                  Όροφος: <strong>{order.user.floor}</strong>
-                </p>
+
+                <div className="flex flex-row justify-between mb-2">
+                  <p className="text-sm text-gray-700">
+                    <strong>
+                      {order.user.floor === "Ισόγειο" ? order.user.floor : `${order.user.floor} όροφος`}
+                    </strong>
+                  </p>
+
+                  <strong className="text-sm text-gray-700 flex items-center gap-1">
+                    <Bell className="w-4 h-4 text-gray-700" />
+                    {order.user.bellName}
+                  </strong>
+                </div>
+
+                <div className="text-sm text-gray-700">
+                  {order.user.name}
+                </div>
+
+                {order.user.comment && (
+                  <p className="text-sm text-gray-700">
+                    Σχόλιο: <strong>{order.user.comment}</strong>
+                  </p>
+                )}
 
                 <div className="flex justify-between">
                   <p className="text-sm text-gray-700 truncate max-w-full">
@@ -374,7 +399,7 @@ export default function CreatedOrderModal() {
               {order.status !== "cancelled" && (
                 <>
                   {confirmReject !== order.id ? (
-                      <div className="flex gap-2 mt-3">
+                      <div className="flex gap-2">
                       <button
                         onClick={() => {setDeliveryModalOpen((prev) => (prev === order.id ? null : order.id))}}
                         className="w-1/2 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition"

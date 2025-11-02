@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `User` ADD COLUMN `bellName` VARCHAR(191) NULL,
+    ADD COLUMN `comment` VARCHAR(191) NULL,
+    ADD COLUMN `timeToReach` INTEGER NULL;

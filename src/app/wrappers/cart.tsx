@@ -101,11 +101,16 @@ export default function OrderSidebar({
   const [validRadius, setValidRadius] = useState<number | null>(null);
   const [isTooFar, setIsTooFar] = useState(false);
   const [paymentWay, setPaymentWay] = useState("");
+  const [userComment, setUserComment] = useState<string | undefined>(user?.comment);
+  const [bellName, setBellName] = useState<string | undefined>(user?.bellName);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (user) {
       setSelectedFloor(user.floor ?? "");
       setAddress(user.address ?? "");
+      setBellName(user.bellName ?? "");
+      setUserComment(user.comment ?? "");
 
       // If user is a business, use their own validRadius
       if (user.business) {
@@ -221,6 +226,26 @@ export default function OrderSidebar({
     }
   };
 
+  const handleUpdateAll = async () => {
+    try {
+      const res = await fetch("/api/update-user-details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ floor: selectedFloor, bellName, comment: userComment, userEmail: user?.email }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update user details");
+
+      const data = await res.json(); // <- await is important
+      if (data.user) {
+        setUser(data.user); // update the user state with the returned user
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Πρόβλημα κατά την ενημέρωση των στοιχείων.");
+    }
+  };
+
   if (!hydrated) {
     return null;
   }
@@ -330,7 +355,7 @@ export default function OrderSidebar({
                       </div>
                     )}
                   </div>
-                  {item.imageId ? (
+                  {item.imageId && (
                     <div className="w-22 h-22 relative overflow-hidden shadow-sm rounded-lg">
                       <Image
                         src={`/api/images/${item.imageId}`}
@@ -338,10 +363,6 @@ export default function OrderSidebar({
                         fill
                         style={{ objectFit: "cover", objectPosition: "center" }}
                       />
-                    </div>
-                  ) : (
-                    <div className="w-22 h-22 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg ">
-                      Χωρίς Εικόνα
                     </div>
                   )}
                 </div>
@@ -409,7 +430,11 @@ export default function OrderSidebar({
             </div>
             
             {user?.address && (
-              <div className="mb-4 text-gray-700 text-sm flex flex-col p-6">
+              <div className="mb-0 text-gray-700 text-sm flex flex-col p-6 overflow-x-hidden overflow-y-auto" 
+              style={{
+                scrollbarWidth: "thin", // Firefox
+                scrollbarColor: "#a8a8a8ff #e5e7eb", // thumb yellow-400, track gray-200 for Firefox
+              }}>
                 <span>
                   <span className="font-semibold text-gray-800">Διεύθυνση:</span> {user.address}
                 </span>
@@ -467,44 +492,68 @@ export default function OrderSidebar({
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 mt-4">
-                  <select
-                    value={selectedFloor || ""}
-                    onChange={(e) => setSelectedFloor(e.target.value)}
-                    className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
-                  >
-                    <option value="">Επίλεξε όροφο</option>
-                    <option value="Ισόγειο">Ισόγειο</option>
-                    <option value="1ος">1ος όροφος</option>
-                    <option value="2ος">2ος όροφος</option>
-                    <option value="3ος">3ος όροφος</option>
-                    <option value="4ος">4ος όροφος</option>
-                    <option value="5ος">5ος όροφος</option>
-                  </select>
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch("/api/update-floor", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ floor: selectedFloor, userEmail: user.email }),
-                        });
-                        if (!res.ok) throw new Error("Failed to update floor");
-                        setWarning("Ο όροφος ενημερώθηκε επιτυχώς!");
-                      } catch (err) {
-                        console.error(err);
-                        alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
-                      }
-                    }}
-                    className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
-                  >
-                    Αποθήκευση
-                  </button>
-                </div>
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="flex items-center gap-2 justify-center w-full p-3 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 mt-4"
+                >
+                  {showDetails ? "Απόκρυψη λεπτομερειών" : "Εμφάνιση λεπτομερειών"}
+                  {showDetails ? (
+                    <ChevronUp className="w-5 h-5 text-gray-600" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-600" />
+                  )}
+                </button>
 
-                {warning && (
-                  <div className="text-red-600 font-semibold mt-4 mb-4">
-                    {warning}
+                {showDetails && (
+                  <div className="flex flex-col gap-2">
+                    {warning && (
+                      <div className="text-red-600 font-semibold mt-4 mb-0">
+                        {warning}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col gap-2 mt-4">
+                      <p className="text-gray-700">Όροφος:</p>
+                      <select
+                        value={selectedFloor || ""}
+                        onChange={(e) => setSelectedFloor(e.target.value)}
+                        className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                      >
+                        <option value="">Επίλεξε όροφο</option>
+                        <option value="Ισόγειο">Ισόγειο</option>
+                        <option value="1ος">1ος όροφος</option>
+                        <option value="2ος">2ος όροφος</option>
+                        <option value="3ος">3ος όροφος</option>
+                        <option value="4ος">4ος όροφος</option>
+                        <option value="5ος">5ος όροφος</option>
+                      </select>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <p className="text-gray-700">Όνομα στο κουδούνι (προεραιτικό):</p>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={bellName || ""}
+                          onChange={(e) => setBellName(e.target.value)}
+                          placeholder="Γράψε το όνομα που φαίνεται στο κουδούνι"
+                          className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <p className="text-gray-700">Σχόλιο για να διευκολυνθεί η εύρεση της κατοικίας σου (προεραιτικό):</p>
+                      <div className="flex flex-col items-center gap-2">
+                        <textarea
+                          value={userComment || ""}
+                          onChange={(e) => setUserComment(e.target.value)}
+                          placeholder="Γράψε ό,τι θέλεις για να διευκολυνθεί να βρεθεί η τοποθεσία σου"
+                          className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                          rows={2}
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -525,6 +574,7 @@ export default function OrderSidebar({
                   }
 
                   if (!selectedFloor) {
+                    setShowDetails(true)
                     setWarning("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
                     return;
                   }
@@ -540,7 +590,15 @@ export default function OrderSidebar({
                   }
 
                   setWarning("");
-                  // ✅ Proceed if floor exists
+                  const floorChanged = user.floor !== selectedFloor;
+                  const bellChanged = user.bellName !== bellName;
+                  const commentChanged = user.comment !== userComment;
+
+                  if (floorChanged || bellChanged || commentChanged) {
+                    handleUpdateAll(); // update only if something changed
+                  }
+
+                  // Proceed to payment
                   setPaymentWayModal(true);
                 }}
               >

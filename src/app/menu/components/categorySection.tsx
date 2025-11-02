@@ -165,9 +165,9 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="w-28 h-full bg-gray-200 flex items-center justify-center text-gray-500 rounded-r-xl flex-shrink-0">
-                  Χωρίς Εικόνα
-                </div>
+                <button className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]">
+                  <Plus size={20} />
+                </button>
               )}
 
               {business && (

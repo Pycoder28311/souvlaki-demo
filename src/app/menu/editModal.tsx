@@ -70,7 +70,7 @@ export default function EditModal({
 
         { orderItem && (
           <>
-            {orderItem.imageId ? (
+            {orderItem.imageId && (
               <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
                 <Image
                   src={`/api/images/${orderItem.imageId}`}
@@ -79,10 +79,6 @@ export default function EditModal({
                   style={{ objectFit: "cover", objectPosition: "center" }}
                   className="rounded-t-lg"
                 />
-              </div>
-            ) : (
-              <div className="w-full h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
-                Χωρίς Εικόνα
               </div>
             )}
             <button

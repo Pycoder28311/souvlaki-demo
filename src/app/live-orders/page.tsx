@@ -51,7 +51,7 @@ export default function Orders() {
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Live Παραγγελίες</h1>
 
         {orders.map((order) => (
-          <OrderCard key={order.id} order={order} />
+          <OrderCard key={order.id} order={order} defaultTime={user?.defaultTime}/>
         ))}
       </div>
     </div>

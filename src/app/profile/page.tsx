@@ -13,6 +13,9 @@ export default function ProfilePage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
   const [selectedFloor, setSelectedFloor] = useState<string | undefined>("");
+  const [userComment, setUserComment] = useState<string | undefined>("");
+  const [bellName, setBellName] = useState<string | undefined>("");
+  const [defaultTime, setDefaultTime] = useState(0);
   const [warning, setWarning] = useState("");
 
   // 🧠 When user changes (loaded later), update the dependent states
@@ -20,10 +23,14 @@ export default function ProfilePage() {
     if (user) {
       setNameInput(user.name ?? "");
       setSelectedFloor(user.floor ?? "");
+      setAddress(user.address ?? "");
       if (user.business) {
         setValidRadius(user.validRadius ?? 0);
+        setDefaultTime(user.defaultTime ?? 0);
+      } else {
+        setUserComment(user.comment ?? "");
+        setBellName(user.bellName ?? "");
       }
-      setAddress(user.address ?? "");
     }
     if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
       setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
@@ -102,7 +109,7 @@ export default function ProfilePage() {
 
   return (
     <>
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-0 sm:pt-16">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-0 sm:pt-24 sm:pb-16">
         <div
             className="
             bg-white shadow-xl w-full text-center relative 
@@ -155,7 +162,7 @@ export default function ProfilePage() {
             )}
 
             {/* Address */}
-            {editingAddress ? (
+            {!user?.business && editingAddress ? (
             <div className="mb-4 relative">
                 <div className="flex items-center gap-2">
                 <input
@@ -217,95 +224,209 @@ export default function ProfilePage() {
             )}
 
             {!user?.business && (
-              <div className="flex items-center gap-2 mt-4">
-                <select
-                  value={selectedFloor || ""}
-                  onChange={(e) => setSelectedFloor(e.target.value)}
-                  className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
-                >
-                  <option value="">Επίλεξε όροφο</option>
-                  <option value="Ισόγειο">Ισόγειο</option>
-                  <option value="1ος">1ος όροφος</option>
-                  <option value="2ος">2ος όροφος</option>
-                  <option value="3ος">3ος όροφος</option>
-                  <option value="4ος">4ος όροφος</option>
-                  <option value="5ος">5ος όροφος</option>
-                </select>
-                <button
-                  onClick={async () => {
-                    try {
-                      const res = await fetch("/api/update-floor", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
-                      });
-                      if (!res.ok) throw new Error("Failed to update floor");
-                      alert("Ο όροφος ενημερώθηκε επιτυχώς!");
-                    } catch (err) {
-                      console.error(err);
-                      alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
-                    }
-                  }}
-                  className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
-                >
-                  Αποθήκευση
-                </button>
+              <div className="flex flex-col gap-4">
+                {/* Ενημέρωση ορόφου */}
+                <div className="flex flex-col gap-2 mt-4">
+                  <p className="text-gray-700">Επεξεργασία ορόφου:</p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={selectedFloor || ""}
+                      onChange={(e) => setSelectedFloor(e.target.value)}
+                      className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                    >
+                      <option value="">Επίλεξε όροφο</option>
+                      <option value="Ισόγειο">Ισόγειο</option>
+                      <option value="1ος">1ος όροφος</option>
+                      <option value="2ος">2ος όροφος</option>
+                      <option value="3ος">3ος όροφος</option>
+                      <option value="4ος">4ος όροφος</option>
+                      <option value="5ος">5ος όροφος</option>
+                      <option value="6ος">6ος όροφος</option>
+                      <option value="7ος">7ος όροφος</option>
+                      <option value="8ος">8ος όροφος</option>
+                      <option value="9ος">9ος όροφος</option>
+                      <option value="10ος">10ος όροφος</option>
+                    </select>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/update-floor", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
+                          });
+                          if (!res.ok) throw new Error("Failed to update floor");
+                          alert("Ο όροφος ενημερώθηκε επιτυχώς!");
+                        } catch (err) {
+                          console.error(err);
+                          alert("Πρόβλημα κατά την ενημέρωση του ορόφου.");
+                        }
+                      }}
+                      className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Αποθήκευση
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 mt-4">
+                  <p className="text-gray-700">Όνομα στο κουδούνι (προεραιτικό):</p>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={bellName || ""}
+                      onChange={(e) => setBellName(e.target.value)}
+                      placeholder="Γράψε το όνομα που φαίνεται στο κουδούνι"
+                      className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/update-bellName", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ bellName, userEmail: user?.email }),
+                          });
+                          if (!res.ok) throw new Error("Failed to update bell name");
+                          alert("Το όνομα στο κουδούνι ενημερώθηκε επιτυχώς!");
+                        } catch (err) {
+                          console.error(err);
+                          alert("Πρόβλημα κατά την ενημέρωση του ονόματος κουδουνιού.");
+                        }
+                      }}
+                      className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Αποθήκευση
+                    </button>
+                  </div>
+                </div>
+
+                {/* Προαιρετικό σχόλιο */}
+                <div className="flex flex-col gap-2 mt-4">
+                  <p className="text-gray-700">Σχόλιο για να διευκολυνθεί η εύρεση της κατοικίας σου (προεραιτικό):</p>
+                  <div className="flex flex-col items-center gap-2">
+                    <textarea
+                      value={userComment || ""}
+                      onChange={(e) => setUserComment(e.target.value)}
+                      placeholder="Γράψε ό,τι θέλεις για να διευκολυνθεί να βρεθεί η τοποθεσία σου"
+                      className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                      rows={4}
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/update-comment", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ comment: userComment, userEmail: user?.email }),
+                          });
+                          if (!res.ok) throw new Error("Failed to update comment");
+                          alert("Το σχόλιο ενημερώθηκε επιτυχώς!");
+                        } catch (err) {
+                          console.error(err);
+                          alert("Πρόβλημα κατά την ενημέρωση του σχολίου.");
+                        }
+                      }}
+                      className="bg-green-500 w-full text-white px-3 py-2 rounded-lg hover:bg-green-600 transition"
+                    >
+                      Αποθήκευση Σχολίου
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 
             {user?.business && (
-              <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
-                <span className="text-gray-700">
-                  Ορίστε την μέγιστη δυνατή απόσταση όπου γίνεται delivery σε (km):
-                </span>
-                <div className="flex flex-row gap-4">
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={validRadius ?? 0}
-                    onChange={(e) => setValidRadius(parseFloat(e.target.value || "0"))}
-                    placeholder="Ορίστε απόσταση"
-                    className={`border p-2 rounded-lg w-full text-center ${
-                      !validRadius ? "border-red-500" : "border-gray-300"
-                    }`}
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!validRadius) {
-                        alert("Παρακαλώ εισάγετε μια τιμή.");
-                        return;
-                      }
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2 mt-4">
+                  <p className="text-gray-700">Μέσος χρόνος προετοιμασίας (αυτός ο χρόνος προστίθεται στον χρόνο που χρειάζεται ο ντελιβεράς):</p>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={defaultTime || ""}
+                      onChange={(e) => setDefaultTime(Number(e.target.value))}
+                      className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-yellow-400"
+                    >
+                      <option value="">Επίλεξε χρόνο</option>
+                      {Array.from({ length: 29 }, (_, i) => (i + 1) * 5).map((time) => (
+                        <option key={time} value={time}>
+                          {time} λεπτά
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/update-defaultTime", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ defaultTime, userEmail: user?.email }),
+                          });
+                          if (!res.ok) throw new Error("Failed to update default time");
+                          alert("Ο προεπιλεγμένος χρόνος ενημερώθηκε επιτυχώς!");
+                        } catch (err) {
+                          console.error(err);
+                          alert("Πρόβλημα κατά την ενημέρωση του προεπιλεγμένου χρόνου.");
+                        }
+                      }}
+                      className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Αποθήκευση
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
+                  <span className="text-gray-700">
+                    Ορίστε την μέγιστη δυνατή απόσταση όπου γίνεται delivery σε (km):
+                  </span>
+                  <div className="flex flex-row gap-4 w-full">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={validRadius ?? 0}
+                      onChange={(e) => setValidRadius(parseFloat(e.target.value || "0"))}
+                      placeholder="Ορίστε απόσταση"
+                      className={`border p-2 rounded-lg w-full text-center ${
+                        !validRadius ? "border-red-500" : "border-gray-300"
+                      }`}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!validRadius) {
+                          alert("Παρακαλώ εισάγετε μια τιμή.");
+                          return;
+                        }
 
-                      const radiusValue = validRadius;
-                      if (isNaN(radiusValue) || radiusValue <= 0) {
-                        alert("Η απόσταση πρέπει να είναι μεγαλύτερη από 0 km.");
-                        return;
-                      }
-                      try {
-                        const res = await fetch("/api/update-valid-radius", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            userId: user.id,
-                            validRadius: validRadius,
-                          }),
-                        });
+                        const radiusValue = validRadius;
+                        if (isNaN(radiusValue) || radiusValue <= 0) {
+                          alert("Η απόσταση πρέπει να είναι μεγαλύτερη από 0 km.");
+                          return;
+                        }
+                        try {
+                          const res = await fetch("/api/update-valid-radius", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              userId: user.id,
+                              validRadius: validRadius,
+                            }),
+                          });
 
-                        if (!res.ok) throw new Error("Failed to update radius");
+                          if (!res.ok) throw new Error("Failed to update radius");
 
-                        const data = await res.json(); 
-                        alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
-                        setShowRadiusNote(false);
-                      } catch (err) {
-                        console.error(err);
-                        alert("Something went wrong");
-                      }
-                    }}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
-                  >
-                    Αποθήκευση
-                  </button>
+                          const data = await res.json(); 
+                          alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
+                          setShowRadiusNote(false);
+                        } catch (err) {
+                          console.error(err);
+                          alert("Something went wrong");
+                        }
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
+                    >
+                      Αποθήκευση
+                    </button>
+                  </div>
                 </div>
                 <Link
                   href="/schedule-manage"
@@ -320,6 +441,5 @@ export default function ProfilePage() {
         </div>
     </div>
     </>
-
   );
 }

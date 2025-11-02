@@ -59,6 +59,9 @@ model User {
   distanceToDestination Decimal?  @db.Decimal(6, 2)
   floor        String?
   validRadius  Decimal?  @db.Decimal(6, 2)
+  defaultTime  Int?
+  bellName     String?
+  comment      String?
   stripeCustomerId String?
 
   orders       ProductOrder[]
@@ -189,6 +192,7 @@ model IngCategory {
   productId Int
   name      String
   isRequired  Boolean      @default(false)
+  onlyOne   Boolean   @default(false)
 
   product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
   ingredients Ingredient[]

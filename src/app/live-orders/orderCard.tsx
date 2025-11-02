@@ -7,9 +7,10 @@ import { Order } from "../types";
 
 interface Props {
   order: Order;
+  defaultTime: number;
 }
 
-const OrderCard: React.FC<Props> = ({ order }) => {
+const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
   const [confirmReject, setConfirmReject] = useState(false);
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
   const [deliveryTime, setDeliveryTime] = useState(""); // input value
@@ -19,7 +20,7 @@ const OrderCard: React.FC<Props> = ({ order }) => {
   
   const distance = order.user.distanceToDestination ?? 0; // σε km
   const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
-  const travelTime = distance / deliverySpeedKmPerMin + 10; // +10 λεπτά προετοιμασίας
+  const travelTime = distance / deliverySpeedKmPerMin + Number(defaultTime ?? 0); // +10 λεπτά προετοιμασίας
 
   const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
   const lower = roundTo5(travelTime);
@@ -28,7 +29,9 @@ const OrderCard: React.FC<Props> = ({ order }) => {
   // Δημιουργία επιλογών από το πιθανότερο μέχρι 60 λεπτά
   const options: string[] = [];
   for (let t = lower - 5; t <= 70; t += 5) {
-    options.push(`${t}-${t + 5}`);
+    if (t >= 0) {
+      options.push(`${t}-${t + 5}`);
+    }
   }
 
   useEffect(() => {
@@ -361,6 +364,16 @@ const OrderCard: React.FC<Props> = ({ order }) => {
         <p className="text-gray-700">
           <strong>Όροφος:</strong> {order.user.floor}
         </p>
+
+        <p className="text-gray-700">
+          <strong>Κουδούνι:</strong> {order.user.bellName}
+        </p>
+
+        {order.user.comment && (
+          <p className="text-gray-700">
+            <strong>Σχόλιο:</strong> {order.user.comment}
+          </p>
+        )}
 
         <p className="text-gray-700">
           <strong>Δημιουργήθηκε: </strong>{" "}

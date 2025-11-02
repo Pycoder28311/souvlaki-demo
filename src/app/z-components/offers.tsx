@@ -94,17 +94,13 @@ export default function MenuGrid({
           >
             {/* Image */}
             <div className="h-48 relative">
-              {item?.imageId ? (
+              {item?.imageId && (
                 <Image
                   src={`/api/images/${item.imageId}`}
                   alt={`image of ${item.name}`}
                   fill
                   className="object-cover rounded-t-xl"
                 />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center bg-gray-200 text-gray-600 rounded-t-xl">
-                  Χωρίς Εικόνα
-                </div>
               )}
             </div>
 

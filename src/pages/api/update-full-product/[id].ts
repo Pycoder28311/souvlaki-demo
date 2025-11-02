@@ -15,6 +15,7 @@ interface CategoryInput {
   ingredients: IngredientInput[];
   delete?: boolean; // flag to delete category
   isRequired?: boolean;
+  onlyOne?: boolean;
 }
 
 type Option = {
@@ -135,6 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             data: { 
               name: submittedCat.name,
               isRequired: submittedCat.isRequired ?? existingCat.isRequired, // ✅ update required
+              onlyOne: submittedCat.onlyOne ?? existingCat.onlyOne, 
             },
           });
           categoryId = submittedCat.id;
@@ -146,6 +148,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             name: submittedCat.name, 
             productId,
             isRequired: submittedCat.isRequired ?? false, // ✅ set default if missing
+            onlyOne: submittedCat.onlyOne ?? false,
           },
         });
         categoryId = newCat.id;
@@ -156,7 +159,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: { 
           name: submittedCat.name, 
           productId,
-          isRequired: submittedCat.isRequired ?? false, // ✅ set default
+          isRequired: submittedCat.isRequired ?? false, // ✅ set default// ✅ set default if missing
+          onlyOne: submittedCat.onlyOne ?? false,
         },
       });
       categoryId = newCat.id;

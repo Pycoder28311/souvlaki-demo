@@ -9,6 +9,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import CreatedOrderModal from "./createdOrderModal";
 import { useCart } from "../wrappers/cartContext";
+import AddressModal from "./addressPanel";
 
 export default function Navbar({scrolled = false, isLive }) {
   const [isScrolled, setIsScrolled] = useState(scrolled);
@@ -142,6 +143,10 @@ export default function Navbar({scrolled = false, isLive }) {
                 </Link>
               </div>
             )}
+          </div>
+
+          <div className="md:hidden absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <AddressModal />
           </div>
 
           <div className="md:hidden flex items-center justify-end space-x-2">

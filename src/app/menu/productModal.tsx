@@ -186,6 +186,18 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
     });
   };
 
+  const handleOnlyOneCat = (catId: number) => {
+    setFullProduct((prev) => {
+      if (!prev || !prev.ingCategories) return prev;
+
+      const newCategories = prev.ingCategories.map((c) =>
+        c.id === catId ? { ...c, onlyOne: !c.onlyOne } : c
+      );
+
+      return { ...prev, ingCategories: newCategories };
+    });
+  };
+
   const handleAddCategory = () => {
     const name = prompt("Εισάγετε το όνομα της νέας κατηγορίας");
     if (!name) return;
@@ -401,7 +413,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
           `}
         onClick={handleContentClick}
       >
-        <div className="overflow-y-auto max-h-full sm:max-h-[80vh] pb-12" style={{
+        <div className="overflow-y-auto max-h-full sm:max-h-[80vh] pb-12 mb-6" style={{
           scrollbarWidth: 'none', // Firefox
         }}>
           {/* Loading state */}
@@ -409,7 +421,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
           {!loading && fullProduct && (
             <>
-              {fullProduct.imageId ? (
+              {fullProduct.imageId && (
                 <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
                   <Image
                     src={`/api/images/${fullProduct.imageId}`}
@@ -418,10 +430,6 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                     style={{ objectFit: "cover", objectPosition: "center" }}
                     className="rounded-t-lg"
                   />
-                </div>
-              ) : (
-                <div className="w-full h-[40vh] sm:h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg mb-4">
-                  Χωρίς Εικόνα
                 </div>
               )}
 
@@ -482,6 +490,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                 toggleOption={toggleOption}
                 handleEditCategoryName={handleEditCategoryName}
                 handleMakeRequiredCat={handleMakeRequiredCat}
+                handleOnlyOneCat={handleOnlyOneCat}
                 handleDeleteCategory={handleDeleteCategory}
                 handleAddIngredient={handleAddIngredient}
                 handleEditIngredientName={handleEditIngredientName}
@@ -496,8 +505,10 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
               />
             </>
           )}
-          {business && (
-            <div className="w-full flex justify-center">
+        </div>
+        <div className="fixed inset-x-0 bottom-0 bg-white p-4 border-t border-gray-300 shadow-md flex gap-4 z-50 rounded-b-lg">
+          {business ? (
+            <div className="w-full flex px-2 justify-center">
               <button
                 onClick={async () => {
                   if (!fullProduct) return;
@@ -521,86 +532,85 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                     setLoading(false);
                   }
                 }}
-                className="h-12 w-[90%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-12"
+                className="h-12 w-[100%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 disabled={loading}
               >
               {loading ? "Αποθήκευση..." : "Αποθήκευση Αλλαγών"}
             </button>
             </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                >
+                  <Minus className="w-6 h-6 text-black" />
+                </button>
+
+                <span className="font-semibold text-lg">{quantity}</span>
+
+                <button
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
+                >
+                  <Plus className="w-6 h-6 text-black" />
+                </button>
+              </div>
+
+              {/* Add to cart button */}
+              <button
+                onClick={() => {
+                  if (!product ||!shopOpen) return;
+
+                  // Find the first required category missing selection
+                  const missingCat = (ingCategories ?? []).find(
+                    (cat) =>
+                      cat.isRequired &&
+                      !selectedIngredients.some((ing) => cat.ingredients.some((i) => i.id === ing.id))
+                  );
+
+                  if (missingCat) {
+                    // Open that category
+                    setOpenCategories((prev) => ({
+                      ...prev,
+                      [missingCat.id]: true,
+                    }));
+
+                    // Scroll into view smoothly
+                    const element = document.getElementById(`ing-cat-${missingCat.id}`);
+                    if (element) {
+                      element.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }
+
+                    return;
+                  }
+
+                  // Add to cart if all required ingredients selected
+                  for (let i = 0; i < quantity; i++) {
+                    addToCart(product, selectedIngredients, ingCategories ?? [], selectedOptions, options);
+                  }
+
+                  setSelectedIngredients([]);
+                  setQuantity(1);
+                  onClose();
+                }}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
+              >
+                {shopOpen ? (
+                  <>
+                    <span className="sm:hidden">Προσθήκη</span>
+                    <span className="hidden sm:inline">Προσθήκη στο Καλάθι</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="sm:hidden">Κλειστό</span>
+                    <span className="hidden sm:inline">Το κατάστημα είναι κλειστό</span>
+                  </>
+                )}
+              </button>
+            </>
           )}
-        </div>
-        <div className="fixed inset-x-0 bottom-0 bg-white p-4 border-t border-gray-300 shadow-md flex gap-4 z-50 rounded-b-lg">
-
-          {/* Quantity controls */}
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
-            >
-              <Minus className="w-6 h-6 text-black" />
-            </button>
-
-            <span className="font-semibold text-lg">{quantity}</span>
-
-            <button
-              onClick={() => setQuantity((q) => q + 1)}
-              className="px-2 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
-            >
-              <Plus className="w-6 h-6 text-black" />
-            </button>
-          </div>
-
-          {/* Add to cart button */}
-          <button
-            onClick={() => {
-              if (!product ||!shopOpen) return;
-
-              // Find the first required category missing selection
-              const missingCat = (ingCategories ?? []).find(
-                (cat) =>
-                  cat.isRequired &&
-                  !selectedIngredients.some((ing) => cat.ingredients.some((i) => i.id === ing.id))
-              );
-
-              if (missingCat) {
-                // Open that category
-                setOpenCategories((prev) => ({
-                  ...prev,
-                  [missingCat.id]: true,
-                }));
-
-                // Scroll into view smoothly
-                const element = document.getElementById(`ing-cat-${missingCat.id}`);
-                if (element) {
-                  element.scrollIntoView({ behavior: "smooth", block: "center" });
-                }
-
-                return;
-              }
-
-              // Add to cart if all required ingredients selected
-              for (let i = 0; i < quantity; i++) {
-                addToCart(product, selectedIngredients, ingCategories ?? [], selectedOptions, options);
-              }
-
-              setSelectedIngredients([]);
-              setQuantity(1);
-              onClose();
-            }}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 text-lg"
-          >
-            {shopOpen ? (
-              <>
-                <span className="sm:hidden">Προσθήκη</span>
-                <span className="hidden sm:inline">Προσθήκη στο Καλάθι</span>
-              </>
-            ) : (
-              <>
-                <span className="sm:hidden">Κλειστό</span>
-                <span className="hidden sm:inline">Το κατάστημα είναι κλειστό</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
     </div>

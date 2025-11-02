@@ -13,12 +13,13 @@ type Option = {
   productId?: number;
 };
 
-type IngCategory = {
+export interface IngCategory {
   id: number;
   name: string;
   ingredients: Ingredient[];
   isRequired?: boolean;
-};
+  onlyOne?: boolean;
+}
 
 interface ProductMap {
   [key: number]: Product;
@@ -270,7 +271,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                 className={`flex flex-col sm:flex-row-reverse items-stretch bg-white shadow-sm rounded-xl mt-4 overflow-hidden ${isAvailable ? 'hover:-translate-y-2 hover:shadow-lg' : 'opacity-50 cursor-not-allowed'}`}
               >
                 {/* Product Image */}
-                {item.imageId ? (
+                {item.imageId && (
                   <div className="w-full sm:w-56 sm:h-auto relative flex-shrink-0">
                     <Image
                       src={`/api/images/${item.imageId}`}
@@ -279,10 +280,6 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                       style={{ objectFit: "cover", objectPosition: "top" }}
                       className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
                     />
-                  </div>
-                ) : (
-                  <div className="w-full sm:w-40 sm:h-auto bg-gray-200 flex items-center justify-center text-gray-500 rounded-t-lg sm:rounded-r-lg sm:rounded-tl-none">
-                    Χωρίς Εικόνα
                   </div>
                 )}
 

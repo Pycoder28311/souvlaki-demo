@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Order } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
 import FiltersSidebar from "./filter";
+import { ChevronDown } from "lucide-react";
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -15,6 +16,14 @@ export default function Orders() {
   const [selectedStatus, setSelectedStatus] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [sortOption, setSortOption] = useState<string>("newest");
+  const [expandedItems, setExpandedItems] = useState<{ [key: number]: boolean }>({});
+
+  const toggleItem = (id: number) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
 
   useEffect(() => {
 
@@ -189,7 +198,7 @@ export default function Orders() {
 
       {/* Right content */}
       <div
-        className="flex-1 p-8 pt-0 max-w-5xl mx-auto overflow-y-auto"
+        className="flex-1 p-8 px-8 md:px-28 pt-0 max-w-5xl mx-auto overflow-y-auto"
         style={{ height: 'calc(100vh - 3.5rem)', overflowX: 'hidden' }}
       >
         <h1 className="text-3xl font-bold mb-4 md:mb-8 text-gray-800 pt-8">Λίστα Παραγγελιών</h1>
@@ -240,37 +249,120 @@ export default function Orders() {
               </span>
             </div>
 
-            {/* Order Details */}
-            <div className="p-4 space-y-3">
-              <p className="text-gray-700">
-                <strong>Όνομα:</strong> {order.user.name}
-              </p>
+            {!expandedItems[order.id] && (
+              <div className="p-4 pb-0 space-y-3">
+                <p className="text-gray-700">
+                  <strong>Όνομα:</strong> {order.user.name}
+                </p>
 
-              <p className="text-gray-700">
-                <strong>Διεύθυνση:</strong> {order.user.address}
-              </p>
+                <p className="text-gray-700">
+                  <strong>Διεύθυνση:</strong> {order.user.address}
+                </p>
 
-              <p className="text-gray-700">
-                <strong>Όροφος:</strong> {order.user.floor}
-              </p>
+                <p className="text-gray-700">
+                  <strong>Όροφος:</strong> {order.user.floor}
+                </p>
 
-              <p className="text-gray-700">
-                <strong>Δημιουργήθηκε: </strong> 
-                {new Date(order.createdAt).toLocaleString("el-GR", {
-                  dateStyle: "medium",
-                  timeStyle: "short",
-                })}
+                <p className="text-gray-700">
+                  <strong>Κουδούνι:</strong> {order.user.bellName}
+                </p>
+
+                {order.user.comment && (
+                  <p className="text-gray-700">
+                    <strong>Σχόλιο:</strong> {order.user.comment}
+                  </p>
+                )}
+
+                <p className="text-gray-700">
+                  <strong>Δημιουργήθηκε: </strong> 
+                  {new Date(order.createdAt).toLocaleString("el-GR", {
+                    dateStyle: "medium",
+                    timeStyle: "short",
+                  })}
+                </p>
+
+                {/* Items */}
+                <ul className="space-y-3">
+                  {order.items.map((item) => {
+                    // Calculate extras
+                    const optionsTotal = item.selectedOptions.reduce(
+                      (acc, opt) => acc + Number(opt.price || 0),
+                      0
+                    );
+                    const ingredientsTotal = item.ingredients?.reduce(
+                      (acc, ing) => acc + Number(ing.price || 0),
+                      0
+                    ) || 0;
+
+                    // Total per item
+                    const itemTotal = (Number(item.price) - (optionsTotal + ingredientsTotal)) * item.quantity;
+
+                    return (
+                      <li
+                        key={item.id}
+                        className="bg-gray-50 border rounded-lg p-3 hover:bg-gray-100 transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-gray-800">
+                            {item.quantity} × {item.product?.name}
+                          </span>
+                          <span className="text-gray-700">{itemTotal.toFixed(2)}€</span>
+                        </div>
+
+                        {item.ingredients && item.ingredients.length > 0 && (
+                          <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
+                            {item.ingredients.map((ing) => (
+                              <li key={ing.id}>
+                                {ing.ingredient?.name}{" "}
+                                {ing.price ? `(${Number(ing.price).toFixed(2)}€)` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+
+                        {item.selectedOptions.length > 0 && (
+                          <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
+                            {item.selectedOptions.map((opt) => (
+                              <li key={opt.id}>
+                                {opt.comment}{" "}
+                                {opt.price ? `(${Number(opt.price).toFixed(2)}€)` : ""}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        <span className="mt-2">Σύνολο:</span> {Number(item.price).toFixed(2)}€
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div className="flex flex-row items-center justify-between p-4 pt-2 pb-2">
+              <p className="text-gray-700 text-xl">
+                <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
               </p>
+              <button
+                className="mt-2 flex items-center text-blue-500 hover:underline text-sm gap-1"
+                onClick={() => toggleItem(order.id)}
+              >
+                <span>{!expandedItems[order.id] ? "Απόκρυψη λεπτομερειών" : "Εμφάνιση λεπτομερειών"}</span>
+                <ChevronDown
+                  className={`w-4 h-4 transition-transform ${
+                    !expandedItems[order.id] ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
               <p
-                className="mb-4 text-gray-700"
+                className="text-gray-900 bg-gray-400 p-2 rounded-lg"
               >
                 {order.paidIn === "POS" ? (
                   <>
-                    <strong>Πληρωμή με:</strong> POS
+                    <strong>Πληρωμή με POS</strong>
                   </>
                 ) : order.paidIn === "door" ? (
                   <>
-                    <strong>Πληρωμή με: </strong>Μετρητά
+                    <strong>Πληρωμή με Μετρητά</strong>
                   </>
                 ) : order.paidIn === "online" ? (
                   <>
@@ -279,65 +371,6 @@ export default function Orders() {
                 ) : (
                   <>{order.paidIn}</>
                 )}
-              </p>
-
-              {/* Items */}
-              <ul className="space-y-3">
-                {order.items.map((item) => {
-                  // Calculate extras
-                  const optionsTotal = item.selectedOptions.reduce(
-                    (acc, opt) => acc + Number(opt.price || 0),
-                    0
-                  );
-                  const ingredientsTotal = item.ingredients?.reduce(
-                    (acc, ing) => acc + Number(ing.price || 0),
-                    0
-                  ) || 0;
-
-                  // Total per item
-                  const itemTotal = (Number(item.price) - (optionsTotal + ingredientsTotal)) * item.quantity;
-
-                  return (
-                    <li
-                      key={item.id}
-                      className="bg-gray-50 border rounded-lg p-3 hover:bg-gray-100 transition"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-gray-800">
-                          {item.quantity} × {item.product?.name}
-                        </span>
-                        <span className="text-gray-700">{itemTotal.toFixed(2)}€</span>
-                      </div>
-
-                      {item.ingredients && item.ingredients.length > 0 && (
-                        <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
-                          {item.ingredients.map((ing) => (
-                            <li key={ing.id}>
-                              {ing.ingredient?.name}{" "}
-                              {ing.price ? `(${Number(ing.price).toFixed(2)}€)` : ""}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-
-                      {item.selectedOptions.length > 0 && (
-                        <ul className="ml-5 mt-2 text-sm text-gray-600 list-disc">
-                          {item.selectedOptions.map((opt) => (
-                            <li key={opt.id}>
-                              {opt.comment}{" "}
-                              {opt.price ? `(${Number(opt.price).toFixed(2)}€)` : ""}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      <span className="mt-2">Σύνολο:</span> {Number(item.price).toFixed(2)}€
-                    </li>
-                  );
-                })}
-              </ul>
-
-              <p className="text-gray-700 text-xl">
-                <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
               </p>
             </div>
           </div>

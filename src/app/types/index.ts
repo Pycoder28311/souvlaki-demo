@@ -7,6 +7,9 @@ export interface User {
   address?: string;
   floor: string;
   validRadius: number;
+  comment: string;
+  bellName: string;
+  defaultTime: number;
   distanceToDestination: number;
 };
 
@@ -36,6 +39,7 @@ export interface IngCategory {
   ingredients: Ingredient[];
   isRequired?: boolean;
   delete?: boolean;
+  onlyOne?: boolean;
 }
 
 export interface ImageType {
