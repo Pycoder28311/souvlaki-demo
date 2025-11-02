@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Minus, Plus, X } from "lucide-react"
+import { Minus, Plus, X, Save } from "lucide-react"
 import { Ingredient, IngCategory, Option, Product } from "../types";
 import ProductDetail from "./components/productDetails";
 import { useCart } from "../wrappers/cartContext";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import isEqual from "lodash.isequal";
 
 type ModalProps = {
   business?: boolean;
@@ -16,6 +18,7 @@ type ModalProps = {
 
 export default function ProductModal({ business, product, onClose, addToCart }: ModalProps) {
   const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
   const [selectedIngredients, setSelectedIngredients] = useState<Ingredient[]>([]);
   const [selectedOptions, setSelectedOptions] = useState<Option[]>([]);
@@ -23,8 +26,6 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [uploading, setUploading] = useState(false)
-  const [message, setMessage] = useState("");
   const [openCategories, setOpenCategories] = useState<Record<number, boolean>>({});
   const [openOptions, setOpenOptions] = useState<Record<number, boolean>>({});
   const { shopOpen } = useCart();
@@ -32,6 +33,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
   const [ingCategories, setIngCategories] = useState<IngCategory[]>([]);
   const [options, setOptions] = useState<Option[]>([]);
   const [animate, setAnimate] = useState(false);
+  const [popup, setPopup] = useState(false);
 
   useEffect(() => {
     if (!product) return;
@@ -71,6 +73,11 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
       return () => clearTimeout(timer);
   }, []);
 
+  const triggerPopupEffect = () => {
+    setPopup(true);
+    setTimeout(() => setPopup(false), 300); // effect διαρκεί 300ms
+  };
+
   // Toggle function
   const toggleCategory = (catId: number) => {
     setOpenCategories((prev) => ({
@@ -86,33 +93,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
     if (selected) {
       setPreview(URL.createObjectURL(selected))
     }
+    triggerPopupEffect();
   }
-
-  const handleSubmit = async (e: React.FormEvent, productId: number) => {
-    e.preventDefault();
-    if (!file) return;
-
-    setUploading(true);
-    setMessage("");
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("productId", String(productId)); // <-- στέλνουμε το ID του προϊόντος
-
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: formData,
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("✅ Το αρχείο ανέβηκε επιτυχώς! Πατήστε το κουμπί Αποθήκευσης Αλλαγών για να αποθηκεύσετε τις αλλαγές.");
-    } else {
-      setMessage("❌ Σφάλμα: " + data.error);
-    }
-
-    setUploading(false);
-  };
 
   const toggleIngredient = (ingredient: Ingredient, ingCategory: IngCategory) => {
     setSelectedIngredients((prev) => {
@@ -158,6 +140,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleEditCategoryName = (catId: number) => {
@@ -176,6 +160,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleMakeRequiredCat = (catId: number) => {
@@ -188,6 +174,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleOnlyOneCat = (catId: number) => {
@@ -200,6 +188,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleAddCategory = () => {
@@ -215,6 +205,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
       };
       return { ...prev, ingCategories: [...(prev.ingCategories || []), newCategory] };
     });
+
+    triggerPopupEffect();
   };
 
   const handleAddOption = () => {
@@ -248,7 +240,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
       return { ...prev, options: [...(prev.options || []), newOption] };
     });
 
-    alert("Η επιλογή προστέθηκε επιτυχώς ✅");
+    triggerPopupEffect();
   };
 
   const handleEditOptionQuestion = (optionId: number) => {
@@ -269,6 +261,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, options: newOptions };
     });
+
+    triggerPopupEffect();
   };
 
   const handleEditOptionPrice = (optionId: number) => {
@@ -289,6 +283,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, options: newOptions };
     });
+
+    triggerPopupEffect();
   };
 
   const handleEditOptionComment = (optionId: number) => {
@@ -309,6 +305,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, options: newOptions };
     });
+
+    triggerPopupEffect();
   };
 
   const handleDeleteOption = (id: number) => {
@@ -317,6 +315,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
       const updatedOptions = prev.options?.filter((opt) => opt.id !== id);
       return { ...prev, options: updatedOptions };
     });
+
+    triggerPopupEffect();
   };
 
   const handleDeleteCategory = (catId: number) => {
@@ -331,6 +331,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
         ),
       };
     });
+
+    triggerPopupEffect();
   };
 
   const handleAddIngredient = (catId: number) => {
@@ -356,6 +358,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleDeleteIngredient = (catId: number, ingId: number) => {
@@ -371,6 +375,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   const handleEditIngredientPrice = (catId: number, ingId: number, currentPrice: number) => {
@@ -395,6 +401,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
       return { ...prev, ingCategories: newCategories };
     });
+
+    triggerPopupEffect();
   };
 
   if (!product) return null;
@@ -421,65 +429,49 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
           scrollbarWidth: 'none', // Firefox
         }}>
           {/* Loading state */}
-          {loading && <p className="text-center py-6">Φόρτωση...</p>}
+          {loading && 
+            <p className="text-center py-6 flex justify-center">
+              <AiOutlineLoading3Quarters className="text-gray-700 w-6 h-6 animate-spin" />
+            </p>
+          }
 
           {!loading && fullProduct && (
             <>
-              {fullProduct.imageId && (
-                <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
-                  <Image
-                    src={`/api/images/${fullProduct.imageId}`}
-                    alt={fullProduct.name}
-                    fill
-                    style={{ objectFit: "cover", objectPosition: "center" }}
-                    className="rounded-t-lg"
-                  />
-                </div>
-              )}
+              <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
+                {/* Εικόνα προϊόντος */}
+                <Image
+                  src={preview || (fullProduct.imageId ? `/api/images/${fullProduct.imageId}` : "")}
+                  alt={preview ? "preview" : fullProduct.name}
+                  fill
+                  style={{ objectFit: "cover", objectPosition: "center" }}
+                  className="rounded-t-lg"
+                />
 
-              <button
-                className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
-                onClick={onClose}
-              >
-                <X className="w-7 h-7" />
-              </button>
-
-              {business && (
-                <div className="p-6 max-w-lg mx-auto">
-                  <h1 className="text-xl font-bold mb-4">Ανέβασε Εικόνα</h1>
-            
-                  <form onSubmit={(e) => handleSubmit(e, product.id)} className="space-y-4">
+                {/* Κουμπί αλλαγής εικόνας */}
+                {business && (
+                  <label className="absolute bottom-2 right-2 cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100">
+                    <span className="sr-only">Choose file</span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleFileChange}
-                      className="block w-full border p-2 rounded"
+                      className="hidden"
                     />
-            
-                    <button
-                      type="submit"
-                      disabled={uploading || !file}
-                      className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-                    >
-                      {uploading ? "Μεταφόρτωση..." : "Μεταφόρτωση"}
-                    </button>
-            
-                    {/* Preview below button */}
-                    {preview && (
-                      <div className="mt-4 w-32 h-32 relative mx-auto">
-                        <Image
-                          src={preview}
-                          alt="preview"
-                          fill
-                          className="rounded shadow object-contain"
-                        />
-                      </div>
-                    )}
-                  </form>
-            
-                  {message && <p className="mt-4">{message}</p>}
-                </div>
-              )}
+                    <span className="text-lg ml-1">
+                      {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
+                    </span>
+                    <Save className="w-6 h-6 text-gray-600" />
+                  </label>
+                )}
+
+                {/* Κλείσιμο modal */}
+                <button
+                  className="absolute top-2 right-2 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700"
+                  onClick={onClose}
+                >
+                  <X className="w-7 h-7" />
+                </button>
+              </div>
 
               <ProductDetail
                 fullProduct={fullProduct}
@@ -516,30 +508,61 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
               <button
                 onClick={async () => {
                   if (!fullProduct) return;
-                  setLoading(true);
+                  setLoadingSave(true);
 
-                  try {
-                    const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(fullProduct),
+                  if (file) {
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("productId", String(product.id)); // <-- στέλνουμε το ID του προϊόντος
+
+                    const res = await fetch("/api/upload", {
+                      method: "POST",
+                      body: formData,
                     });
 
                     if (!res.ok) throw new Error("Failed to save changes");
+                  }
 
-                    alert("Οι αλλαγές αποθηκεύτηκαν επιτυχώς!");
-                    window.location.reload(); // 🔄 reload the page
-                  } catch (err) {
-                    console.error(err);
-                    alert("Error saving changes");
-                  } finally {
-                    setLoading(false);
+                  if (!isEqual(product, fullProduct)) {
+                    try {
+                      const res = await fetch(`/api/update-full-product/${fullProduct.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(fullProduct),
+                      });
+
+                      if (!res.ok) throw new Error("Failed to save changes");
+
+                      alert("Οι αλλαγές αποθηκεύτηκαν επιτυχώς!");
+                      window.location.reload(); // 🔄 reload the page
+                    } catch (err) {
+                      console.error(err);
+                      alert("Error saving changes");
+                    } finally {
+                      setLoadingSave(false);
+                    }
+                  } else {
+                    setLoadingSave(false)
                   }
                 }}
-                className="h-12 w-[100%] px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                disabled={loading}
+                className={`
+                  h-12 w-full px-4 py-2 bg-blue-600 text-white items-center rounded-lg
+                  hover:bg-blue-700
+                  transition-transform duration-200
+                  ${popup ? "scale-110 shadow-lg" : ""}
+                `}
+                disabled={loadingSave}
               >
-              {loading ? "Αποθήκευση..." : "Αποθήκευση Αλλαγών"}
+              {loadingSave ? 
+                <div className="flex justify-center gap-2">
+                  <p className="text-lg">Αποθήκευση</p>
+                  <AiOutlineLoading3Quarters className="text-gray-100 w-5 h-5 animate-spin" />
+                </div> : 
+                <div className="flex justify-center items-center gap-2">
+                  <p className="text-lg">Αποθήκευση Αλλαγών</p>
+                  <Save className="w-6 h-6 text-gray-100" />
+                </div>}
             </button>
             </div>
           ) : (

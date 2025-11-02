@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import styles from '../Auth.module.css';
 import { FcGoogle } from "react-icons/fc";
+import { googleButtonClasses } from "../buttonStyles";
 
 export default function SignIn() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,29 +57,7 @@ export default function SignIn() {
           
           <button
             type="submit"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              padding: '10px 16px',
-              backgroundColor: '#646cff', // main color
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              borderRadius: '6px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s, transform 0.1s',
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4f55e1';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#646cff';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            }}
+            className={googleButtonClasses}
           >
             Σύνδεση
           </button>
@@ -87,30 +66,8 @@ export default function SignIn() {
         <div className={styles.links}>
           <button
             onClick={() => signIn("google", { callbackUrl: "/" })}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              gap: '6px',
-              padding: '10px 16px',
-              backgroundColor: '#646cff', // main color
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              borderRadius: '6px',
-              textDecoration: 'none',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s, transform 0.1s',
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4f55e1';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#646cff';
-              (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-            }}
+            className={googleButtonClasses}
+            style={{width: '100%'}}
           >
             <FcGoogle className="w-5 h-5" />
             Σύνδεση με Google

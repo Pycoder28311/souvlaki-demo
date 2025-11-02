@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import OrderCard from "./orderCard";
 import { Order } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -26,10 +27,11 @@ export default function Orders() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen space-x-3">
         <span className="text-gray-700 text-lg font-semibold">
-          Φόρτωση παραγγελιών...
+          Φόρτωση παραγγελιών
         </span>
+        <AiOutlineLoading3Quarters className="text-gray-700 w-6 h-6 animate-spin" />
       </div>
     );
   }

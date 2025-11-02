@@ -3,13 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check } from "lucide-react";
+import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { OrderItem, Option, Product } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
 import CheckOutForm from '../z-components/checkOut';
-import { ArrowLeft } from "lucide-react";
 
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
@@ -313,7 +312,7 @@ export default function OrderSidebar({
                         {(item.price * item.quantity).toFixed(2)}€
                       </span>
                       <button
-                        className=" p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400"
+                        className=" p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400 hover:scale-105"
 
                       >
                         <Edit2 className="w-4 h-4" />
@@ -482,7 +481,7 @@ export default function OrderSidebar({
                 ) : (
                   <div
                     onClick={() => setEditingAddress(true)}
-                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
+                    className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all hover:scale-105"
                   >
                     <Edit2 size={18} />
                     <span>Αλλαγή Διεύθυνσης</span>

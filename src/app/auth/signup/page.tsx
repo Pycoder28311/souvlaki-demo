@@ -5,6 +5,8 @@ import Link from "next/link";
 import { validatePassword } from "../../utils/validatePassword";
 import styles from '../Auth.module.css';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FcGoogle } from "react-icons/fc";
+import { googleButtonClasses } from "../buttonStyles";
 
 export default function SignUp() {
   const [email, setEmail] = useState("");
@@ -212,8 +214,15 @@ export default function SignUp() {
           
           {error && <div className={styles.errorMessage}>{error}</div>}
           
-          <button type="submit" className={styles.primaryButton}>
+          <button type="submit" className={googleButtonClasses}>
             Εγγραφή
+          </button>
+          <button
+            onClick={() => signIn("google", { callbackUrl: "/" })}
+            className={googleButtonClasses}
+          >
+            <FcGoogle className="w-5 h-5" />
+            Σύνδεση με Google
           </button>
         </form>
         

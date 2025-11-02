@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import styles from '../Confirm.module.css';
+import { googleButtonClasses } from '../buttonStyles';
 
 export default function ResetPassword() {
   const [email, setEmail] = useState('');
@@ -54,7 +55,7 @@ export default function ResetPassword() {
             />
           </div>
           
-          <button type="submit" className={styles.submitButton}>
+          <button type="submit" className={googleButtonClasses}>
             Αποστολή Συνδέσμου Επαναφοράς
           </button>
         </form>

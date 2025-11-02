@@ -70,7 +70,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                   selectedCategory?.id === category.id ? null : category
                 )
               }
-              className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+              className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition hover:scale-105"
               title="Επεξεργασία Κατηγορίας"
             >
               <Edit2 size={20} />
@@ -114,7 +114,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
               }}
             >
               {/* Product Info */}
-              <div className="flex-1 p-2 pr-12">
+              <div className="flex-1 p-2 pr-12 pl-3">
                 <h3 className="font-bold text-lg text-gray-900 mb-1 truncate">
                   {product.name}
                 </h3>
@@ -160,12 +160,16 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                   />
 
                   {/* + Button */}
-                  <button className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]">
+                  <button
+                    className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition transform hover:bg-yellow-500 hover:scale-105 shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
+                  >
                     <Plus size={20} />
                   </button>
                 </div>
               ) : (
-                <button className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition hover:bg-yellow-500 shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]">
+                <button
+                  className="absolute bottom-2 right-2 p-2 bg-yellow-400 text-gray-800 font-bold rounded-lg transition transform hover:bg-yellow-500 hover:scale-105 shadow-[2px_2px_0px_0px_rgba(202,138,4,0.5)]"
+                >
                   <Plus size={20} />
                 </button>
               )}
@@ -178,7 +182,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                       selectedAdminProduct?.id === product.id ? null : product
                     );
                   }}
-                  className="absolute top-2 right-2 p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
+                  className="absolute top-2 right-2 p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition hover:scale-105"
                   title="Επεξεργασία Προϊόντος"
                 >
                   <Edit2 size={20} />

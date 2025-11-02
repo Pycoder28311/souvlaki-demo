@@ -16,6 +16,7 @@
     "@stripe/react-stripe-js": "^5.2.0",
     "@stripe/stripe-js": "^8.1.0",
     "bcryptjs": "^3.0.2",
+    "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.544.0",
     "mailgen": "^2.0.29",
     "next": "15.5.3",
@@ -33,6 +34,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/lodash.isequal": "^4.5.8",
     "@types/mailgen": "^2.0.7",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.1",

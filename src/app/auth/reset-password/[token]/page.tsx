@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation'; // useParams hook for accessing dynamic route params
 import { validatePassword } from "../../../utils/validatePassword";
 import { signIn } from 'next-auth/react';
+import { googleButtonClasses } from '../../buttonStyles';
+import { AiOutlineLoading3Quarters } from 'react-icons/ai';
 
 const ResetPassword = () => {
   const { token } = useParams() ?? {};// Access the token directly from the params
@@ -78,7 +80,7 @@ const ResetPassword = () => {
 
   // Show a loading state if the token is not yet available
   if (!token) {
-    return <p>Φόρτωση...</p>;
+    return <AiOutlineLoading3Quarters className="text-gray-700 w-6 h-6 animate-spin" />;
   }
 
   return (
@@ -152,7 +154,8 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-2 rounded-lg transition-colors duration-200"
+            className={googleButtonClasses}
+            style={{width: '100%'}}
           >
             {loading ? 'Γίνεται επαναφορά...' : 'Επαναφορά Κωδικού'}
           </button>

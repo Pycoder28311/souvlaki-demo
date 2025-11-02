@@ -56,7 +56,35 @@ export default function MenuGrid({
     fetchProducts();
   }, []);
 
-  if (loading) return <p>Φόρτωση...</p>;
+  if (loading) {
+    return (
+      <div className="grid md:grid-cols-3 gap-24 pr-6 pl-6 md:pr-12 md:pl-12">
+        {[1, 2, 3].map((_, idx) => (
+          <div
+            key={idx}
+            className="bg-white rounded-xl border border-gray-200 shadow-md flex flex-col animate-pulse"
+          >
+            {/* Image placeholder */}
+            <div className="h-48 bg-gray-200 rounded-t-xl" />
+
+            {/* Content placeholder */}
+            <div className="p-5 flex flex-col flex-1 gap-2">
+              {/* Title */}
+              <div className="h-5 bg-gray-300 rounded w-3/4"></div>
+              {/* Price */}
+              <div className="h-5 bg-gray-300 rounded w-1/4 mt-1"></div>
+              {/* Description */}
+              <div className="h-4 bg-gray-300 rounded w-full mt-2"></div>
+              <div className="h-4 bg-gray-300 rounded w-5/6"></div>
+              {/* Button */}
+              <div className="h-10 bg-gray-300 rounded mt-auto"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (menuItems.length === 0) return <></>;
 
   return (

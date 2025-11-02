@@ -162,7 +162,7 @@ export default function ProfilePage() {
             )}
 
             {/* Address */}
-            {!user?.business && editingAddress ? (
+            {editingAddress ? (
             <div className="mb-4 relative">
                 <div className="flex items-center gap-2">
                 <input
