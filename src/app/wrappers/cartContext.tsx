@@ -346,33 +346,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   }
 
-  const OpenSidebarPaths = ["/menu"];
-  const Open = OpenSidebarPaths.includes(pathname);
-
-  const [isSidebarOpen, setIsSidebarOpen] = useState(Open);
-
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    if (isSidebarOpen && isMobile) {
-    // Disable background scroll
-    document.body.style.overflow = "hidden";
-    } else {
-    // Re-enable when closed
-    document.body.style.overflow = "";
-    }
-
-    // Cleanup when component unmounts
-    return () => {
-    document.body.style.overflow = "";
-    };
-  }, [isSidebarOpen]);
-
   const [user, setUser] = useState<User | null>(null);
   const [selected, setSelected] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
   const [address, setAddress] = useState("");
   const [showRadiusNote, setShowRadiusNote] = useState(false);
   const [validRadius, setValidRadius] = useState<number | null>(null);
+
+  const OpenSidebarPaths = ["/menu"];
+  const Open = OpenSidebarPaths.includes(pathname);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (user?.business) return false;
+    return Open;
+  });
+
+  useEffect(() => {
+    // If user.business changes dynamically, close the sidebar
+    if (user?.business) {
+      setIsSidebarOpen(false);
+    }
+  }, [user?.business]);
   
   useEffect(() => {
     const fetchSession = async () => {
