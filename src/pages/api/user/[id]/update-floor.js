@@ -1,19 +1,21 @@
 import { prisma } from "@/lib/prisma";
 
 export default async function handler(req, res) {
+  const { id } = req.query; // ✅ get user ID from folder name
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { floor, userEmail } = req.body;
+    const { floor } = req.body;
 
-    if (!userEmail || !floor) {
-      return res.status(400).json({ error: "Missing userId or floor" });
+    if (!id || floor === null) {
+      return res.status(400).json({ error: "Missing user ID or floor" });
     }
 
     const updatedUser = await prisma.user.update({
-      where: { email: userEmail },
+      where: { id: Number(id) },
       data: { floor },
     });
 
@@ -23,4 +25,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Failed to update floor" });
   }
 }
-

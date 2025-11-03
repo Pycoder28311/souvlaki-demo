@@ -57,10 +57,12 @@ export default function ProfilePage() {
       const payload = { name: nameInput }
 
       // Then, update the user with the distance included
-      const response = await fetch("/api/update-user", {
+      const response = await fetch(`/api/user/${user?.id}/update-user`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({...payload,}),
+        body: JSON.stringify({
+          ...payload,
+        }),
       });
 
       const updatedUser = await response.json();
@@ -81,11 +83,11 @@ export default function ProfilePage() {
         return;
       }
 
-      const payload = { address: addressToSend, email: user?.email };
-      const response = await fetch("/api/update-address", {
+      const payload = { address: addressToSend };
+      const response = await fetch(`/api/user/${user?.id}/update-address`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload), // payload can include { address }
       });
 
       if (!response.ok) throw new Error("Failed to update user");
@@ -250,10 +252,10 @@ export default function ProfilePage() {
                     <button
                       onClick={async () => {
                         try {
-                          const res = await fetch("/api/update-floor", {
+                          const res = await fetch(`/api/user/${user?.id}/update-floor`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
+                            body: JSON.stringify({ floor: selectedFloor }), // no userEmail needed
                           });
                           if (!res.ok) throw new Error("Failed to update floor");
                           alert("Ο όροφος ενημερώθηκε επιτυχώς!");
@@ -282,10 +284,10 @@ export default function ProfilePage() {
                     <button
                       onClick={async () => {
                         try {
-                          const res = await fetch("/api/update-bellName", {
+                          const res = await fetch(`/api/user/${user?.id}/update-bellName`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ bellName, userEmail: user?.email }),
+                            body: JSON.stringify({ bellName }), // no userEmail needed
                           });
                           if (!res.ok) throw new Error("Failed to update bell name");
                           alert("Το όνομα στο κουδούνι ενημερώθηκε επιτυχώς!");
@@ -315,10 +317,10 @@ export default function ProfilePage() {
                     <button
                       onClick={async () => {
                         try {
-                          const res = await fetch("/api/update-comment", {
+                          const res = await fetch(`/api/user/${user?.id}/update-comment`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ comment: userComment, userEmail: user?.email }),
+                            body: JSON.stringify({ comment: userComment }), // no userEmail needed
                           });
                           if (!res.ok) throw new Error("Failed to update comment");
                           alert("Το σχόλιο ενημερώθηκε επιτυχώς!");
@@ -359,7 +361,7 @@ export default function ProfilePage() {
                           const res = await fetch("/api/update-defaultTime", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ defaultTime, userEmail: user?.email }),
+                            body: JSON.stringify({ defaultTime }),
                           });
                           if (!res.ok) throw new Error("Failed to update default time");
                           alert("Ο προεπιλεγμένος χρόνος ενημερώθηκε επιτυχώς!");
@@ -403,12 +405,11 @@ export default function ProfilePage() {
                           return;
                         }
                         try {
-                          const res = await fetch("/api/update-valid-radius", {
+                          const res = await fetch(`/api/user/${user.id}/update-valid-radius`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
-                              userId: user.id,
-                              validRadius: validRadius,
+                              validRadius: validRadius, // no userId needed here
                             }),
                           });
 

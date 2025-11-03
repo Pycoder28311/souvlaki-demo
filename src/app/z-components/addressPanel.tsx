@@ -42,8 +42,8 @@ export default function AddressModal() {
         return;
       }
 
-      const payload = { address: addressToSend, email: user?.email };
-      const response = await fetch("/api/update-address", {
+      const payload = { address: addressToSend };
+      const response = await fetch(`/api/user/${user?.id}/update-address`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -161,10 +161,10 @@ export default function AddressModal() {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await fetch("/api/update-floor", {
+                            const res = await fetch(`/api/user/${user.id}/update-floor`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ floor: selectedFloor, userEmail: user?.email }),
+                              body: JSON.stringify({ floor: selectedFloor }), // no userEmail needed
                             });
                             if (!res.ok) throw new Error("Failed to update floor");
                             alert("Ο όροφος ενημερώθηκε επιτυχώς!");
@@ -193,10 +193,10 @@ export default function AddressModal() {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await fetch("/api/update-bellName", {
+                            const res = await fetch(`/api/user/${user.id}/update-bellName`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ bellName, userEmail: user?.email }),
+                              body: JSON.stringify({ bellName }),
                             });
                             if (!res.ok) throw new Error("Failed to update bell name");
                             alert("Το όνομα στο κουδούνι ενημερώθηκε επιτυχώς!");
@@ -226,10 +226,10 @@ export default function AddressModal() {
                       <button
                         onClick={async () => {
                           try {
-                            const res = await fetch("/api/update-comment", {
+                            const res = await fetch(`/api/user/${user.id}/update-comment`, {
                               method: "POST",
                               headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ comment: userComment, userEmail: user?.email }),
+                              body: JSON.stringify({ comment: userComment }), // userEmail no longer needed
                             });
                             if (!res.ok) throw new Error("Failed to update comment");
                             alert("Το σχόλιο ενημερώθηκε επιτυχώς!");

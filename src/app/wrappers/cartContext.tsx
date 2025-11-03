@@ -307,11 +307,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAddress(geoAddress.split(",")[0]);
 
       try {
-        const response = await fetch("/api/update-address", {
+        const response = await fetch(`/api/user/${user?.id}/update-address`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            email: user.email,
             address: geoAddress,
           }),
         });

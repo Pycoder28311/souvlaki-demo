@@ -1,16 +1,18 @@
-// pages/api/update-address.ts
 import { prisma } from "@/lib/prisma";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export default async function handler(req, res) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query; // ✅ get user ID from folder
+
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { address, email } = req.body;
+    const { address } = req.body as { address?: string };
 
-    if (!address || !email) {
-      return res.status(400).json({ error: "Missing address or email" });
+    if (!id || !address) {
+      return res.status(400).json({ error: "Missing user ID or address" });
     }
 
     // 🔹 Find the business user
@@ -40,9 +42,9 @@ export default async function handler(req, res) {
 
     const distanceToDestination = distanceInfo.value / 1000; // meters → km
 
-    // 🔹 Update the user
+    // 🔹 Update the user using ID from URL
     const updatedUser = await prisma.user.update({
-      where: { email },
+      where: { id: Number(id) },
       data: { address, distanceToDestination },
     });
 
