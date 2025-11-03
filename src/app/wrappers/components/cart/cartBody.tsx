@@ -3,6 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, X, Edit2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
+import {
+  handleCheckHours,
+} from "../../functions/cart";
+import { useCart } from "../../cartContext";
 
 type Availability = {
   available: boolean;
@@ -10,23 +14,11 @@ type Availability = {
 };
 
 interface CartBodyProps {
-  isSidebarOpen: boolean;
-  setIsSidebarOpen: (val: boolean) => void;
-  orderItems: OrderItem[];
-  removeItem: (item: OrderItem) => void;
   setEditableOrderItem: (item: OrderItem | null) => void;
-  setQuantity: (val: number) => void;
   expandedItems: Record<number, boolean>;
   setExpandedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   availabilityMap: Record<string, Availability>;
   setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>;
-  handleCheckHours: (
-    orderItems: OrderItem[],
-    availabilityMap: Record<string, Availability>,
-    setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>,
-    setShowPaymentModal: (val: boolean) => void,
-    setPaymentWayModal: (val: boolean) => void
-  ) => void;
   setShowPaymentModal: (val: boolean) => void;
   setPaymentWayModal: (val: boolean) => void;
   total: number;
@@ -35,23 +27,17 @@ interface CartBodyProps {
 }
 
 const CartBody: React.FC<CartBodyProps> = ({
-  isSidebarOpen,
-  setIsSidebarOpen,
-  orderItems,
-  removeItem,
   setEditableOrderItem,
-  setQuantity,
   expandedItems,
   setExpandedItems,
   availabilityMap,
   setAvailabilityMap,
-  handleCheckHours,
   setShowPaymentModal,
   setPaymentWayModal,
   total,
-  user,
   getUnavailableMessage,
 }) => {
+  const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen, user } = useCart();
   if (!isSidebarOpen) return null;
 
   return (
@@ -198,7 +184,7 @@ const CartBody: React.FC<CartBodyProps> = ({
             onClick={() =>
               handleCheckHours(orderItems, availabilityMap, setAvailabilityMap, setShowPaymentModal, setPaymentWayModal)
             }
-            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-yellow-500 transition"
+            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
           >
             Πλήρωμή {total.toFixed(2)}€
           </button>
@@ -208,7 +194,7 @@ const CartBody: React.FC<CartBodyProps> = ({
       {orderItems.length === 0 && !user?.business && (
         <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
           <Link href="/menu" className="block w-full">
-            <button className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-base font-bold rounded-lg hover:bg-yellow-500 transition">
+            <button className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl font-bold rounded-lg hover:bg-yellow-500 transition">
               Δες το Μενού
             </button>
           </Link>

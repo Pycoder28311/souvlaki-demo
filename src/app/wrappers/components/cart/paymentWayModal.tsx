@@ -3,31 +3,19 @@
 import React from "react";
 import { ArrowLeft } from "lucide-react";
 import CheckOutForm from "../../../z-components/checkOut";
-import { User, OrderItem } from "../../../types"; 
 import { useRouter } from "next/navigation";
+import { handleClickDoor } from "../../functions/cart";
+import { useCart } from "../../cartContext";
 
 interface PaymentWayModalProps {
   paymentWayModal: boolean;
   setPaymentWayModal: (val: boolean) => void;
   total: number;
-  user: User | null;
-  orderItems: OrderItem[];
-  removeItem: (item: OrderItem) => void;
-  setIsSidebarOpen: (val: boolean) => void;
   isTooFar: boolean;
   formLoaded: boolean;
   setFormLoaded: (val: boolean) => void;
   paymentWay: string;
   setPaymentWay: (val: string) => void;
-  handleClickDoor: (
-    router: ReturnType<typeof import("next/navigation").useRouter>,
-    paidIn: string,
-    user: User | null,
-    orderItems: OrderItem[],
-    removeItem: (item: OrderItem) => void,
-    setIsSidebarOpen: (val: boolean) => void,
-    setShowPaymentModal: (val: boolean) => void,
-  ) => void;
   setShowPaymentModal: (val: boolean) => void;
 }
 
@@ -35,19 +23,15 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
   paymentWayModal,
   setPaymentWayModal,
   total,
-  user,
-  orderItems,
-  removeItem,
-  setIsSidebarOpen,
   isTooFar,
   formLoaded,
   setFormLoaded,
   paymentWay,
   setPaymentWay,
-  handleClickDoor,
   setShowPaymentModal,
 }) => {
   const router = useRouter();
+  const { orderItems, removeItem, setIsSidebarOpen, user } = useCart();
 
   if (!paymentWayModal) return null;
 
@@ -56,9 +40,9 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
 
   return (
     <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
-      <div className="bg-gray-100 w-full h-full max-h-full flex flex-col">
+      <div className="bg-gray-100 w-full h-full max-h-full flex flex-col p-4">
         {/* Header */}
-        <div className="flex items-center border-b border-gray-300 px-2 pt-4 pb-4">
+        <div className="flex items-center border-b border-gray-300 pb-4">
           <button
             onClick={() => {
               setPaymentWayModal(false);
@@ -68,13 +52,13 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
           >
             <ArrowLeft className="w-5 h-5 text-gray-700" />
           </button>
-          <h2 className="text-xl font-bold text-gray-800 ml-3">Τρόπος Πληρωμής</h2>
+          <h2 className="text-xl font-bold text-gray-800 ml-1">Τρόπος Πληρωμής</h2>
         </div>
 
         {/* Bottom Section */}
-        <div className="pb-6 border-gray-300 mt-auto px-6">
+        <div className="border-gray-300 mt-auto">
           {/* Total */}
-          <p className="mb-4 font-bold text-gray-900 text-xl px-1 pt-4">
+          <p className="mb-4 font-bold text-gray-900 text-2xl px-1 pt-4">
             Σύνολο: {total.toFixed(2)}€
           </p>
 
