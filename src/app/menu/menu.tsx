@@ -127,7 +127,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
     if (user?.business) {
       setIsSidebarOpen(false);
     }
-  }, [user?.business]);
+  }, [user?.business, setIsSidebarOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {

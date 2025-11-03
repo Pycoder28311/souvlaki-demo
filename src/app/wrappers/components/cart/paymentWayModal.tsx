@@ -20,6 +20,7 @@ interface PaymentWayModalProps {
   paymentWay: string;
   setPaymentWay: (val: string) => void;
   handleClickDoor: (
+    router: ReturnType<typeof import("next/navigation").useRouter>,
     paidIn: string,
     user: User | null,
     orderItems: OrderItem[],
@@ -125,6 +126,7 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
               className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
               onClick={() => {
                 handleClickDoor(
+                  router,
                   "POS",
                   user,
                   orderItems,
@@ -143,6 +145,7 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
               className={`mt-2 w-full bg-green-500 text-white py-3 sm:py-2 text-lg sm:text-lg rounded-xl font-semibold hover:bg-green-600 ${isDisabled ? disabledClasses : ""}`}
               onClick={() => {
                 handleClickDoor(
+                  router,
                   "door",
                   user,
                   orderItems,

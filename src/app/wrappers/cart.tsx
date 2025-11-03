@@ -3,12 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { X, ShoppingCart, ChevronDown, ChevronUp, Trash2, Edit2, Check, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { OrderItem, Option } from "../types"; 
+import { X, ChevronDown, ChevronUp, Edit2, Check, ArrowLeft } from "lucide-react";
+import { OrderItem } from "../types"; 
 import { useCart } from "../wrappers/cartContext";
-import CheckOutForm from '../z-components/checkOut';
 import {
   handleSearch,
   handleUpdateAddress,

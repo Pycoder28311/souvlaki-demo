@@ -91,8 +91,8 @@ const PaymentModal: FC<PaymentModalProps> = ({
   setIsSidebarOpen,
   setPaymentWayModal,
 }) => {
-  if (!showPaymentModal) return null;
   const router = useRouter();
+  if (!showPaymentModal) return null;
 
   return (
     <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center">

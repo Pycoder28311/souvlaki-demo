@@ -4,6 +4,11 @@ import Link from "next/link";
 import { ShoppingCart, X, Edit2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
 
+type Availability = {
+  available: boolean;
+  unavailableReason?: string;
+};
+
 interface CartBodyProps {
   isSidebarOpen: boolean;
   setIsSidebarOpen: (val: boolean) => void;
@@ -13,12 +18,12 @@ interface CartBodyProps {
   setQuantity: (val: number) => void;
   expandedItems: Record<number, boolean>;
   setExpandedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
-  availabilityMap: Record<string, { available: boolean; unavailableReason?: string }>;
-  setAvailabilityMap: (val: Record<string, { available: boolean; unavailableReason?: string }>) => void;
+  availabilityMap: Record<string, Availability>;
+  setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>;
   handleCheckHours: (
     orderItems: OrderItem[],
-    availabilityMap: Record<string, { available: boolean; unavailableReason?: string }>,
-    setAvailabilityMap: (val: any) => void,
+    availabilityMap: Record<string, Availability>,
+    setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>,
     setShowPaymentModal: (val: boolean) => void,
     setPaymentWayModal: (val: boolean) => void
   ) => void;

@@ -6,6 +6,11 @@ type ProductWithAvailability = Product & {
   unavailableReason: string;
 };
 
+type Availability = {
+  available: boolean;
+  unavailableReason?: string;
+};
+
 export const handlePayment = async (
   paidIn: string,
   user: User | null,
@@ -54,7 +59,7 @@ export const handlePayment = async (
 export const handleSearch = async (
   e: React.ChangeEvent<HTMLInputElement>,
   setQuery: (val: string) => void,
-  setResults: (val: any[]) => void
+  setResults:  (val: string[]) => void,
 ) => {
   setQuery(e.target.value);
 
@@ -131,8 +136,8 @@ export const getUnavailableMessage = (reason?: string) => {
 
 export const handleCheckHours = async (
   orderItems: OrderItem[],
-  availabilityMap: Record<string, any>,
-  setAvailabilityMap: (val: Record<string, any>) => void,
+  availabilityMap: Record<string, Availability>,
+  setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>,
   setShowPaymentModal: (val: boolean) => void,
   setPaymentWayModal: (val: boolean) => void
 ) => {
@@ -196,6 +201,7 @@ export const handleUpdateAll = async (
 };
 
 export const handleClickDoor = (
+  router: ReturnType<typeof import("next/navigation").useRouter>,
   paidIn: string,
   user: User | null,
   orderItems: OrderItem[],
@@ -203,7 +209,6 @@ export const handleClickDoor = (
   setIsSidebarOpen: (val: boolean) => void,
   setShowPaymentModal: (val: boolean) => void,
 ) => {
-  const router = useRouter();
   if (!user) {
     router.push("/auth/login-options");
     return;

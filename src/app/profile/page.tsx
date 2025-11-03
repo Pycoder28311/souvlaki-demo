@@ -35,7 +35,7 @@ export default function ProfilePage() {
     if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
       setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
     }
-  }, [user, setAddress, setValidRadius]);
+  }, [user, setAddress, setValidRadius, validRadius]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
