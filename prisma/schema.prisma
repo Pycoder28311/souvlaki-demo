@@ -1,0 +1,305 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                 Int       @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?   @db.Text
+  access_token       String?   @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?   @db.Text
+  session_state      String?
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  password     String?
+  name         String?
+  image        String?
+  emailVerified DateTime?
+  business     Boolean   @default(false)
+  address      String?
+  distanceToDestination Decimal?  @db.Decimal(6, 2)
+  floor        String?
+  defaultTime  Int?
+  bellName     String?
+  comment      String?
+  stripeCustomerId String?
+
+  orders       ProductOrder[]
+  passwordResets PasswordReset[]
+  favorites Favorite[]
+  reviewsGiven     Review[] @relation("UserReviewsGiven")
+  reviewsReceived  Review[] @relation("UserReviewsReceived")
+  accounts      Account[]
+  sessions      Session[]
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+}
+
+model Shop {
+  id        Int      @id @default(autoincrement())
+  street    String
+  imageId   Int?          @unique
+  validRadius  Decimal?  @db.Decimal(6, 2)
+
+  image       Image?        @relation(fields: [imageId], references: [id], onDelete: Cascade)
+}
+
+model PaymentIntent {
+  id            String   @id @default(cuid())
+  stripeId      String   @unique      // Το ID που επιστρέφει το Stripe
+  userId        String?                 // Προαιρετικά αν συνδέεται με χρήστη
+  orderId       String?                 // Προαιρετικά αν συνδέεται με παραγγελία
+  amount        Int                     // Ποσό σε cents
+  currency      String                  // Πχ "eur"
+  status        String                  // "requires_payment_method", "succeeded", "canceled", κλπ
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model PasswordReset {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  senderId    Int?
+  receiverId  Int?
+  subject     String
+  content     String
+  senderName  String
+  senderEmail String
+  senderPhone String?
+  createdAt   DateTime @default(now())
+  read        Boolean  @default(false)
+
+  sender   User? @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User? @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+}
+
+model Image {
+  id        Int      @id @default(autoincrement())
+  data      Bytes
+  createdAt DateTime @default(now())
+  product   Product? // optional back relation
+  shop      Shop?
+}
+
+model Transaction {
+  id         String   @id @default(uuid())
+  senderName String
+  senderIban String
+  receiverName String
+  receiverIban String
+  amount     Float
+  status     String   @default("pending") // pending, completed
+  createdAt  DateTime @default(now())
+}
+
+model Review {
+  id         Int      @id @default(autoincrement())
+  reviewerId Int      // ποιος κάνει την κριτική
+  reviewedId Int      // ποιος δέχεται την κριτική
+  rating     Int      // 1-5 αστεράκια
+  comment    String?  // προαιρετικό κείμενο
+  createdAt  DateTime @default(now())
+
+  reviewer   User     @relation("UserReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewed   User     @relation("UserReviewsReceived", fields: [reviewedId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  position Int       @default(0)
+  openHour  String?  @default("00:00")
+  closeHour String?  @default("23:59")
+  alwaysClosed Boolean      @default(false)
+  
+  products Product[]
+}
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  categoryId  Int
+  name        String
+  offer       Boolean       @default(false)
+  offerPrice  Decimal       @default(0) @db.Decimal(10,2)
+  price       Decimal       @db.Decimal(10,2)
+  image       Image?        @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  imageId     Int?          @unique
+  description String?       @default("description")
+  openHour  String?  @default("00:00")
+  closeHour String?  @default("23:59")
+  alwaysClosed Boolean      @default(false)
+
+  category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  ingCategories IngCategory[]
+  orderItems  OrderItem[]
+  favorites   Favorite[]
+  options     Options[]
+}
+
+model Options {
+  id        Int       @id @default(autoincrement())
+  question  String
+  price     Decimal   @db.Decimal(10,2)
+  comment   String?
+  productId Int
+  
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productOptions   OrderItem[] @relation("ProductOptions")
+  selectedByOrders OrderItem[] @relation("OrderItemSelectedOptions")
+}
+
+model IngCategory {
+  id        Int          @id @default(autoincrement())
+  productId Int
+  name      String
+  isRequired  Boolean      @default(false)
+  onlyOne   Boolean   @default(false)
+
+  product   Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredients Ingredient[]
+}
+
+model Ingredient {
+  id            Int       @id @default(autoincrement())
+  ingCategoryId Int
+  name          String
+  price         Decimal   @db.Decimal(10,2)
+  image         String?
+  ingCategory   IngCategory @relation(fields: [ingCategoryId], references: [id], onDelete: Cascade)
+  orderItems    OrderItemIngredient[]
+  favoriteIngredients FavoriteIngredient[]
+}
+
+model ProductOrder {
+  id        Int         @id @default(autoincrement())
+  userId    Int
+  status    String      @default("pending") // pending, preparing, delivered, cancelled
+  seenRejected Boolean  @default(false)
+  paid      Boolean     @default(false)
+  paidIn    String?     @default("door")
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  total     Decimal     @db.Decimal(10,2)
+  deliveryTime String?
+  payment_intent_id String?
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id          Int        @id @default(autoincrement())
+  orderId     Int
+  productId   Int
+  imageId     Int?       @unique
+  quantity    Int        @default(1)
+  price       Decimal    @db.Decimal(10,2) // snapshot of product price
+  comment     String?    // <-- user comment about this product in the order
+  order       ProductOrder      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredients OrderItemIngredient[]
+  favorites   Favorite[]
+  options     Options[] @relation("ProductOptions")
+  selectedOptions     Options[] @relation("OrderItemSelectedOptions")
+}
+
+model OrderItemIngredient {
+  id           Int        @id @default(autoincrement())
+  orderItemId  Int
+  ingredientId Int
+  name         String  @default("Unknown") 
+  price        Decimal    @db.Decimal(10,2) // snapshot of ingredient price
+  orderItem    OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+}
+
+model Favorite {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  productId  Int
+  orderItemId Int? // optional link to original order item snapshot
+  createdAt  DateTime   @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItem  OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+  ingredients FavoriteIngredient[]
+}
+
+model FavoriteIngredient {
+  id          Int        @id @default(autoincrement())
+  favoriteId  Int
+  ingredientId Int
+  favorite    Favorite   @relation(fields: [favoriteId], references: [id], onDelete: Cascade)
+  ingredient  Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+}
+
+model WeeklySchedule {
+  id          Int      @id @default(autoincrement())
+  dayOfWeek   String   // e.g. "Monday", "Tuesday", etc.
+  openHour    String?  // nullable -> μπορεί να είναι κλειστό
+  closeHour   String?
+  alwaysClosed Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DateScheduleOverride {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @unique // συγκεκριμένη ημερομηνία
+  openHour    String?  // null = κλειστό
+  closeHour   String?
+  alwaysClosed Boolean  @default(true)
+  recurringYearly Boolean @default(false)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

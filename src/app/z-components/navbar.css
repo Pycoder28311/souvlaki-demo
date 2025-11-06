@@ -1,0 +1,64 @@
+.navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 50;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Όταν δεν έχει scroll */
+.navbar-default {
+    background-color: transparent;
+    padding-top: 1.5rem;
+    /* py-6 ≈ 24px */
+    padding-bottom: 1.5rem;
+}
+
+/* Desktop responsive */
+@media (min-width: 768px) {
+    .navbar-default {
+        padding-top: 0.75rem;
+        /* md:py-3 ≈ 12px */
+        padding-bottom: 0.75rem;
+    }
+}
+
+/* Όταν έχει scroll */
+.navbar-scrolled {
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding-top: 0.5rem;
+    /* py-2 ≈ 8px */
+    padding-bottom: 0.5rem;
+}
+
+/* Desktop responsive */
+@media (min-width: 768px) {
+    .navbar-scrolled {
+        padding-top: 0.5rem;
+        /* md:py-2 ≈ 8px */
+        padding-bottom: 0.5rem;
+    }
+}
+
+.navbar-logo {
+    font-weight: bold;
+    font-size: 1.25rem;
+    /* text-xl ≈ 20px */
+    transition: color 0.3s ease-in-out;
+    color: white;
+    /* default color */
+}
+
+/* Όταν η navbar έχει scroll */
+.navbar-logo.scrolled {
+    color: #111827;
+    /* text-gray-900 */
+}
+
+/* Mobile μεγαλύτερο κείμενο */
+@media (max-width: 767px) {
+    .navbar-logo {
+        font-size: 1.5rem;
+        /* λίγο μεγαλύτερο στο mobile */
+    }
+}
