@@ -23,7 +23,7 @@ type Availability = {
 export default function OrderSidebar({
   setEditableOrderItem,
 }: OrderSidebarProps) {
-  const { orderItems, isSidebarOpen, setIsSidebarOpen, shopOpen, user, setAddress, setSelectedFloor, isTooFar, setIsTooFar, shops } = useCart();
+  const { orderItems, isSidebarOpen, setIsSidebarOpen, shopOpen, user, setAddress, setSelectedFloor } = useCart();
   const total = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const [hydrated, setHydrated] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -35,6 +35,8 @@ export default function OrderSidebar({
   const [expandedItems, setExpandedItems] = useState<{ [key: string]: boolean }>({});
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
+  const [validRadius, setValidRadius] = useState<number | null>(null);
+  const [isTooFar, setIsTooFar] = useState(false);
   const [paymentWay, setPaymentWay] = useState("");
   const [userComment, setUserComment] = useState<string | undefined>(user?.comment);
   const [bellName, setBellName] = useState<string | undefined>(user?.bellName);
@@ -60,15 +62,10 @@ export default function OrderSidebar({
       setUserComment(user.comment ?? "");
 
       // If user is a business, use their own validRadius
-      if (user.business && shops && shops.length > 0) {
-        // 🔹 Find the smallest validRadius among all shops
-        const minRadius = Math.min(...shops.map(shop => shop.validRadius ?? 0));
-
-        // 🔹 Check if user is too far
-        setIsTooFar(
-          user.distanceToDestination != null &&
-          user.distanceToDestination > minRadius
-        );
+      if (user.business) {
+        const radius = user.validRadius ?? 0;
+        setValidRadius(radius);
+        setIsTooFar(user.distanceToDestination != null && user.distanceToDestination > radius);
       }
     }
   }, [user, setAddress, user?.business, setSelectedFloor]);
@@ -112,6 +109,7 @@ export default function OrderSidebar({
         setResults={setResults}
         editingAddress={editingAddress}
         setEditingAddress={setEditingAddress}
+        validRadius={validRadius}
         showDetails={showDetails}
         setShowDetails={setShowDetails}
         setWarning={setWarning}

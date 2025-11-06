@@ -437,41 +437,61 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
 
           {!loading && fullProduct && (
             <>
-              <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
-                {/* Εικόνα προϊόντος */}
-                <Image
-                  src={preview || (fullProduct.imageId ? `/api/images/${fullProduct.imageId}` : "")}
-                  alt={preview ? "preview" : fullProduct.name}
-                  fill
-                  style={{ objectFit: "cover", objectPosition: "center" }}
-                  className="rounded-t-lg"
-                />
-
-                {/* Κουμπί αλλαγής εικόνας */}
-                {business && (
-                  <label className="absolute bottom-2 right-2 cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100">
-                    <span className="sr-only">Choose file</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="hidden"
+              {(preview || fullProduct.imageId) ? (
+                <div className="w-full h-[40vh] sm:h-64 relative overflow-hidden shadow-sm mb-4 rounded-t-lg">
+                  {/* Εικόνα προϊόντος */}
+                    <Image
+                      src={preview || `/api/images/${fullProduct.imageId}`}
+                      alt={preview ? "preview" : fullProduct.name}
+                      fill
+                      style={{ objectFit: "cover", objectPosition: "center" }}
+                      className="rounded-t-lg"
                     />
-                    <span className="text-lg ml-1">
-                      {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
-                    </span>
-                    <Save className="w-6 h-6 text-gray-600" />
-                  </label>
-                )}
 
-                {/* Κλείσιμο modal */}
-                <button
-                  className="absolute top-2 right-2 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700"
-                  onClick={onClose}
-                >
-                  <X className="w-7 h-7" />
-                </button>
-              </div>
+                  {/* Κουμπί αλλαγής εικόνας */}
+                  {business && (
+                    <label className="absolute bottom-2 right-2 cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100">
+                      <span className="sr-only">Choose file</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <span className="text-lg ml-1">
+                        {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
+                      </span>
+                      <Save className="w-6 h-6 text-gray-600" />
+                    </label>
+                  )}
+
+                  {/* Κλείσιμο modal */}
+                  <button
+                    className="absolute top-2 right-2 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700"
+                    onClick={onClose}
+                  >
+                    <X className="w-7 h-7" />
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {business && (
+                    <label className=" cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100">
+                      <span className="sr-only">Choose file</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                      />
+                      <span className="text-lg ml-1">
+                        {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
+                      </span>
+                      <Save className="w-6 h-6 text-gray-600" />
+                    </label>
+                  )}
+                </>
+              )}
 
               <ProductDetail
                 fullProduct={fullProduct}

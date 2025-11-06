@@ -7,7 +7,7 @@ import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
 export default function AddressModal() {
-  const { showWelcome, setShowWelcome, address, user, setUser, setAddress, shops } = useCart(); 
+  const { showWelcome, setShowWelcome, address, user, setUser, setAddress, validRadius } = useCart(); 
   const [warning, setWarning] = useState("");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<string[]>([]);
@@ -58,17 +58,8 @@ export default function AddressModal() {
       setQuery("")
       setUser(data.updatedUser);
       setAddress(data.updatedUser.address)
-      if (shops && shops.length > 0 && data.distanceValue != null) {
-        const minRadius = Math.min(...shops.map(shop => shop.validRadius ?? 0));
-
-        if (data.distanceValue > minRadius) {
-          setWarning(
-            "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
-          );
-        } else {
-          setWarning("Η διεύθυνσή σας αποθηκεύτηκε επιτυχώς");
-          setEditingAddress(false);
-        }
+      if (validRadius && data.distanceValue > validRadius) {
+        setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
       } else {
         setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
         setEditingAddress(false); 

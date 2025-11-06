@@ -19,6 +19,7 @@ interface PaymentModalProps {
   setResults: (val: string[]) => void;
   editingAddress: boolean;
   setEditingAddress: (val: boolean) => void;
+  validRadius: number | null;
   showDetails: boolean;
   setShowDetails: (val: boolean) => void;
   setWarning: (val: string) => void;
@@ -42,6 +43,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
   setResults,
   editingAddress,
   setEditingAddress,
+  validRadius,
   showDetails,
   setShowDetails,
   setWarning,
@@ -54,7 +56,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
   setIsSidebarOpen,
   setPaymentWayModal,
 }) => {
-  const { user, setUser, address, setAddress, selectedFloor, setSelectedFloor, shops } = useCart();
+  const { user, setUser, address, setAddress, selectedFloor, setSelectedFloor } = useCart();
   const router = useRouter();
   if (!showPaymentModal) return null;
 
@@ -109,7 +111,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
                         setAddress,
                         setWarning,
                         setEditingAddress,
-                        shops,
+                        validRadius
                       )
                     }
                     className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"

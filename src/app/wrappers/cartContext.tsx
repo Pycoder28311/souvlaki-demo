@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useState, useEffect, useContext, useCallback} from "react";
-import { OrderItem, Product, Ingredient, IngCategory, Option, User, Shop } from "../types";
+import { OrderItem, Product, Ingredient, IngCategory, Option, User } from "../types";
 import { usePathname } from "next/navigation";
 
 type Schedule = {
@@ -38,12 +38,10 @@ interface CartContextType {
   setAddress: React.Dispatch<React.SetStateAction<string>>;
   showRadiusNote: boolean;
   setShowRadiusNote: React.Dispatch<React.SetStateAction<boolean>>;
+  validRadius: number | null;
+  setValidRadius: React.Dispatch<React.SetStateAction<number | null>>;
   shopOpen: boolean;
   cartMessage: string;
-  shops: Shop[];
-  setShops: React.Dispatch<React.SetStateAction<Shop[]>>;
-  isTooFar: boolean;
-  setIsTooFar: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 type Weekday =
@@ -79,14 +77,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
   const [overrides, setOverrides] = useState<Override[]>([]);
   const [cartMessage, setCartMessage] = useState("Φόρτωση...");
-  const [isTooFar, setIsTooFar] = useState(false);
   
   const [user, setUser] = useState<User | null>(null);
-  const [shops, setShops] = useState<Shop[]>([]);
   const [selected, setSelected] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
   const [address, setAddress] = useState("");
   const [showRadiusNote, setShowRadiusNote] = useState(false);
+  const [validRadius, setValidRadius] = useState<number | null>(null);
 
   const OpenSidebarPaths = ["/menu"];
   const Open = OpenSidebarPaths.includes(pathname);
@@ -282,10 +279,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (typeof session.user.address === "string") {
             setAddress(session.user.address.split(",")[0]);
           }
+
+          if (session.user.validRadius == null && session.user.business) {
+            setShowRadiusNote(true);
+          }
         }
 
-        if (session.shops && Array.isArray(session.shops)) {
-          setShops(session.shops);
+        if (session.validRadius) {
+          setValidRadius(session.validRadius)
         }
       } catch (error) {
         console.error("Error fetching session:", error);
@@ -482,12 +483,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAddress,
         showRadiusNote,
         setShowRadiusNote,
-        shopOpen,
+        validRadius,
+        setValidRadius,
+        shopOpen,            
         cartMessage,
-        shops,
-        setShops,
-        isTooFar,
-        setIsTooFar,
       }}
     >
       {children}

@@ -24,14 +24,14 @@ export default async function handler(req, res) {
         return res.status(200).json({});
       }
 
-      const shops = await prisma.shop.findMany({
-        orderBy: { id: "asc" },
-        select: { id: true, street: true, validRadius: true },
+      const businessUser = await prisma.user.findFirst({
+        where: { business: true },
+        select: { validRadius: true },
       });
 
-      // Merge session with user data and include validRadii
+      // Merge session with user data
       session.user = { ...session.user, ...user };
-      session.shops = shops;
+      session.validRadius = businessUser?.validRadius ?? null;
 
       return res.status(200).json(session);
     } catch (error) {

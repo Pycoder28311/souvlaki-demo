@@ -58,6 +58,7 @@ model User {
   address      String?
   distanceToDestination Decimal?  @db.Decimal(6, 2)
   floor        String?
+  validRadius  Decimal?  @db.Decimal(6, 2)
   defaultTime  Int?
   bellName     String?
   comment      String?
@@ -72,15 +73,6 @@ model User {
   sessions      Session[]
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
-}
-
-model Shop {
-  id        Int      @id @default(autoincrement())
-  street    String
-  imageId   Int?          @unique
-  validRadius  Decimal?  @db.Decimal(6, 2)
-
-  image       Image?        @relation(fields: [imageId], references: [id], onDelete: Cascade)
 }
 
 model PaymentIntent {
@@ -126,7 +118,6 @@ model Image {
   data      Bytes
   createdAt DateTime @default(now())
   product   Product? // optional back relation
-  shop      Shop?
 }
 
 model Transaction {

@@ -1,4 +1,4 @@
-import { OrderItem, Product, Shop, User } from "../../types"; // adjust path
+import { OrderItem, Product, User } from "../../types"; // adjust path
 import { useRouter } from "next/navigation";
 
 type ProductWithAvailability = Product & {
@@ -84,7 +84,7 @@ export const handleUpdateAddress = async (
   setAddress: (address: string) => void,
   setWarning: (msg: string) => void,
   setEditingAddress: (val: boolean) => void,
-  shops: Shop[],
+  validRadius: number | null,
 ) => {
   try {
     const addressToSend = results[0]?.trim() ? results[0] : address;
@@ -108,25 +108,16 @@ export const handleUpdateAddress = async (
     setUser(data.updatedUser);
     setAddress(data.updatedUser.address);
 
-    // 🔹 Check distance against all shops
-    if (shops && shops.length > 0 && data.distanceValue != null) {
-      const minRadius = Math.min(...shops.map(shop => shop.validRadius ?? 0));
-      if (data.distanceValue > minRadius) {
-        setWarning(
-          "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
-        );
-      } else {
-        setWarning("Η διεύθυνσή σας αποθηκεύτηκε επιτυχώς");
-        setEditingAddress(false);
-      }
+    if (validRadius && data.distanceValue > validRadius) {
+      setWarning(
+        "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
+      );
     } else {
-      // fallback if no shops or distanceValue missing
+      setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
       setEditingAddress(false);
-      setWarning("Η διεύθυνσή σας αποθηκεύτηκε επιτυχώς");
     }
   } catch (err) {
     console.error("Error updating user:", err);
-    setWarning("Σφάλμα κατά την ενημέρωση της διεύθυνσης.");
   }
 };
 

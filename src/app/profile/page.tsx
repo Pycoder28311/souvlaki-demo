@@ -4,19 +4,9 @@ import { useState, useEffect } from "react";
 import { Pencil, Check, X, Calendar } from "lucide-react";
 import { useCart } from "../wrappers/cartContext";
 import Link from "next/link";
-import { Shop } from "../types";
-
-type Address = {
-  id: number;
-  street: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
-};
 
 export default function ProfilePage() {
-  const { user, setUser, setAddress, setShowRadiusNote, shops, setShops } = useCart();
+  const { user, setUser, setAddress, setShowRadiusNote, validRadius, setValidRadius } = useCart();
   const [editingName, setEditingName] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
   const [nameInput, setNameInput] = useState("");
@@ -35,23 +25,17 @@ export default function ProfilePage() {
       setSelectedFloor(user.floor ?? "");
       setAddress(user.address ?? "");
       if (user.business) {
+        //setValidRadius(user.validRadius ?? 0);
         setDefaultTime(user.defaultTime ?? 0);
       } else {
         setUserComment(user.comment ?? "");
         setBellName(user.bellName ?? "");
       }
     }
-    if (user?.distanceToDestination != null && shops && shops.length > 0) {
-      const maxRadius = Math.max(...shops.map(shop => shop.validRadius ?? 0));
-      if (user.distanceToDestination > maxRadius) {
-        setWarning(
-          "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
-        );
-      } else {
-        setWarning(""); // clear warning if within range
-      }
+    if (user?.distanceToDestination && validRadius && user.distanceToDestination > validRadius) {
+      setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
     }
-  }, [user, setAddress, shops]);
+  }, [user, setAddress, setValidRadius, validRadius]);
 
   const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
@@ -114,84 +98,15 @@ export default function ProfilePage() {
       setQuery("")
       setUser(data.updatedUser);
       setAddress(data.updatedUser.address)
-      if (shops && shops.length > 0 && data.distanceValue != null) {
-        const minRadius = Math.min(...shops.map(shop => shop.validRadius ?? 0));
-
-        if (data.distanceValue > minRadius) {
-          setWarning(
-            "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
-          );
-        } else {
-          setWarning("Η διεύθυνσή σας αποθηκεύτηκε επιτυχώς");
-          setEditingAddress(false);
-        }
-      }
-      else {
+      if (validRadius && data.distanceValue > validRadius) {
+        setWarning("Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας.")
+      } else {
         setWarning("Η διεύθυνσή σας αποθηκεύτηκε απιτυχώς");
         setEditingAddress(false); 
       }
     } catch (error) {
       console.error("Error updating user:", error);
     }
-  };
-
-  const [addingShop, setAddingShop] = useState(false);
-  const [editingShopId, setEditingShopId] = useState<number | null>(null);
-
-  // Fetch shops on mount
-  useEffect(() => {
-    const fetchShops = async () => {
-      const res = await fetch("/api/shops");
-      if (res.ok) {
-        const data: Shop[] = await res.json();
-        setShops(data);
-      }
-    };
-    fetchShops();
-  }, []);
-
-  // Add or update shop
-  const handleSaveShop = async () => {
-    if (!query.trim()) return;
-
-    if (editingShopId) {
-      // Update existing shop
-      const res = await fetch(`/api/shops/${editingShopId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ street: query }),
-      });
-      const updatedShop: Shop = await res.json();
-      setShops((prev) =>
-        prev.map((s) => (s.id === editingShopId ? updatedShop : s))
-      );
-      setEditingShopId(null);
-    } else {
-      // Add new shop
-      const res = await fetch("/api/shops", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ street: query }),
-      });
-      const newShop: Shop = await res.json();
-      setShops((prev) => [...prev, newShop]);
-    }
-
-    setQuery("");
-    setAddingShop(false);
-  };
-
-  // Edit shop
-  const handleEditShop = (shop: Shop) => {
-    setQuery(shop.street);
-    setEditingShopId(shop.id);
-    setAddingShop(true);
-  };
-
-  // Delete shop
-  const handleDeleteShop = async (id: number) => {
-    await fetch(`/api/shops/${id}`, { method: "DELETE" });
-    setShops((prev) => prev.filter((s) => s.id !== id));
   };
 
   return (
@@ -250,48 +165,48 @@ export default function ProfilePage() {
 
             {/* Address */}
             {editingAddress ? (
-              <div className="mb-4 relative">
+            <div className="mb-4 relative">
                 <div className="flex items-center gap-2">
-                  <input
+                <input
                     type="text"
                     value={query}
                     onChange={handleSearch}
                     placeholder="Type your address..."
                     className="border border-gray-300 rounded-xl p-3 w-full focus:ring-2 focus:ring-blue-400"
-                  />
-                  <button
+                />
+                <button
                     onClick={handleUpdateAddress}
                     className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition flex items-center justify-center"
-                  >
+                >
                     <Check className="w-5 h-5" />
-                  </button>
-                  <button
+                </button>
+                <button
                     onClick={() => setEditingAddress(false)}
                     className="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-300 transition flex items-center justify-center"
-                  >
+                >
                     <X className="w-5 h-5" />
-                  </button>
+                </button>
                 </div>
 
                 {/* Dropdown Results */}
                 {results.length > 0 && (
-                  <ul className="absolute top-full left-0 w-full bg-white border rounded-xl max-h-52 overflow-y-auto mt-1 shadow-lg z-20">
+                <ul className="absolute top-full left-0 w-full bg-white border rounded-xl max-h-52 overflow-y-auto mt-1 shadow-lg z-20">
                     {results.map((r, i) => (
-                      <li
+                    <li
                         key={i}
                         onClick={() => {
-                          setAddress(r);
-                          setQuery(r);
-                          setResults([]);
+                        setAddress(r);
+                        setQuery(r);
+                        setResults([]);
                         }}
                         className="p-3 hover:bg-gray-100 cursor-pointer text-left"
-                      >
+                    >
                         {r}
-                      </li>
+                    </li>
                     ))}
-                  </ul>
+                </ul>
                 )}
-              </div>
+            </div>
             ) : (
             <div className="flex items-center justify-center gap-2 max-w-full mb-4">
                 <p className="text-gray-500 text-lg truncate">{user?.address}</p>
@@ -425,72 +340,6 @@ export default function ProfilePage() {
 
             {user?.business && (
               <div className="flex flex-col gap-4">
-                <div>
-                  <h2 className="text-lg font-bold mb-2">Shops</h2>
-
-                  {/* Input for adding/updating */}
-                  {addingShop && (
-                    <div className="flex gap-2 mb-4">
-                      <input
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Enter shop address"
-                        className="border p-2 rounded flex-1"
-                      />
-                      <button
-                        onClick={handleSaveShop}
-                        className="bg-green-500 text-white px-3 py-2 rounded"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={() => {
-                          setAddingShop(false);
-                          setEditingShopId(null);
-                          setQuery("");
-                        }}
-                        className="bg-gray-300 px-3 py-2 rounded"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Shops list */}
-                  <ul>
-                    {shops.map((shop) => (
-                      <li key={shop.id} className="flex justify-between items-center mb-2">
-                        <span>{shop.street}</span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditShop(shop)}
-                            className="bg-blue-500 text-white px-2 py-1 rounded"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => handleDeleteShop(shop.id)}
-                            className="bg-red-500 text-white px-2 py-1 rounded"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Add new shop button */}
-                  {!addingShop && (
-                    <button
-                      onClick={() => setAddingShop(true)}
-                      className="mt-2 bg-green-500 text-white px-3 py-2 rounded"
-                    >
-                      Add Shop
-                    </button>
-                  )}
-                </div>
-
                 <div className="flex flex-col gap-2 mt-4">
                   <p className="text-gray-700">Μέσος χρόνος προετοιμασίας (αυτός ο χρόνος προστίθεται στον χρόνο που χρειάζεται ο ντελιβεράς):</p>
                   <div className="flex items-center gap-2">
@@ -522,6 +371,59 @@ export default function ProfilePage() {
                         }
                       }}
                       className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Αποθήκευση
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-col sm:flex-col items-center gap-3 sm:gap-4">
+                  <span className="text-gray-700">
+                    Ορίστε την μέγιστη δυνατή απόσταση όπου γίνεται delivery σε (km):
+                  </span>
+                  <div className="flex flex-row gap-4 w-full">
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={validRadius ?? 0}
+                      onChange={(e) => setValidRadius(parseFloat(e.target.value || "0"))}
+                      placeholder="Ορίστε απόσταση"
+                      className={`border p-2 rounded-lg w-full text-center ${
+                        !validRadius ? "border-red-500" : "border-gray-300"
+                      }`}
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!validRadius) {
+                          alert("Παρακαλώ εισάγετε μια τιμή.");
+                          return;
+                        }
+
+                        const radiusValue = validRadius;
+                        if (isNaN(radiusValue) || radiusValue <= 0) {
+                          alert("Η απόσταση πρέπει να είναι μεγαλύτερη από 0 km.");
+                          return;
+                        }
+                        try {
+                          const res = await fetch(`/api/user/${user.id}/update-valid-radius`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              validRadius: validRadius, // no userId needed here
+                            }),
+                          });
+
+                          if (!res.ok) throw new Error("Failed to update radius");
+
+                          const data = await res.json(); 
+                          alert(`Μέγιστη έγκυρη απόσταση: ${data.validRadius} km`);
+                          setShowRadiusNote(false);
+                        } catch (err) {
+                          console.error(err);
+                          alert("Something went wrong");
+                        }
+                      }}
+                      className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg"
                     >
                       Αποθήκευση
                     </button>

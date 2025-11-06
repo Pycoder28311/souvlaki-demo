@@ -6,16 +6,11 @@ export interface User {
   business: boolean;
   address?: string;
   floor: string;
+  validRadius: number;
   comment: string;
   bellName: string;
   defaultTime: number;
   distanceToDestination: number;
-};
-
-export interface Shop {
-  id: number;
-  street: string;
-  validRadius?: number | null;
 };
 
 export interface Ingredient {
