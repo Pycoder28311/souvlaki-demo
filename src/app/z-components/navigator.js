@@ -90,7 +90,7 @@ export default function Navbar({scrolled = false, isLive }) {
             <span
               className={`ml-2 font-bold text-xl hidden md:inline ${isScrolled ? "text-gray-900" : "text-white"}`}
             >
-              ΣΟΥΒΛΑΚΙΑs
+              ΣΟΥΒΛΑΚΙΑ
             </span>
           </Link>
 
