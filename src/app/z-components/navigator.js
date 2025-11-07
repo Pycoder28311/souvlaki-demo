@@ -114,7 +114,7 @@ export default function Navbar({scrolled = false, isLive }) {
           {/* Desktop links */}
           <div className="hidden md:flex items-center space-x-8">
             {user ? (
-              <div className="flex flex-col space-y-1">
+              <div className="flex flex-col space-y-1" onClick={() => setIsSidebarOpen(false)}>
                 <button
                   onClick={() => setSidebarOpen(true)}
                   className={`flex px-4 py-2 font-bold transition-all duration-300 transform rounded-lg ${
