@@ -40,30 +40,32 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
 
   return (
     <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
-      <div className="bg-gray-100 w-full h-full max-h-full flex flex-col p-4">
+      <div className="bg-gray-100 w-full h-full max-h-full flex flex-col py-4">
         {/* Header */}
-        <div className="flex items-center border-b border-gray-400 pb-3">
-          <button
-            onClick={() => {
-              setPaymentWayModal(false);
-              setFormLoaded(false);
-            }}
-            className="p-2 rounded-lg hover:bg-gray-200 transition"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-700" />
-          </button>
-          <h2 className="text-xl font-bold text-gray-800 ml-1">Τρόπος Πληρωμής</h2>
+        <div className=" px-4">
+          <div className=" border-b border-gray-400 flex items-center pb-3 ">
+            <button
+              onClick={() => {
+                setPaymentWayModal(false);
+                setFormLoaded(false);
+              }}
+              className="p-2 rounded-lg hover:bg-gray-200 transition"
+            >
+              <ArrowLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <h2 className="text-xl font-bold text-gray-800 ml-1">Τρόπος Πληρωμής</h2>
+          </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="border-gray-300 absolute bottom-32 sm:bottom-18">
+        <div className="border-gray-300 w-full px-4 fixed bottom-18">
           {/* Total */}
           <p className="mb-4 font-bold text-gray-900 text-2xl px-1 pt-4">
             Σύνολο: {total.toFixed(2)}€
           </p>
 
           {/* Checkout Form */}
-          <div className="pr-4">
+          <div className="w-full">
             <CheckOutForm
               amount={total}
               userId={user?.id}

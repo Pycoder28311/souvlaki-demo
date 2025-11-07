@@ -31,7 +31,7 @@ export default function Orders() {
         <span className="text-gray-700 text-lg font-semibold">
           Φόρτωση παραγγελιών
         </span>
-        <AiOutlineLoading3Quarters className="text-gray-700 w-6 h-6 animate-spin" />
+        <AiOutlineLoading3Quarters className="text-gray-700 w-4 h-4 animate-spin" />
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function Orders() {
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Live Παραγγελίες</h1>
 
         {orders.map((order) => (
-          <OrderCard key={order.id} order={order} defaultTime={user?.defaultTime}/>
+          <OrderCard key={order.id} order={order} defaultTime={user?.defaultTime} setOrders={setOrders}/>
         ))}
       </div>
     </div>

@@ -121,7 +121,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
               {/* Collapsible Ingredients */}
               {open && (
-                <div className="p-3 space-y-2">
+                <div className="px-2 py-2 space-y-2">
                   {business && (
                     <div className="flex justify-between flex-wrap gap-1">
                       <p>Επεξεργασία:</p>
@@ -219,7 +219,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   {business && (
                     <button
                       onClick={() => handleAddIngredient(ingCat.id)}
-                      className="px-1 py-1 flex items-center gap-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+                      className="px-2 py-1 flex items-center gap-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm"
                     >
                       <Plus className="w-4 h-4" /><p> Προσθήκη Συστατικού</p>
                     </button>
@@ -267,7 +267,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               </div>
 
               {open && (
-                <div className="p-3 space-y-2">
+                <div className="p-2 space-y-2">
                   {business && ( 
                     <div className="flex gap-1 justify-between"> {/* Edit Question */} 
                       <p>Επεξεργασία:</p>

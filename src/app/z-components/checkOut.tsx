@@ -175,15 +175,16 @@ export default function CheckoutPage({
   const options = { clientSecret, 
     appearance: {
       variables: {
-        colorPrimary: '#1518a1ff',
+        colorPrimary: '#22259eff',
         colorBackground: '#ffffffff',
-        colorText: '#111827',
+        colorText: '#000000ff',
         colorDanger: '#ef4444',
         fontFamily: 'system-ui, sans-serif',
-        borderRadius: '0px',
+        borderRadius: '12px',
         spacingUnit: '4px',
       },
-    }, };
+    }, 
+  };
 
   return (
     clientSecret && (

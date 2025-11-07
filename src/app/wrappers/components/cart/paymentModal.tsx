@@ -217,7 +217,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="absolute bottom-32 sm:bottom-18 left-0 right-0 border-gray-300">
+        <div className="fixed bottom-18 left-0 right-0 border-gray-300">
           <div className="px-4">
             <p className="mt-4 px-1 font-bold text-gray-900 text-2xl">Σύνολο: {total.toFixed(2)}€</p>
             <button

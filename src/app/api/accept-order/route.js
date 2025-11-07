@@ -14,7 +14,8 @@ export async function POST(req) {
       where: { id },
       data: {
         status: "pending",
-        deliveryTime, // e.g. "25-30"
+        deliveryTime, // e.g. "25-30" 
+        acceptedAt: new Date()
       },
     });
 

@@ -31,7 +31,7 @@ export default function CancelPage() {
             backgroundColor: "#0070f3",
             color: "white",
             border: "none",
-            borderRadius: "5px",
+            borderRadius: "12px",
             cursor: "pointer",
             fontSize: "1rem",
           }}

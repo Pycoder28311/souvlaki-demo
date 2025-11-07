@@ -85,6 +85,7 @@ export interface Order {
   status: string;
   total: number;
   createdAt: string;
+  acceptedAt?: string;
   items: OrderItem[];
   user: User;
   paid: boolean;

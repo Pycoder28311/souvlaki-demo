@@ -57,6 +57,7 @@ type Order = {
   status: string;
   total: number;
   createdAt: string;
+  acceptedAt?: string;
   items: OrderItem[];
   user: User;
   paid: boolean;
@@ -76,21 +77,21 @@ interface Props {
     options: Option[]
   ) => void;
   setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
+  setNotification: React.Dispatch<React.SetStateAction<string | null>>
 }
 
-export default function OrderCard({ order, products, addToCart, setOrders }: Props) {
+export default function OrderCard({ order, products, addToCart, setOrders,  setNotification }: Props) {
   const [confirmCancel, setConfirmCancel] = useState(false);
   const [currentRange, setCurrentRange] = useState<string>(order.deliveryTime);
-  const [notification, setNotification] = useState<string | null>(null);
   const { shopOpen } =useCart();
 
   useEffect(() => {
-    if (!order.deliveryTime || !order.createdAt) return;
+    if (!order.deliveryTime || !order.acceptedAt) return;
 
     const parts = order.deliveryTime.split("-").map((v) => parseInt(v, 10));
     const maxTime = parts[1] || parts[0];
 
-    const startTime = new Date(order.createdAt).getTime();
+    const startTime = new Date(order.acceptedAt).getTime();
     const endTime = startTime + maxTime * 60 * 1000;
 
     const update = () => {
@@ -116,7 +117,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
     update();
     const timer = setInterval(update, 1000); // κάθε δευτερόλεπτο
     return () => clearInterval(timer);
-  }, [order.deliveryTime, order.createdAt]);
+  }, [order.deliveryTime, order.acceptedAt]);
 
   const handleCancel = async () => {
     try {
@@ -148,20 +149,15 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
   };
 
   return (
-    <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden">
-      {notification && (
-        <div>
-          {notification}
-        </div>
-      )}
+    <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-gray-50 overflow-hidden">
       {/* Header */}
-      <div className="bg-yellow-400 px-4 py-2 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-0">
-        <p className="text-gray-700">
+      <div className="bg-yellow-400 px-2 py-2 flex flex-row justify-between items-center">
+        <p className="text-gray-700 px-2 text-lg">
           <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
         </p>
 
         <span
-          className={`px-3 py-1 text-sm font-medium rounded-lg ${
+          className={`px-3 py-1 text-md font-medium rounded-lg ${
             order.status === "completed"
                 ? "bg-green-500 text-white"
                 : order.status === "pending"
@@ -169,7 +165,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                 : order.status === "rejected"
                 ? "bg-red-600 text-white"
                 : order.status === "cancelled"
-                ? "bg-gray-400 text-white"
+                ? "bg-red-400 text-white"
                 : order.status === "requested"
                 ? "bg-yellow-500 text-white"
                 : "bg-gray-300 text-white"
@@ -189,9 +185,9 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
         </span>
       </div>
 
-      <div className="mb-4 p-4 bg-white space-y-3">
+      <div className="mb-0 md:mb-4 p-4 space-y-3">
         {/* Delivery Time */}
-        <div className="flex justify-between">
+        <div className="flex flex-col md:flex-row justify-between gap-4 md:gap-0">
           {order.deliveryTime && order.status === "pending" && (
             <p className="text-gray-700 text-lg font-semibold">
               {currentRange !== "Έτοιμη" ? "Παράδοση σε:" : "Η παραγγελία είναι"} <span className="text-blue-600">{currentRange} {currentRange !== "Έτοιμη" && "λεπτά"}</span>
@@ -211,25 +207,25 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
             {!confirmCancel ? (
               <button
                 onClick={() => setConfirmCancel(true)}
-                className="mt-2 w-full py-1.5 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-md transition"
+                className="mt-2 w-full py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-lg md:text-md transition"
               >
                 Ακύρωση
               </button>
             ) : (
               <div className="space-y-2 mt-2 border border-red-400 rounded-lg p-3 bg-red-50">
-                <span className="text-gray-800 font-semibold text-sm">
+                <span className="text-gray-800 font-semibold text-base md:text-sm">
                   Είστε σίγουροι ότι θέλετε να ακυρώσετε την παραγγελία;
                 </span>
                 <div className="flex space-x-2">
                   <button
                     onClick={handleCancel}
-                    className="w-1/2 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-sm transition"
+                    className="w-1/2 py-1.5 bg-red-700 hover:bg-red-800 text-white rounded-lg text-base md:text-sm transition"
                   >
                     Ναι
                   </button>
                   <button
                     onClick={() => setConfirmCancel(false)}
-                    className="w-1/2 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-lg text-sm transition"
+                    className="w-1/2 py-1.5 bg-gray-300 hover:bg-gray-400 rounded-lg text-base md:text-sm transition"
                   >
                     Όχι
                   </button>
@@ -277,14 +273,14 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
                       src={`/api/images/${item.imageId}`}
                       alt={item.name}
                       fill
-                      style={{ objectFit: "cover", objectPosition: "top" }}
+                      style={{ objectFit: "cover", objectPosition: "center" }}
                       className="rounded-t-xl sm:rounded-r-xl sm:rounded-tl-none h-full"
                     />
                   </div>
                 )}
 
                 {/* Order Details */}
-                <div className="flex-1 p-4 sm:p-6 flex flex-col justify-between">
+                <div className="flex-1 p-4 sm:p-3 flex flex-col justify-between">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">
                       {item.name}
@@ -313,7 +309,7 @@ export default function OrderCard({ order, products, addToCart, setOrders }: Pro
 
                   {/* Repeat Order Button */}
                   <button
-                    className="mt-4 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium"
+                    className="mt-4 max-w-80 w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium self-center"
                     onClick={() => {
                       const product = products[item.productId];
                       if (!isAvailable || !shopOpen || !product) return;

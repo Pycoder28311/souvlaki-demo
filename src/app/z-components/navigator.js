@@ -275,10 +275,10 @@ export default function Navbar({scrolled = false, isLive }) {
                 {user?.name?.charAt(0) || "U"}
               </div>
               <div className="flex flex-col max-w-[200px]">
-                <h2 className="text-lg font-semibold text-gray-800 break-words">
+                <h2 className="text-2xl lg:text-lg font-semibold text-gray-800 break-words">
                   {user?.name}
                 </h2>
-                <p className="text-sm text-gray-500 break-words">
+                <p className=" text-lg lg:text-sm text-gray-500 break-words">
                   {address?.split(",")[0] || ""}
                 </p>
               </div>
@@ -290,7 +290,7 @@ export default function Navbar({scrolled = false, isLive }) {
             <li>
               <Link
                 href="/profile"
-                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
               >
                 Προφίλ
               </Link>
@@ -300,7 +300,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 <li>
                   <Link
                     href="/live-orders"
-                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
                   >
                     Παραγγελίες Live
                   </Link>
@@ -308,7 +308,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 <li>
                   <Link
                     href="/all-orders"
-                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
                   >
                     Όλες οι Παραγγελίες
                   </Link>
@@ -316,7 +316,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 <li>
                   <Link
                     href="/messages"
-                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
                   >
                     Μηνύματα
                   </Link>
@@ -324,7 +324,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 <li>
                   <Link 
                     href="/schedule-manage" 
-                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
                   >
                     Διαχείρηση Ωραρίου
                   </Link>
@@ -335,7 +335,7 @@ export default function Navbar({scrolled = false, isLive }) {
               <li>
                 <Link
                   href="/orders-history"
-                  className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition"
+                  className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
                 >
                   Οι Παραγγελίες μου
                 </Link>
@@ -347,8 +347,8 @@ export default function Navbar({scrolled = false, isLive }) {
           <div className="mt-auto pb-12 lg:pb-0">
             <Link
               href="/api/auth/signout"
-              className="block w-full text-center px-4 py-2 rounded-md font-bold shadow hover:shadow-md 
-                        bg-yellow-400 text-gray-900 hover:bg-yellow-500 transition-all"
+              className="block w-full text-center px-4 py-2 rounded-lg font-bold shadow hover:shadow-md 
+                        bg-yellow-400 text-gray-700 hover:bg-yellow-500 transition-all text-xl lg:text-base"
             >
               Αποσύνδεση
             </Link>

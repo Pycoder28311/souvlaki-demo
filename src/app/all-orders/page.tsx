@@ -141,7 +141,7 @@ export default function Orders() {
         <span className="text-gray-700 text-lg font-semibold">
           Φόρτωση παραγγελιών
         </span>
-        <AiOutlineLoading3Quarters className="text-gray-700 w-6 h-6 animate-spin" />
+        <AiOutlineLoading3Quarters className="text-gray-700 w-4 h-4 animate-spin" />
       </div>
     );
   }
@@ -217,11 +217,11 @@ export default function Orders() {
         {filteredOrders.map((order) => (
           <div
             key={order.id}
-            className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden"
+            className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden"
           >
             {/* Order Header */}
-            <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
-              <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
+            <div className="bg-yellow-400 px-2 py-2 flex justify-between items-center">
+              <p className="font-semibold text-gray-900 px-2 text-lg">Παραγγελία #{order.id}</p>
               <span
                 className={`px-3 py-1 font-medium rounded-lg ${
                   order.status === "completed"
@@ -340,12 +340,11 @@ export default function Orders() {
               </div>
             )}
 
-            <div className="flex flex-row items-center justify-between p-4 pt-2 pb-2">
-              <p className="text-gray-700 text-xl">
-                <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
-              </p>
+            <div className={`flex md:hidden w-full flex justify-center pt-2 ${
+              expandedItems[order.id] ? "pt-0" : "pt-2"
+            }`}>
               <button
-                className="mt-2 flex items-center text-blue-500 hover:underline text-sm gap-1"
+                className="mt-2 flex items-center text-blue-500 hover:underline text-md gap-1"
                 onClick={() => toggleItem(order.id)}
               >
                 <span>{!expandedItems[order.id] ? "Απόκρυψη λεπτομερειών" : "Εμφάνιση λεπτομερειών"}</span>
@@ -355,8 +354,29 @@ export default function Orders() {
                   }`}
                 />
               </button>
+            </div>
+
+            <div className={`flex flex-row items-center justify-between p-2 ${
+              expandedItems[order.id] ? "pt-2" : "pt-4"
+            }`}>
+              <p className="text-gray-700 text-xl ml-2">
+                <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
+              </p>
+              <div className="hidden md:flex">
+                <button
+                  className="mt-2 flex items-center text-blue-500 hover:underline text-md gap-1"
+                  onClick={() => toggleItem(order.id)}
+                >
+                  <span>{!expandedItems[order.id] ? "Απόκρυψη λεπτομερειών" : "Εμφάνιση λεπτομερειών"}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform ${
+                      !expandedItems[order.id] ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+              </div>
               <p
-                className="text-gray-900 bg-gray-400 p-2 rounded-lg"
+                className="text-gray-700 bg-gray-300 px-2 py-1 rounded-lg"
               >
                 {order.paidIn === "POS" ? (
                   <>

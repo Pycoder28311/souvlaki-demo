@@ -7,10 +7,11 @@ import { Order } from "../types";
 
 interface Props {
   order: Order;
+  setOrders: React.Dispatch<React.SetStateAction<Order[]>>;
   defaultTime: number;
 }
 
-const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
+const OrderCard: React.FC<Props> = ({ order, setOrders, defaultTime }) => {
   const [confirmReject, setConfirmReject] = useState(false);
   const [deliveryModalOpen, setDeliveryModalOpen] = useState(false);
   const [deliveryTime, setDeliveryTime] = useState(""); // input value
@@ -21,7 +22,6 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
   const distance = order.user.distanceToDestination ?? 0; // σε km
   const deliverySpeedKmPerMin = 30 / 60; // 30 km/h σε λεπτά ανά km
   const travelTime = distance / deliverySpeedKmPerMin + Number(defaultTime ?? 0); // +10 λεπτά προετοιμασίας
-
   const roundTo5 = (num: number) => Math.ceil(num / 5) * 5;
   const lower = roundTo5(travelTime);
   const upper = lower + 5;
@@ -36,14 +36,16 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
 
   const [showSelect, setShowSelect] = useState(false);
   const selectRef = useRef<HTMLSelectElement | null>(null);
+  const printRef = useRef<HTMLDivElement>(null);
+  const textToPrint = "";
 
   useEffect(() => {
-    if (!order.deliveryTime || !order.createdAt) return;
+    if (!order.deliveryTime || !order.acceptedAt) return;
 
     const parts = order.deliveryTime.split("-").map((v) => parseInt(v, 10));
     const maxTime = parts[1] || parts[0];
 
-    const startTime = new Date(order.createdAt).getTime();
+    const startTime = new Date(order.acceptedAt).getTime();
     const endTime = startTime + maxTime * 60 * 1000;
 
     const update = () => {
@@ -69,7 +71,7 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
     update();
     const timer = setInterval(update, 1000); // κάθε δευτερόλεπτο
     return () => clearInterval(timer);
-  }, [order.deliveryTime, order.createdAt]);
+  }, [order.deliveryTime, order.acceptedAt]);
 
   useEffect(() => {
     if (showSelect && selectRef.current) {
@@ -116,11 +118,204 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
     }
   };
 
+  const handlePrint = (order: Order): Promise<void> => {
+    return new Promise((resolve, reject) => {
+    if (!printRef.current) return reject();
+
+    const printWindow = window.open("", "", "width=700,height=600");
+    if (!printWindow) return reject();
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Print</title>
+        <style>
+          @media print {
+            @page { margin: 0; }
+            body {
+              margin: 0;
+              font-family: Arial, sans-serif;
+              white-space: pre-wrap;
+              font-size: 10px;
+              display: flex;
+              justify-content: center;
+              align-items: flex-start;
+              height: 100vh;
+            }
+            .receipt {
+              text-align: center;
+              border: 1px solid #000;
+              padding: 3px;
+              width: 280px;
+              line-height: 1;
+            }
+          }
+
+          body {
+            font-family: Arial, sans-serif;
+            white-space: pre-wrap;
+            font-size: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+          }
+
+          .receipt {
+            text-align: center;
+            border: 1px solid #000;
+            padding: 3px;
+            width: 280px;
+            line-height: 1;
+          }
+
+          .receipt h2 {
+            font-size: 10px;
+            margin: 2px 0 4px 0;
+          }
+
+          .receipt h3 {
+            font-size: 10px;
+            margin: 4px 0 2px 0;
+          }
+
+          .receipt p {
+            margin: 1px 0;
+          }
+
+          .logo {
+            max-width: 80px;
+            margin-bottom: px;
+          }
+
+          hr {
+            margin: 4px 0;
+            border: none;
+            border-top: 1px dashed #000;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt">
+          <img src="${window.location.origin}/favicon.jpg" class="logo" />
+          <h2>Απόδειξη Παραγγελίας</h2>
+
+          <p><strong>Αριθμός Παραγγελίας:</strong> ${order.id}</p>
+          <p><strong>Ημερομηνίαd:</strong> ${new Date(order.createdAt).toLocaleDateString('el-GR')} ${new Date(order.createdAt).toLocaleTimeString('el-GR')}</p>
+          <p><strong>Ώρα Παράδοσης:</strong> ${order.deliveryTime || '-'}</p>
+          <p><strong>Κατάσταση:</strong> ${order.status}</p>
+          <hr />
+
+          <div style="text-align:left; margin-top:15px;">
+            <h3>Πελάτης</h3>
+            <p><strong>Όνομα:</strong> ${order.user?.name || '—'}</p>
+            <p><strong>Email:</strong> ${order.user?.email || '—'}</p>
+            <hr />
+
+            <h3>Περιεχόμενο Παραγγελίας</h3>
+            ${order.items
+              .map(
+                (item, index) => `
+                <div style="margin-bottom:10px;">
+                  <p><strong>${index + 1}. ${item.product?.name}</strong> (x${item.quantity})</p>
+                  <p>Τιμή Μονάδας: €${Number(item.price).toFixed(2)}</p>
+                  ${
+                    item.selectedIngredients && item.selectedIngredients.length > 0
+                      ? `<p>+ Υλικά: ${item.selectedIngredients
+                          .map((ing) => ing.name)
+                          .join(', ')}</p>`
+                      : ''
+                  }
+                  ${
+                    item.selectedOptions && item.selectedOptions.length > 0
+                      ? `<p>+ Επιλογές: ${item.selectedOptions
+                          .map((opt) => opt.comment)
+                          .join(', ')}</p>`
+                      : ''
+                  }
+                </div>
+              `
+              )
+              .join('')}
+          </div>
+
+          <hr />
+          <p><strong>Σύνολο:</strong> €${Number(order.total).toFixed(2)}</p>
+          <p><strong>Πληρωμή:</strong> ${order.paid ? 'Εξοφλημένη' : 'Μη εξοφλημένη'}</p>
+          ${order.paid && order.paidIn ? `<p><strong>Τρόπος Πληρωμής:</strong> ${order.paidIn}</p>` : ''}
+          <hr />
+
+          <p style="margin-top:20px; text-align:center;">Ευχαριστούμε για την προτίμησή σας!</p>
+        </div>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.focus();
+
+    // Resolve when the user clicks "Print"
+    printWindow.onafterprint = () => {
+      printWindow.close();
+      resolve();
+    };
+
+    // Reject if the user closes the window without printing
+    const interval = setInterval(() => {
+      if (printWindow.closed) {
+        clearInterval(interval);
+        reject(); // do NOT accept the order
+      }
+    }, 200);
+
+    setTimeout(() => printWindow.print(), 400);
+  });
+
+  };
+
+  const handleAcceptOrder = async (time: string, order: Order) => {
+    if (!time) return;
+
+    try {
+      await handlePrint(order); // waits for actual printing
+    } catch {
+      return; // stop execution, don't call API
+    }
+
+    try {
+      const res = await fetch("/api/accept-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: order.id,       // the current order id
+          deliveryTime: time, // the selected time
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to accept order");
+
+      // Update order locally
+      setOrders((prev: Order[]) =>
+        prev.map((o) =>
+          o.id === order.id ? { ...o, status: "pending", deliveryTime: time } : o
+        )
+      );
+
+      setSuccessMap(true);
+
+      // Hide tick after 2 seconds
+      setTimeout(() => {
+        setSuccessMap(false);
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="mb-6 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">
+    <div className="mb-6 rounded-xl shadow-md border border-gray-200 bg-white overflow-hidden">
       {/* Order Header */}
-      <div className="bg-yellow-400 px-4 py-2 flex justify-between items-center">
-        <p className="font-semibold text-gray-900">Παραγγελία #{order.id}</p>
+      <div className="bg-yellow-400 px-2 py-2 flex justify-between items-center">
+        <p className="font-semibold text-gray-900 px-2 text-lg">Παραγγελία #{order.id}</p>
         {currentRange !== "Έτοιμη" ? (
           <>
             <span
@@ -181,7 +376,7 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
             </span>
           </>
         ) : (
-            <span className="px-3 py-1 font-medium rounded-lg bg-green-500 text-white cursor-pointer">
+            <span className="px-1 py-1 font-medium rounded-lg bg-green-500 text-white cursor-pointer">
               {order.deliveryTime && order.status === "pending" && (
                 <span
                   onClick={async () => {
@@ -218,7 +413,7 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
       {order.status === "requested" && (
         <>
         {!confirmReject ? (
-            <div className="flex gap-2 mt-3 p-4">
+            <div className="flex gap-2 mt-3 px-4">
             <button
                 onClick={() => setDeliveryModalOpen(!deliveryModalOpen)}
                 className="w-1/2 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition"
@@ -266,90 +461,61 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
         </>
       )}
 
-    {deliveryModalOpen && (
+      {deliveryModalOpen && (
         <div className={`
-        z-60 flex items-center justify-center
+          z-60 flex items-center justify-center
         `}>
-        <div className="p-4 w-full">
+          <div className="p-4 w-full">
             <h3 className="text-gray-800 font-semibold mb-2">Χρόνος παράδοσης</h3>
             <select
-            value={deliveryTime}
-            onChange={async (e) => {
+              value={deliveryTime}
+              onChange={async (e) => {
                 const time = e.target.value;
                 setDeliveryTime(time);
-
-                if (!time) return;
-
-                try {
-                const res = await fetch("/api/accept-order", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                    id: order.id,       // the current order id
-                    deliveryTime: time, // the selected time
-                    }),
-                });
-
-                if (!res.ok) throw new Error("Failed to accept order");
-
-                setSuccessMap(true);
-                alert("Η παραγγελία έγινε δεκτή με επιτυχία!");
-
-                // Hide tick after 2 seconds
-                setTimeout(() => {
-                    setSuccessMap(false);
-                }, 2000);
-                } catch (err) {
-                console.error(err);
-                }
-            }}
-            className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
+              }}
+              className="w-full border border-gray-300 rounded-md p-2 mb-3 focus:outline-yellow-400"
             >
-                <option value="">Επιλέξτε χρόνο παράδοσης</option>
-                <option value={`${lower}-${upper}`}>
-                  Προτεινόμενος χρόνος: {lower}-{upper} λεπτά
-                </option>
+              <option value="">Επιλέξτε χρόνο παράδοσης</option>
+              <option value={`${lower}-${upper}`}>
+                Προτεινόμενος χρόνος: {lower}-{upper} λεπτά
+              </option>
 
-                {/* Υπόλοιπες επιλογές */}
-                {options.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt} λεπτά
-                  </option>
-                ))}
+              {/* Υπόλοιπες επιλογές */}
+              {options.map((opt) => (
+                <option key={opt} value={opt}>
+                  {opt} λεπτά
+                </option>
+              ))}
             </select>
             {successMap && (
-                <span className="absolute right-2 top-2 text-green-600 font-bold">✓</span>
+              <span className="absolute right-2 top-2 text-green-600 font-bold">✓</span>
             )}
             <div className="flex justify-end space-x-2">
-            <button
+              <button
                 onClick={() => setDeliveryModalOpen(false)}
                 className="py-1 px-3 bg-gray-300 hover:bg-gray-400 rounded-md text-sm"
-            >
+              >
                 Άκυρο
-            </button>
-            <button
+              </button>
+              <button
                 onClick={async () => {
-                try {
-                    const res = await fetch("/api/accept-order", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: order.id, deliveryTime }),
-                    });
-                    if (!res.ok) throw new Error("Failed to accept order");
+                  try {
+                    handleAcceptOrder(deliveryTime, order); 
+                    //setOrders((prev) => prev.filter((o) => o.id !== order.id));
                     setDeliveryModalOpen(false);
                     setDeliveryTime("");
-                } catch (err) {
+                  } catch (err) {
                     console.error(err);
-                }
+                  }
                 }}
                 className="py-1 px-3 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm"
             >
                 Αποδοχή
-            </button>
+              </button>
             </div>
+          </div>
         </div>
-        </div>
-    )}
+      )}
 
       {/* Order Details */}
       <div className="p-4 space-y-3">
@@ -437,21 +603,24 @@ const OrderCard: React.FC<Props> = ({ order, defaultTime }) => {
             );
           })}
         </ul>
+      </div>
 
-        <div className="flex w-full justify-between">
-          <p className="text-gray-700 text-xl">
-            <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
-          </p>
-          <div
-            className={`inline-block px-2 py-1 rounded-lg text-md font-medium text-white ${
-              order?.paid
-                ? "bg-green-500 shadow-md hover:bg-green-600"
-                : "bg-gray-400 text-gray-900 shadow-inner hover:bg-gray-500"
-            } transition-colors duration-200`}
-          >
-            {order?.paid ? "Πληρωμή Online" : "Κατά την Παραλαβή"}
-          </div>
+      <div className="flex w-full justify-between p-2">
+        <p className="text-gray-700 text-xl px-2">
+          <strong>Σύνολο:</strong> {Number(order.total).toFixed(2)}€
+        </p>
+        <div
+          className={`inline-block px-2 py-1 rounded-lg text-md font-medium text-white ${
+            order?.paid
+              ? "bg-green-500 shadow-md"
+              : "bg-gray-400 text-gray-900 shadow-inner"
+          } transition-colors duration-200`}
+        >
+          {order?.paid ? "Πληρωμή Online" : "Κατά την Παραλαβή"}
         </div>
+      </div>
+      <div ref={printRef} className="hidden">
+        {textToPrint}
       </div>
     </div>
   );

@@ -54,6 +54,7 @@ export default function MyOrdersPage() {
   const pendingRef = useRef<HTMLDivElement>(null);
   const completedRef = useRef<HTMLDivElement>(null);
   const cancelledRef = useRef<HTMLDivElement>(null);
+  const [notification, setNotification] = useState<string | null>(null);
   const { user } = useCart();
   const userId = user?.id;
 
@@ -91,6 +92,36 @@ export default function MyOrdersPage() {
     }
   };
 
+  const sections = [
+    {
+      key: "pending",
+      ref: pendingRef,
+      title: "🕒 Εκκρεμείς Παραγγελίες",
+      color: "text-yellow-600",
+      buttonText: "Εκκρεμείς",
+      buttonClass: "bg-yellow-400 hover:bg-yellow-500 text-gray-800",
+      filter: (order: Order) => order.status === "pending" || order.status === "requested",
+    },
+    {
+      key: "completed",
+      ref: completedRef,
+      title: "✅ Ολοκληρωμένες Παραγγελίες",
+      color: "text-green-600",
+      buttonText: "Ολοκληρωμένες",
+      buttonClass: "bg-green-500 hover:bg-green-600 text-white",
+      filter: (order: Order) => order.status === "completed",
+    },
+    {
+      key: "cancelled",
+      ref: cancelledRef,
+      title: "❌ Ακυρωμένες / Απορριφθείσες Παραγγελίες",
+      color: "text-red-600",
+      buttonText: "Ακυρωμένες / Απορριφθείσες",
+      buttonClass: "bg-red-500 hover:bg-red-600 text-white",
+      filter: (order: Order) => order.status === "cancelled" || order.status === "rejected",
+    },
+  ];
+
   if (orders.length === 0) return 
     <div className="text-center py-10 pt-30">
       <p className="mb-4 text-xl">Δεν έχετε κάνει ακόμα παραγγελίες.</p>
@@ -113,85 +144,43 @@ export default function MyOrdersPage() {
       >
         <h1 className="text-3xl font-bold mb-8 text-gray-800">Οι Παραγγελίες μου</h1>
 
+        {/* Navigation Buttons */}
         <div className="flex flex-wrap justify-center lg:justify-between gap-3 mb-6 top-0 z-10">
-          <button
-            onClick={() => scrollToSection(pendingRef)}
-            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-gray-800 rounded-lg font-semibold transition"
-          >
-            Εκκρεμείς
-          </button>
-          <button
-            onClick={() => scrollToSection(completedRef)}
-            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition"
-          >
-            Ολοκληρωμένες
-          </button>
-          <button
-            onClick={() => scrollToSection(cancelledRef)}
-            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
-          >
-            Ακυρωμένες / Απορριφθείσες
-          </button>
+          {sections.map(({ key, ref, buttonText, buttonClass }) => (
+            <button
+              key={key}
+              onClick={() => scrollToSection(ref)}
+              className={`px-4 py-2 rounded-lg font-semibold transition ${buttonClass}`}
+            >
+              {buttonText}
+            </button>
+          ))}
         </div>
 
+        {/* Order Sections */}
         <div className="space-y-8">
-          {/* Pending Orders */}
-          {orders.some((order) => order.status === "pending" || order.status === "requested") && (
-            <div ref={pendingRef}>
-              <h2 className="text-xl font-bold text-yellow-600 mb-4">🕒 Εκκρεμείς Παραγγελίες</h2>
-              {orders
-                .filter((order) => order.status === "pending" || order.status === "requested")
-                .map((order) => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    products={products}
-                    addToCart={addToCart}
-                    setOrders={setOrders}
-                  />
-                ))}
-            </div>
-          )}
+          {notification && <div>{notification}</div>}
 
-          {/* Completed Orders */}
-          {orders.some((order) => order.status === "completed") && (
-            <div ref={completedRef}>
-              <h2 className="text-xl font-bold text-green-600 mb-4">✅ Ολοκληρωμένες Παραγγελίες</h2>
-              {orders
-                .filter((order) => order.status === "completed")
-                .map((order) => (
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    products={products}
-                    addToCart={addToCart}
-                    setOrders={setOrders}
-                  />
-                ))}
-            </div>
-          )}
+          {sections.map(({ key, ref, title, color, filter }) => {
+            const filteredOrders = orders.filter(filter);
+            if (filteredOrders.length === 0) return null;
 
-          {/* Cancelled & Rejected Orders */}
-          {orders.some(
-            (order) => order.status === "cancelled" || order.status === "rejected"
-          ) && (
-            <div ref={cancelledRef}>
-              <h2 className="text-xl font-bold text-red-600 mb-4">❌ Ακυρωμένες / Απορριφθείσες Παραγγελίες</h2>
-              {orders
-                .filter(
-                  (order) => order.status === "cancelled" || order.status === "rejected"
-                )
-                .map((order) => (
+            return (
+              <div key={key} ref={ref}>
+                <h2 className={`text-xl font-bold mb-4 ${color}`}>{title}</h2>
+                {filteredOrders.map((order) => (
                   <OrderCard
                     key={order.id}
                     order={order}
                     products={products}
                     addToCart={addToCart}
                     setOrders={setOrders}
+                    setNotification={setNotification}
                   />
                 ))}
-            </div>
-          )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

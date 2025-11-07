@@ -182,7 +182,7 @@ const CartBody: React.FC<CartBodyProps> = ({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && !user?.business && (
-        <div className="absolute bottom-32 sm:bottom-18 left-0 right-0">
+        <div className="fixed bottom-18 left-0 right-0">
           <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <button
@@ -199,7 +199,7 @@ const CartBody: React.FC<CartBodyProps> = ({
       )}
 
       {orderItems.length === 0 && !user?.business && (
-        <div className="absolute bottom-32 sm:bottom-18 left-0 right-0">
+        <div className="fixed bottom-18 left-0 right-0">
           <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <Link href="/menu" className="block w-full">

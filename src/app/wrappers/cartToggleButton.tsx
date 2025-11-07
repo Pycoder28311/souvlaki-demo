@@ -69,7 +69,7 @@ export default function CartToggleButton() {
             <button
               className="
                 md:hidden fixed bottom-4 left-4 right-4 px-6 py-3 bg-green-600 text-white
-                flex items-center justify-center rounded-lg z-40
+                flex items-center justify-center rounded-xl z-40
                 text-xl font-semibold shadow-lg hover:bg-green-700 active:bg-green-800
                 transition-colors duration-200
               "
