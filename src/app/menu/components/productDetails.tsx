@@ -93,7 +93,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
               {/* Header */}
               <div
                 onClick={() => toggleCategory(ingCat.id)}
-                className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
+                  ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
               >
                 <div className="flex items-center gap-2">
                   {open ? (
@@ -124,54 +125,48 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   {business && (
                     <div className="flex justify-between flex-wrap gap-1">
                       <p>Επεξεργασία:</p>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditCategoryName(ingCat.id);
-                        }}
-                        className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
-                        title="Επεξεργασία Κατηγορίας"
-                      >
-                        Όνομα
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMakeRequiredCat(ingCat.id);
-                        }}
-                        className={`px-2 py-1 rounded text-xs font-semibold text-white transition-shadow shadow-sm ${
-                          ingCat.isRequired
-                            ? "bg-orange-600 hover:bg-orange-700"
-                            : "bg-orange-500 hover:bg-orange-600"
-                        }`}
-                        title={ingCat.isRequired ? "Κάνε Προαιρετική" : "Κάνε Υποχρεωτική"}
-                      >
-                        {ingCat.isRequired ? "Προαιρετική" : "Υποχρεωτική"}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOnlyOneCat(ingCat.id);
-                        }}
-                        className={`px-2 py-1 rounded text-xs font-semibold text-white transition-shadow shadow-sm ${
-                          ingCat.isRequired
-                            ? "bg-orange-600 hover:bg-orange-700"
-                            : "bg-orange-500 hover:bg-orange-600"
-                        }`}
-                        title={ingCat.onlyOne ? "Μόνο μία επιλογή" : "Μόνο μία επιλογή"}
-                      >
-                        {ingCat.onlyOne ? "Επιτρεπόμενες επιλογές: Όλες" : "Επιτρεπόμενες επιλογές: Μία"}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCategory(ingCat.id);
-                        }}
-                        className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm"
-                        title="Διαγραφή Κατηγορίας"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex gap-1 justify-between">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditCategoryName(ingCat.id);
+                          }}
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm"
+                          title="Επεξεργασία Κατηγορίας"
+                        >
+                          Όνομα
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMakeRequiredCat(ingCat.id);
+                          }}
+                          className={`px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm`}
+                          title={ingCat.isRequired ? "Κάνε Προαιρετική" : "Κάνε Υποχρεωτική"}
+                        >
+                          {ingCat.isRequired ? "Προαιρετική" : "Υποχρεωτική"}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOnlyOneCat(ingCat.id);
+                          }}
+                          className={`px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm`}
+                          title={ingCat.onlyOne ? "Μόνο μία επιλογή" : "Μόνο μία επιλογή"}
+                        >
+                          {ingCat.onlyOne ? "Επιτρεπόμενες επιλογές: Όλες" : "Επιτρεπόμενες επιλογές: Μία"}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCategory(ingCat.id);
+                          }}
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm"
+                          title="Διαγραφή Κατηγορίας"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   )}
                   {ingCat.ingredients.map((ing) => (
@@ -197,21 +192,21 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                         <div className="flex gap-1"> 
                           <button 
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditIngredientName(ingCat.id, ing.id); }} 
-                            className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm" 
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
                             title="Επεξεργασία Ερώτησης" 
                           > 
                             Όνομα 
                           </button> 
                           <button 
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEditIngredientPrice(ingCat.id, ing.id, ing.price); }} 
-                            className="px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition text-xs font-medium" 
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
                             title="Edit Price" 
                           > 
                             Τιμή 
                           </button> 
                           <button 
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDeleteIngredient(ingCat.id, ing.id); }} 
-                            className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm" 
+                            className="px-2 py-1 bg-gray-300 hover:bg-gray-400 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
                             title="Διαγραφή Κατηγορίας" 
                           > 
                             <Trash2 className="w-4 h-4" /> 
@@ -276,34 +271,36 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                   {business && ( 
                     <div className="flex gap-1 justify-between"> {/* Edit Question */} 
                       <p>Επεξεργασία:</p>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditOptionQuestion(opt.id); }} 
-                        className="px-2 py-1 bg-yellow-400 hover:bg-yellow-500 text-white rounded text-xs font-semibold transition-shadow shadow-sm" 
-                        title="Επεξεργασία Ερώτησης" 
-                      > 
-                        Όνομα 
-                      </button> {/* Edit Price */} 
-                      <button   
-                        onClick={(e) => { e.stopPropagation(); handleEditOptionPrice(opt.id); }} 
-                        className="px-2 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 transition text-xs font-medium" 
-                        title="Edit Price" 
-                      > 
-                        Τιμή 
-                      </button> {/* Edit Comment */} 
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditOptionComment(opt.id); }} 
-                        className="px-2 py-1 bg-orange-500 hover:bg-orange-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm" 
-                        title="Επεξεργασία Σχολίου" 
-                      > 
-                        Προϊόν 
-                      </button> {/* Delete Option */} 
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteOption(opt.id); }} 
-                        className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-shadow shadow-sm" 
-                        title="Διαγραφή Επιλογής" 
-                      > 
-                        <Trash2 className="w-4 h-4" /> 
-                      </button> 
+                      <div className="flex gap-1 justify-between">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleEditOptionQuestion(opt.id); }} 
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
+                          title="Επεξεργασία Ερώτησης" 
+                        > 
+                          Όνομα 
+                        </button> {/* Edit Price */} 
+                        <button   
+                          onClick={(e) => { e.stopPropagation(); handleEditOptionPrice(opt.id); }} 
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
+                          title="Edit Price" 
+                        > 
+                          Τιμή 
+                        </button> {/* Edit Comment */} 
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleEditOptionComment(opt.id); }} 
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
+                          title="Επεξεργασία Σχολίου" 
+                        > 
+                          Προϊόν 
+                        </button> {/* Delete Option */} 
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteOption(opt.id); }} 
+                          className="px-2 py-1 bg-gray-200 hover:bg-gray-300 text-black rounded-md text-xs font-semibold transition-shadow shadow-sm" 
+                          title="Διαγραφή Επιλογής" 
+                        > 
+                          <Trash2 className="w-4 h-4" /> 
+                        </button> 
+                      </div>
                     </div> 
                   )}
                   <label className="flex items-center gap-3">
@@ -337,13 +334,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         <div className="flex justify-between mt-4">
           <button
             onClick={handleAddCategory}
-            className="px-2 py-2 flex items-center gap-2 mr-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base"
+            className="px-2 py-2 flex items-center gap-2 mr-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base"
           >
-            <Plus className="w-5 h-5" /> <p>Προσθήκη Επιλογής</p>
+            <Plus className="w-5 h-5" /> <p>Προσθήκη Κατηγορίας</p>
           </button>
           <button
             onClick={handleAddOption}
-            className="px-2 py-2 flex items-center gap-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base"
+            className="px-2 py-2 flex items-center gap-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base"
           >
             <Plus className="w-5 h-5" /> <p>Προσθήκη Επιλογής</p>
           </button>
