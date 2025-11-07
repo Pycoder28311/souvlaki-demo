@@ -77,15 +77,15 @@ export default function OrderSidebar({
   return (
     
    <div
-      className={`flex flex-col h-full w-full md:w-80 bg-gray-100 border-l border-gray-200 border-l-2 border-yellow-400 shadow-lg transition-all duration-300
-        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
-        fixed right-0 top-[55px] z-50 ${showPaymentModal ? "overflow-y-auto overflow-x-hidden" : ""}`}
-      style={{
-        height: `calc(100vh)`,
-        scrollbarWidth: "thin", // Firefox
-        scrollbarColor: "#a8a8a8ff #e5e7eb", // thumb yellow-400, track gray-200 for Firefox
-      }}
-    >
+    className={`flex flex-col h-full w-full md:w-80 bg-gray-100 border-l-2 border-yellow-400 shadow-lg transition-transform duration-300
+      ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
+      fixed right-0 top-[55px] z-50 ${showPaymentModal ? "overflow-y-auto overflow-x-hidden" : ""}`}
+    style={{
+      height: `calc(100vh - 55px)`, // αφαιρεί το header
+      scrollbarWidth: "thin",
+      scrollbarColor: "#facc15 #e5e7eb", // yellow-400 thumb, gray-200 track
+    }}
+  >
       <CartBody
         setEditableOrderItem={setEditableOrderItem}
         expandedItems={expandedItems}
