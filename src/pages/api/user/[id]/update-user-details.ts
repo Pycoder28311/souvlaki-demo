@@ -18,14 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ error: "Missing user ID" });
   }
 
+  const updatedData = {
+    floor: floor ?? "",
+    bellName: bellName ?? "",
+    comment: comment ?? "",
+  };
+
   try {
     const updatedUser = await prisma.user.update({
       where: { id: Number(id) },
-      data: {
-        ...(floor && { floor }),
-        ...(bellName && { bellName }),
-        ...(comment && { comment }),
-      },
+      data: updatedData,
     });
 
     return res.status(200).json({

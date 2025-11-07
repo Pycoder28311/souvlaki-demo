@@ -2,7 +2,7 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Product } from "../../types"; // make sure you import your interface
-import { Edit2, Save, Trash2 } from "lucide-react";
+import { Edit2, Pencil, Save, Trash2 } from "lucide-react";
 
 interface AdminProductModalProps {
   product: Product;
@@ -126,7 +126,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Ονόματος
-            <Edit2 size={18} className="inline ml-2" />
+            <Pencil size={18} className="inline ml-2" />
           </button>
 
           <button
@@ -136,7 +136,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             {product.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
-            <Edit2 size={18} className="inline ml-2" />
+            <Pencil size={18} className="inline ml-2" />
           </button>
 
           <button
@@ -144,7 +144,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Περιγραφής
-            <Edit2 size={18} className="inline ml-2" />
+            <Pencil size={18} className="inline ml-2" />
           </button>
 
           <button
@@ -152,7 +152,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Τιμής
-            <Edit2 size={18} className="inline ml-2" />
+            <Pencil size={18} className="inline ml-2" />
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-full">

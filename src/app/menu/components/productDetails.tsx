@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronRight, Trash2, Edit2, Plus } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2, Edit2, Plus, Pencil } from "lucide-react";
 import { Product, Ingredient, Option, IngCategory } from "../../types";
 
 interface ProductDetailProps {
@@ -114,7 +114,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
                     title="Επεξεργασία Κατηγορίας"
                   >
-                    <Edit2 size={20} />
+                    <Pencil size={20} />
                   </div>
                 )}
               </div>
@@ -261,7 +261,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
                     title="Επεξεργασία Κατηγορίας"
                   >
-                    <Edit2 size={20} />
+                    <Pencil size={20} />
                   </div>
                 )}
               </div>

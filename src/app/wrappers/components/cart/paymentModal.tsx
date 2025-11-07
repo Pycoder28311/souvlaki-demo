@@ -1,6 +1,6 @@
 // PaymentModal.tsx
 import { FC } from "react";
-import { ArrowLeft, Edit2, Check, X, ChevronUp, ChevronDown } from "lucide-react";
+import { ArrowLeft, Edit2, Check, X, ChevronUp, ChevronDown, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../cartContext";
 import {
@@ -64,7 +64,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
     <div className="fixed mb-12 sm:mb-0 inset-0 bg-opacity-50 z-60 flex justify-center items-center h-full">
       <div className="bg-gray-100 w-full h-full max-h-full flex flex-col p-4">
         {/* Header */}
-        <div className="flex items-center border-b border-gray-400 pb-4">
+        <div className="flex items-center border-b border-gray-400 pb-3">
           <button
             onClick={() => {
               setShowPaymentModal(false);
@@ -80,14 +80,16 @@ const PaymentModal: FC<PaymentModalProps> = ({
         {/* Address & Details */}
         {user?.address && (
           <div
-            className="text-gray-700 text-sm flex flex-col pt-6 px-2 overflow-x-hidden overflow-y-auto"
+            className="text-gray-700 text-sm flex flex-col pt-4 px-2 h-80 overflow-x-hidden overflow-y-auto"
             style={{
               scrollbarWidth: "thin",
               scrollbarColor: "#a8a8a8ff #e5e7eb",
             }}
           >
             <span>
-              <span className="font-semibold text-gray-800">{user.address}</span> 
+              <span className="font-semibold text-gray-800 text-lg md:text-base">
+                {user.address}
+              </span>
             </span>
 
             {editingAddress ? (
@@ -149,7 +151,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
                 onClick={() => {setEditingAddress(true); setShowDetails(true)}}
                 className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
               >
-                <Edit2 size={18} />
+                <Pencil size={18} />
                 <span>Αλλαγή Διεύθυνσης</span>
               </div>
             )}
@@ -170,7 +172,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
               <div className="flex flex-col gap-2">
 
                 <div className="flex flex-col gap-2 mt-4">
-                  <p className="text-gray-700">Όροφος:</p>
+                  <strong className="text-gray-700">Όροφος:</strong>
                   <select
                     value={selectedFloor || ""}
                     onChange={(e) => setSelectedFloor(e.target.value)}
@@ -187,7 +189,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-gray-700">Όνομα στο κουδούνι (προεραιτικό):</p>
+                  <strong className="text-gray-700">Όνομα στο κουδούνι (προεραιτικό):</strong>
                   <input
                     type="text"
                     value={bellName || ""}
@@ -198,9 +200,9 @@ const PaymentModal: FC<PaymentModalProps> = ({
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <p className="text-gray-700">
+                  <strong className="text-gray-700">
                     Σχόλιο για να διευκολυνθεί η εύρεση της κατοικίας σου (προεραιτικό):
-                  </p>
+                  </strong>
                   <textarea
                     value={userComment || ""}
                     onChange={(e) => setUserComment(e.target.value)}
@@ -215,49 +217,51 @@ const PaymentModal: FC<PaymentModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="border-gray-300 mt-auto">
-          <p className="mt-4 px-1 font-bold text-gray-900 text-2xl">Σύνολο: {total.toFixed(2)}€</p>
-          <button
-            className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
-            onClick={() => {
-              if (!user) {
-                setIsSidebarOpen(false);
-                router.push("/auth/signin");
-                return;
-              }
+        <div className="absolute bottom-18 left-0 right-0 border-gray-300">
+          <div className="px-4">
+            <p className="mt-4 px-1 font-bold text-gray-900 text-2xl">Σύνολο: {total.toFixed(2)}€</p>
+            <button
+              className="mt-2 w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
+              onClick={() => {
+                if (!user) {
+                  setIsSidebarOpen(false);
+                  router.push("/auth/signin");
+                  return;
+                }
 
-              if (!selectedFloor) {
-                setShowDetails(true);
-                setWarning("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
-                return;
-              }
+                if (!selectedFloor) {
+                  setShowDetails(true);
+                  setWarning("Παρακαλώ επίλεξε όροφο πριν την πληρωμή.");
+                  return;
+                }
 
-              if (!user?.address) {
-                setWarning("Παρακαλώ επίλεξε διεύθυνση πριν την πληρωμή.");
-                return;
-              }
+                if (!user?.address) {
+                  setWarning("Παρακαλώ επίλεξε διεύθυνση πριν την πληρωμή.");
+                  return;
+                }
 
-              if (isTooFar) {
-                setWarning(
-                  "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
-                );
-                return;
-              }
+                if (isTooFar) {
+                  setWarning(
+                    "Η απόστασή σας από το κατάστημα υπερβαίνει την δυνατή απόσταση παραγγελίας."
+                  );
+                  return;
+                }
 
-              setWarning("");
-              const floorChanged = user.floor !== selectedFloor;
-              const bellChanged = user.bellName !== bellName;
-              const commentChanged = user.comment !== userComment;
+                setWarning("");
+                const floorChanged = user.floor !== selectedFloor;
+                const bellChanged = user.bellName !== bellName;
+                const commentChanged = user.comment !== userComment;
 
-              if (floorChanged || bellChanged || commentChanged) {
-                handleUpdateAll(user, selectedFloor, bellName, userComment, setUser);
-              }
+                if (floorChanged || bellChanged || commentChanged) {
+                  handleUpdateAll(user, selectedFloor, bellName, userComment, setUser);
+                }
 
-              setPaymentWayModal(true);
-            }}
-          >
-            Επιβεβαίωση Πληρωμής
-          </button>
+                setPaymentWayModal(true);
+              }}
+            >
+              Επιβεβαίωση Πληρωμής
+            </button>
+          </div>
         </div>
       </div>
     </div>

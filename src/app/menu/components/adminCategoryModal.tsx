@@ -2,7 +2,7 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Category } from "../../types"; // your Category interface
-import { X, Plus, Edit2, Trash2, Save } from "lucide-react";
+import { X, Plus, Edit2, Trash2, Save, Pencil } from "lucide-react";
 
 interface CategoryModalProps {
   category: Category;
@@ -157,7 +157,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             className="w-full py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium"
           >
             Επεξεργασία Ονόματος
-            <Edit2 size={18} className="inline ml-2" />
+            <Pencil size={18} className="inline ml-2" />
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-full">

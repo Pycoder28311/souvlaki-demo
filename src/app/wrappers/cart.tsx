@@ -81,7 +81,7 @@ export default function OrderSidebar({
         ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
         fixed right-0 top-[55px] z-50 ${showPaymentModal ? "overflow-y-auto overflow-x-hidden" : ""}`}
       style={{
-        height: `calc(100vh - 55px)`,
+        height: `calc(100vh)`,
         scrollbarWidth: "thin", // Firefox
         scrollbarColor: "#a8a8a8ff #e5e7eb", // thumb yellow-400, track gray-200 for Firefox
       }}

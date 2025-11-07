@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Edit2, Plus } from "lucide-react";
+import { Edit2, Pencil, Plus } from "lucide-react";
 import { Product, Category } from "../../types"; // import your types
 
 interface CategorySectionProps {
@@ -73,7 +73,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
               className="p-2 bg-gray-200 rounded-lg hover:bg-gray-300"
               title="Επεξεργασία Κατηγορίας"
             >
-              <Edit2 size={20} />
+              <Pencil size={20} />
             </button>
           )}
         </div>
@@ -185,7 +185,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                   className="absolute top-2 right-2 p-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
                   title="Επεξεργασία Προϊόντος"
                 >
-                  <Edit2 size={20} />
+                  <Pencil size={20} />
                 </button>
               )}
             </div>)

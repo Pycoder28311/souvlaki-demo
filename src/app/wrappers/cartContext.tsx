@@ -327,6 +327,24 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resolveAddress();
   }, [user]);
 
+  useEffect(() => {
+    const handleBodyOverflow = () => {
+      if (window.innerWidth < 768 && isSidebarOpen) {
+        document.body.style.overflow = "hidden"; // κλείδωσε scroll
+      } else {
+        document.body.style.overflow = "auto"; // επέστρεψε scroll
+      }
+    };
+
+    handleBodyOverflow(); // τρέχει αμέσως
+    window.addEventListener("resize", handleBodyOverflow); // update σε resize
+
+    return () => {
+      window.removeEventListener("resize", handleBodyOverflow);
+      document.body.style.overflow = "auto"; // clean up on unmount
+    };
+  }, [isSidebarOpen]);
+
   const addToCart = (
     product: Product,
     selectedIngredients: Ingredient[],

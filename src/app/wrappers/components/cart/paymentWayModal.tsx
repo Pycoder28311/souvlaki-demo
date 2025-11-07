@@ -42,7 +42,7 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
     <div className="fixed mb-12 sm:mb-0 w-full inset-0 bg-opacity-50 z-60 flex justify-center items-center">
       <div className="bg-gray-100 w-full h-full max-h-full flex flex-col p-4">
         {/* Header */}
-        <div className="flex items-center border-b border-gray-300 pb-4">
+        <div className="flex items-center border-b border-gray-400 pb-3">
           <button
             onClick={() => {
               setPaymentWayModal(false);
@@ -56,14 +56,14 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
         </div>
 
         {/* Bottom Section */}
-        <div className="border-gray-300 mt-auto">
+        <div className="border-gray-300 absolute bottom-18">
           {/* Total */}
           <p className="mb-4 font-bold text-gray-900 text-2xl px-1 pt-4">
             Σύνολο: {total.toFixed(2)}€
           </p>
 
           {/* Checkout Form */}
-          <div>
+          <div className="pr-4">
             <CheckOutForm
               amount={total}
               userId={user?.id}

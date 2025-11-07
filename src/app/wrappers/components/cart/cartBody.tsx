@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, X, Edit2, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { ShoppingCart, X, Edit2, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
 import {
   handleCheckHours,
@@ -41,18 +41,21 @@ const CartBody: React.FC<CartBodyProps> = ({
   if (!isSidebarOpen) return null;
 
   return (
-    <div className="flex flex-col h-full w-full sm:w-80 bg-gray-50 p-4">
+    <div className="flex flex-col h-full w-full sm:w-80 bg-gray-50 p-4"
+      style={{
+        height: `calc(100vh)`,
+      }}>
       {/* Header */}
       <div className="flex justify-between items-center mb-4 border-b border-gray-400 pb-3">
         <h3 className="font-bold text-xl text-gray-800 flex items-center gap-2">
-          <ShoppingCart className="w-8 h-8" /> Το καλάθι μου
+          <ShoppingCart className="w-7 h-7" /> Το καλάθι μου
         </h3>
         <button
           className="p-1 bg-yellow-400 text-gray-800 rounded-lg hover:bg-yellow-500 transition"
           onClick={() => setIsSidebarOpen(false)}
           aria-label="Close Cart Sidebar"
         >
-          <X className="w-8 h-8" />
+          <X className="w-7 h-7" />
         </button>
       </div>
 
@@ -94,7 +97,7 @@ const CartBody: React.FC<CartBodyProps> = ({
                         {(item.price * item.quantity).toFixed(2)}€
                       </span>
                       <button className="p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400">
-                        <Edit2 className="w-4 h-4" />
+                        <Pencil className="w-4 h-4" />
                       </button>
                       <button
                         onClick={(e) => {
@@ -179,25 +182,33 @@ const CartBody: React.FC<CartBodyProps> = ({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && !user?.business && (
-        <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
-          <button
-            onClick={() =>
-              handleCheckHours(orderItems, availabilityMap, setAvailabilityMap, setShowPaymentModal, setPaymentWayModal)
-            }
-            className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
-          >
-            Πλήρωμή {total.toFixed(2)}€
-          </button>
+        <div className="absolute bottom-18 left-0 right-0">
+          <div className="px-4">
+            <div className="border-t border-gray-400 pt-4">
+              <button
+                onClick={() =>
+                  handleCheckHours(orderItems, availabilityMap, setAvailabilityMap, setShowPaymentModal, setPaymentWayModal)
+                }
+                className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
+              >
+                Πλήρωμή {total.toFixed(2)}€
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
       {orderItems.length === 0 && !user?.business && (
-        <div className="mb-14 sm:mb-0 border-t border-gray-400 pt-4 px-2 sm:px-0">
-          <Link href="/menu" className="block w-full">
-            <button className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl font-bold rounded-lg hover:bg-yellow-500 transition">
-              Δες το Μενού
-            </button>
-          </Link>
+        <div className="absolute bottom-20 left-0 right-0">
+          <div className="px-4">
+            <div className="border-t border-gray-400 pt-4">
+              <Link href="/menu" className="block w-full">
+                <button className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl font-bold rounded-lg hover:bg-yellow-500 transition">
+                  Δες το Μενού
+                </button>
+              </Link>
+            </div>
+          </div>
         </div>
       )}
     </div>
