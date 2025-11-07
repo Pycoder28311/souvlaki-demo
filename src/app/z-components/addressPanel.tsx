@@ -299,22 +299,22 @@ export default function AddressModal() {
                 </div>
               )}
               <div className="flex-row items-center gap-4 w-full justify-between hidden md:flex">
-                  <button
-                      onClick={() => {
-                      handleConfirmAddress();
-                      setShowWelcome(false);
-                      }}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-                  >
-                      Ναι, απόκρυψη
-                  </button>
-                  <button
-                      onClick={() => setEditingAddress(true)}
-                      className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition flex-shrink-0"
-                  >
-                      Όχι, επεξεργασία
-                  </button>
-                  </div>
+                <button
+                  onClick={() => setEditingAddress(true)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition flex-shrink-0"
+                >
+                  Όχι, επεξεργασία
+                </button>
+                <button
+                  onClick={() => {
+                    handleConfirmAddress();
+                    setShowWelcome(false);
+                  }}
+                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+                >
+                  Ναι, απόκρυψη
+                </button>
+              </div>
             </div>
           )}
 
