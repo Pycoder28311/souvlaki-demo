@@ -16,7 +16,7 @@ export default function Navbar({scrolled = false, isLive }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
-  const { user, address, showRadiusNote } = useCart();
+  const { user, address, showRadiusNote, setIsSidebarOpen } = useCart();
 
   // derive business from user
   const business = user?.business ?? false;
@@ -53,6 +53,7 @@ export default function Navbar({scrolled = false, isLive }) {
 
   const handleClick = () => {
     if (user) {
+      setIsSidebarOpen(false);
       setSidebarOpen((v) => !v) // toggle sidebar
     } else {
       router.push("/auth/signin") // redirect to login
@@ -124,7 +125,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 </button>
               </div>
             ) : (
-              <div className="flex space-x-4">
+              <div className="flex space-x-4" onClick={() => setIsSidebarOpen(false)}>
                 <Link
                   href="/auth/signin"
                   className={`px-4 py-2 font-bold transition-all duration-300 transform rounded-lg ${
@@ -145,7 +146,7 @@ export default function Navbar({scrolled = false, isLive }) {
             )}
           </div>
 
-          <div className="md:hidden absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="md:hidden absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2" onClick={() => setIsSidebarOpen(false)}>
             <AddressModal />
           </div>
 
