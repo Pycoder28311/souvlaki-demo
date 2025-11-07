@@ -147,7 +147,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
             ) : (
               <div
                 onClick={() => {setEditingAddress(true); setShowDetails(true)}}
-                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all hover:scale-105"
+                className="mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-200 text-gray-800 font-medium shadow-sm hover:bg-gray-300 hover:shadow-md transition-all"
               >
                 <Edit2 size={18} />
                 <span>Αλλαγή Διεύθυνσης</span>

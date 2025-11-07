@@ -93,7 +93,7 @@ const CartBody: React.FC<CartBodyProps> = ({
                       <span className="text-yellow-500 font-semibold px-3 py-1">
                         {(item.price * item.quantity).toFixed(2)}€
                       </span>
-                      <button className="p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400 hover:scale-105">
+                      <button className="p-2 bg-gray-300 text-gray-800 font-bold rounded-lg transition hover:bg-gray-400">
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button

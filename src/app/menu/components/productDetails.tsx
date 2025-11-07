@@ -110,7 +110,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 </div>
                 {business && (
                   <div
-                    className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition hover:scale-105"
+                    className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
                     title="Επεξεργασία Κατηγορίας"
                   >
                     <Edit2 size={20} />
@@ -263,7 +263,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
 
                 {business && (
                   <div
-                    className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition hover:scale-105"
+                    className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
                     title="Επεξεργασία Κατηγορίας"
                   >
                     <Edit2 size={20} />
@@ -337,13 +337,13 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         <div className="flex justify-between mt-4">
           <button
             onClick={handleAddCategory}
-            className="px-2 py-2 flex items-center gap-2 mr-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base"
+            className="px-2 py-2 flex items-center gap-2 mr-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base"
           >
             <Plus className="w-5 h-5" /> <p>Προσθήκη Επιλογής</p>
           </button>
           <button
             onClick={handleAddOption}
-            className="px-2 py-2 flex items-center gap-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-base"
+            className="px-2 py-2 flex items-center gap-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-base"
           >
             <Plus className="w-5 h-5" /> <p>Προσθήκη Επιλογής</p>
           </button>

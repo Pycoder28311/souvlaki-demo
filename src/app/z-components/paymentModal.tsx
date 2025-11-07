@@ -3,6 +3,7 @@
 
 import React from "react";
 import { User } from "../types"; 
+import { Plus } from "lucide-react";
 
 type OrderItem = {
   id: number;
@@ -48,7 +49,7 @@ export default function PaymentModal({
                 {item.ingredients && item.ingredients.length > 0 && (
                   <ul className="ml-2 text-sm text-gray-600">
                     {item.ingredients.map((ing) => (
-                      <li key={ing.id}>+ {ing.name} - {Number(ing.price).toFixed(2)}€</li>
+                      <li key={ing.id}><Plus size={18} className="inline" /> {ing.name} - {Number(ing.price).toFixed(2)}€</li>
                     ))}
                   </ul>
                 )}

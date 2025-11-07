@@ -2,6 +2,7 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Product } from "../../types"; // make sure you import your interface
+import { Edit2, Save, Trash2 } from "lucide-react";
 
 interface AdminProductModalProps {
   product: Product;
@@ -122,39 +123,36 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => onEditName(product.id, product.name)}
-            className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+            className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Ονόματος
-          </button>
-
-          <button
-            onClick={() => onDelete(product.id, product.name)}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-          >
-            Διαγραφή Προϊόντος
+            <Edit2 size={18} className="inline ml-2" />
           </button>
 
           <button
             onClick={() =>
               onToggleOffer(product.id, product.offer, product.price)
             }
-            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+            className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             {product.offer ? "Αφαίρεση Προσφοράς" : "Ορισμός Προσφοράς"}
+            <Edit2 size={18} className="inline ml-2" />
           </button>
 
           <button
             onClick={() => onEditDescription(product.id)}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+            className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Περιγραφής
+            <Edit2 size={18} className="inline ml-2" />
           </button>
 
           <button
             onClick={() => onEditPrice(product.id)}
-            className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition"
+            className="px-4 py-2 bg-gray-200 flex items-center justify-center text-black rounded-lg hover:bg-gray-300 transition"
           >
             Επεξεργασία Τιμής
+            <Edit2 size={18} className="inline ml-2" />
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-full">
@@ -231,9 +229,10 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
               {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
+              <Save className="w-5 h-5 text-gray-100" />
             </button>
 
             <button
@@ -247,15 +246,21 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   console.error(err)
                 }
               }}
-              className={`p-2 rounded-lg transition ${
-                product.alwaysClosed ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'
-              }`}
+              className={`p-2 rounded-lg transition bg-gray-200 text-black hover:bg-gray-300`}
               title="Toggle Availability"
             >{product.alwaysClosed 
               ? 'Διαθέσιμο τις ώρες που ορίζω' 
-              : 'Μη διαθέσιμο (κάνε κλικ για επεξεργασία)'}
+              : 'Κάνε το προϊόν μη διαθέσιμο'}
             </button>
           </form>
+
+          <button
+            onClick={() => onDelete(product.id, product.name)}
+            className="px-4 py-2 bg-red-500 flex items-center justify-center text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Διαγραφή Προϊόντος
+            <Trash2 size={18} className="inline ml-2" />
+          </button>
         </div>
       </div>
     </div>

@@ -204,7 +204,7 @@ export default function EditModal({
                             <div className="flex-1">
                               <p className="font-semibold text-gray-800">{ing.name}</p>
                               {ing.price > 0 && (
-                                <p className="text-sm text-gray-600">+{Number(ing.price).toFixed(2)}€</p>
+                                <p className="text-sm text-gray-600"><Plus size={18} className="inline" />{Number(ing.price).toFixed(2)}€</p>
                               )}
                             </div>
                           </label>

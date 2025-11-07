@@ -374,7 +374,7 @@ export default function ScheduleManager() {
         <button
           onClick={handleSave}
           disabled={loading}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50"
+          className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold disabled:opacity-50"
         >
           {loading ? "Αποθήκευση..." : "Αποθήκευση αλλαγών"}
         </button>

@@ -10,6 +10,7 @@ export default function CartToggleButton() {
 
   useEffect(() => {
     if (!isSidebarOpen) return;
+    if (user?.business) return;
 
     // Only run on mobile (e.g., width <= 768px)
     if (typeof window !== "undefined" && window.innerWidth > 768) return;

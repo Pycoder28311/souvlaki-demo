@@ -567,8 +567,8 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                   }
                 }}
                 className={`
-                  h-12 w-full px-4 py-2 bg-blue-600 text-white items-center rounded-lg
-                  hover:bg-blue-700
+                  h-12 w-full px-4 py-2 bg-blue-500 text-white items-center rounded-lg
+                  hover:bg-blue-600
                   transition-transform duration-200
                   ${popup ? "scale-110 shadow-lg" : ""}
                 `}

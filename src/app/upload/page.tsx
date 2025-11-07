@@ -58,7 +58,7 @@ export default function UploadPage() {
         <button
           type="submit"
           disabled={uploading || !file}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
+          className="px-4 py-2 bg-blue-500 text-white rounded disabled:opacity-50"
         >
           {uploading ? "Ανέβασμα..." : "Ανέβηκε"}
         </button>

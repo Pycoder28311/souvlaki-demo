@@ -2,7 +2,7 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Category } from "../../types"; // your Category interface
-import { X, Plus, Edit2, Trash2 } from "lucide-react";
+import { X, Plus, Edit2, Trash2, Save } from "lucide-react";
 
 interface CategoryModalProps {
   category: Category;
@@ -124,13 +124,13 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
           <div className="flex justify-center gap-3">
             <button
               onClick={() => moveCategory(category.id, "up")}
-              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform"
             >
               ▲ Πάνω
             </button>
             <button
               onClick={() => moveCategory(category.id, "down")}
-              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform transform hover:scale-110"
+              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform"
             >
               ▼ Κάτω
             </button>
@@ -138,33 +138,26 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
 
           <button
             onClick={saveCategoryPositions}
-            className="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform transform hover:scale-105 font-medium"
+            className="w-full py-2 bg-blue-500 flex items-center justify-center gap-2 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium"
           >
             Ενημέρωση Θέσεων
+            <Save className="w-5 h-5 text-gray-100" />
           </button>
 
           <button
             onClick={() => handleCreateProduct(category.id)}
-            className="w-full py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-transform transform hover:scale-105 font-medium"
+            className="w-full py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium"
           >
-            <Plus size={18} className="inline mr-2" />
             Δημιουργία Προϊόντος
+            <Plus size={18} className="inline ml-2" />
           </button>
 
           <button
             onClick={() => handleEditCategory(category.id, category.name)}
-            className="w-full py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-transform transform hover:scale-105 font-medium"
+            className="w-full py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium"
           >
-            <Edit2 size={18} className="inline mr-2" />
             Επεξεργασία Ονόματος
-          </button>
-
-          <button
-            onClick={() => handleDeleteCategory(category.id, category.name)}
-            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform transform hover:scale-105 font-medium"
-          >
-            <Trash2 size={18} className="inline mr-2" />
-            Διαγραφή Κατηγορίας
+            <Edit2 size={18} className="inline ml-2" />
           </button>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-full">
@@ -241,9 +234,10 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
               {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
+              <Save className="w-5 h-5 text-gray-100" />
             </button>
 
             <button
@@ -257,15 +251,21 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
                   console.error(err)
                 }
               }}
-              className={`p-2 rounded-lg transition ${
-                category.alwaysClosed ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-green-500 text-white hover:bg-green-600'
-              }`}
+              className={`p-2 rounded-lg transition bg-gray-200 text-black hover:bg-gray-300`}
               title="Toggle Availability"
             >{category.alwaysClosed 
               ? 'Διαθέσιμη τις ώρες που ορίζω' 
-              : 'Μη διαθέσιμη (κάνε κλικ για επεξεργασία)'}
+              : 'Κάνε την κατηγορία μη διαθέσιμη'}
             </button>
           </form>
+
+          <button
+            onClick={() => handleDeleteCategory(category.id, category.name)}
+            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform font-medium"
+          >
+            Διαγραφή Κατηγορίας
+            <Trash2 size={18} className="inline ml-2" />
+          </button>
         </div>
       </div>
     </div>

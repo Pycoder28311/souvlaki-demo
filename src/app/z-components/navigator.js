@@ -116,7 +116,7 @@ export default function Navbar({scrolled = false, isLive }) {
               <div className="flex flex-col space-y-1">
                 <button
                   onClick={() => setSidebarOpen(true)}
-                  className={`flex px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
+                  className={`flex px-4 py-2 font-bold transition-all duration-300 transform rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
@@ -127,7 +127,7 @@ export default function Navbar({scrolled = false, isLive }) {
               <div className="flex space-x-4">
                 <Link
                   href="/auth/signin"
-                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >
@@ -135,7 +135,7 @@ export default function Navbar({scrolled = false, isLive }) {
                 </Link>
                 <Link
                   href="/auth/login-options"
-                  className={`px-4 py-2 font-bold transition-all duration-300 transform hover:scale-105 rounded-lg ${
+                  className={`px-4 py-2 font-bold transition-all duration-300 transform rounded-lg ${
                     isScrolled ? "bg-yellow-500 text-gray-900" : "bg-white text-gray-900"
                   }`}
                 >

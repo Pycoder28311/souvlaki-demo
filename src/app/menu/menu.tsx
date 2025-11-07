@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import ProductModal from "./productModal";
 import { useCart } from "../wrappers/cartContext";
-import { Search, X} from "lucide-react";
+import { Plus, Search, X} from "lucide-react";
 import { Product, Category } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
@@ -99,6 +99,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
   }, [categories, isSidebarOpen]); // add sidebarOpen to deps
 
   useEffect(() => {
+  if (user?.business) return;
     // Set initial value on client
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth >= 768);
@@ -107,9 +108,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
     handleResize(); // set immediately on mount
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [setIsSidebarOpen]);
+  }, [setIsSidebarOpen, user?.business]);
 
   useEffect(() => {
+    if (user?.business) return;
     const handleResize = () => {
       if (window.innerWidth < 768) {
         setIsSidebarOpen(false);
@@ -120,7 +122,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [setIsSidebarOpen]);
+  }, [setIsSidebarOpen, user?.business]);
 
   useEffect(() => {
     // If user.business changes dynamically, close the sidebar
@@ -581,9 +583,9 @@ export default function Menu({ categories: initialCategories, business }: { cate
         <div className="w-full flex justify-center mt-4 mb-4">
           <button
             onClick={handleCreateCategory}
-            className="rounded-lg px-6 py-3 font-bold text-white bg-blue-600 hover:bg-blue-700 transition-all"
+            className="rounded-xl px-4 py-2 font-bold text-white flex items-center gap-2 text-lg bg-blue-500 hover:bg-blue-600 transition-all"
           >
-            + Δημιουργία Κατηγορίας
+            <Plus size={18} className="inline" /> Δημιουργία Κατηγορίας
           </button>
         </div>
       )}
