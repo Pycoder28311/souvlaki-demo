@@ -1,5 +1,4 @@
-import { OrderItem, Product, User } from "../../types"; // adjust path
-import { useRouter } from "next/navigation";
+import { OrderItem, Product, User } from "../../types"; 
 
 type ProductWithAvailability = Product & {
   available: boolean;
