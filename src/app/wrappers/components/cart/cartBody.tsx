@@ -182,8 +182,8 @@ const CartBody: React.FC<CartBodyProps> = ({
 
       {/* Total and Checkout */}
       {orderItems.length > 0 && !user?.business && (
-        <div className=" bottom-18 sm:bottom-4 left-0 right-0">
-          <div className="px-0">
+        <div className="fixed bottom-18 sm:bottom-4 left-0 right-0">
+          <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <button
                 onClick={() =>
@@ -199,8 +199,8 @@ const CartBody: React.FC<CartBodyProps> = ({
       )}
 
       {orderItems.length === 0 && !user?.business && (
-        <div className="bottom-18 sm:bottom-4 left-0 right-0">
-          <div className="px-0">
+        <div className="fixed bottom-18 sm:bottom-4 left-0 right-0">
+          <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <Link href="/menu" className="block w-full">
                 <button className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl font-bold rounded-lg hover:bg-yellow-500 transition">
