@@ -183,7 +183,97 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
           </button>
         </div>
 
-        <div className="flex gap-2 flex-col items-center justify-center mb-4">
+        <div className="flex flex-col md:flex-row gap-4 w-full justify-between mb-4">
+          <div className="flex items-start justify-center">
+            {editingPriceId === product.id ? (
+              <div className="flex items-center gap-2">
+                <span className="text-gray-800 font-semibold">Τιμή:</span>
+                <input
+                  type="number"
+                  value={newPrice}
+                  onChange={(e) => setNewPrice(parseFloat(e.target.value))}
+                  className="w-12 border rounded-lg px-2 py-1 text-sm"
+                  placeholder="Νέα Τιμή"
+                />
+                <button
+                  onClick={() => {
+                    if (isNaN(newPrice) || newPrice <= 0) return alert("Η τιμή πρέπει να είναι μεγαλύτερη από 0");
+                    if (newPrice !== product.price) {
+                      onEditPrice(product.id, newPrice);
+                    }
+                    setPrice(newPrice)
+                    setEditingPriceId(null);
+                  }}
+                  className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm"
+                >
+                  <Save className="w-4 h-4 text-black" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center w-full gap-2 justify-center">
+                <span className="text-gray-800 font-semibold">Τιμή: {Number(price).toFixed(2)} €</span>
+                <button
+                  onClick={() => {
+                    setEditingPriceId(product.id);
+                    setNewPrice(product.price); // prefill with current price
+                  }}
+                  className="px-2 py-2 flex items-center justify-center text-black rounded-lg hover:bg-gray-200 transition"
+                >
+                  <Pencil size={16} className="inline" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {!isEditingOffer ? (
+              <>
+                <button
+                  onClick={() => {
+                    if (offer) {
+                      // Directly disable offer
+                      onToggleOffer(product.id, product.categoryId || 0, product.offer, product.price, offerPrice);
+                      setOffer(!product.offer)
+                    } else {
+                      // Start editing mode
+                      setIsEditingOffer(true);
+                    }
+                  }}
+                  className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600 w-full justify-center`}
+                >
+                  {offer ? "Αφαίρεση Προσφοράς" : "Ορισμός ως Προσφορά"}
+                </button>
+              </>
+            ) : (
+              <div className="flex flex-row items-center gap-2 justify-center w-full">
+                  <p>Νέα Τιμή:</p>
+                  <input
+                    type="number"
+                    placeholder="Νέα τιμή"
+                    value={offerPrice}
+                    onChange={(e) => setOfferPrice(Number(e.target.value))}
+                    className="w-12 border rounded-lg px-2 py-1 text-sm"
+                  />
+
+                  <button
+                    onClick={() => {
+                      if (offerPrice !== product.offerPrice) {
+                        handleConfirm()
+                        setOffer(!offer)
+                      } else {
+                        handleCancel()
+                      }
+                    }}
+                    className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm flex items-center gap-1"
+                  >
+                    <Save className="w-4 h-4 text-black" />
+                  </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="flex gap-2 flex-col items-start justify-center mb-2">
           <div className="flex items-center gap-2">
             <strong>Περιγραφή</strong>
             <button
@@ -204,114 +294,23 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </button>
           </div>
           {isEditingDescription ? (
-            <>
-              <input
-                type="text"
-                value={newDescription}
-                onChange={(e) => setNewDescription(e.target.value)}
-                className="border border-gray-300 rounded-lg px-2 py-1 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </>
+            <textarea
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              className="border border-gray-300 rounded-lg px-2 py-1 text-md focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
+              rows={4} // adjust height
+              placeholder="Εισάγετε την περιγραφή..."
+            />
           ) : (
-            <h3 className="text-lg">
+            <h3 className="text-md">
               {newDescription}
             </h3>
-          )}
-        </div>
-
-        <div className="flex items-center justify-center mb-4 w-full">
-          {editingPriceId === product.id ? (
-            <div className="flex items-center gap-2">
-              <span className="text-gray-800 font-medium">Τιμή:</span>
-              <input
-                type="number"
-                value={newPrice}
-                onChange={(e) => setNewPrice(parseFloat(e.target.value))}
-                className="w-24 border rounded-lg px-2 py-1 text-sm"
-                placeholder="Νέα Τιμή"
-              />
-              <button
-                onClick={() => {
-                  if (isNaN(newPrice) || newPrice <= 0) return alert("Η τιμή πρέπει να είναι μεγαλύτερη από 0");
-                  if (newPrice !== product.price) {
-                    onEditPrice(product.id, newPrice);
-                  }
-                  setPrice(newPrice)
-                  setEditingPriceId(null);
-                }}
-                className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm"
-              >
-                <Save className="w-4 h-4 text-black" />
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center w-full gap-2 justify-center">
-              <span className="text-gray-800 font-medium">Τιμή: {Number(price).toFixed(2)} €</span>
-              <button
-                onClick={() => {
-                  setEditingPriceId(product.id);
-                  setNewPrice(product.price); // prefill with current price
-                }}
-                className="px-2 py-2 flex items-center justify-center text-black rounded-lg hover:bg-gray-200 transition"
-              >
-                <Pencil size={16} className="inline" />
-              </button>
-            </div>
-          )}
-        </div>
-
-        {isEditingOffer && (<strong className="flex w-full justify-center mb-2">Προσφορά</strong>)}
-
-        <div className="flex items-center gap-2 mb-4">
-          {!isEditingOffer ? (
-            <>
-              <button
-                onClick={() => {
-                  if (offer) {
-                    // Directly disable offer
-                    onToggleOffer(product.id, product.categoryId || 0, product.offer, product.price, offerPrice);
-                    setOffer(!product.offer)
-                  } else {
-                    // Start editing mode
-                    setIsEditingOffer(true);
-                  }
-                }}
-                className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600 w-full justify-center`}
-              >
-                {offer ? "Αφαίρεση Προσφοράς" : "Ορισμός ως Προσφορά"}
-              </button>
-            </>
-          ) : (
-            <div className="flex flex-row items-center gap-2 justify-center w-full">
-                <p>Νέα Τιμή:</p>
-                <input
-                  type="number"
-                  placeholder="Νέα τιμή"
-                  value={offerPrice}
-                  onChange={(e) => setOfferPrice(Number(e.target.value))}
-                  className="w-24 border rounded-lg px-2 py-1 text-sm"
-                />
-
-                <button
-                  onClick={() => {
-                    if (offerPrice !== product.offerPrice) {
-                      handleConfirm()
-                    } else {
-                      handleCancel()
-                    }
-                    setOffer(!offer)
-                  }}
-                  className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm flex items-center gap-1"
-                >
-                  <Save className="w-4 h-4 text-black" />
-                </button>
-            </div>
           )}
         </div>
         
         {!availability && (
           <form onSubmit={handleFormSubmitWrapper} className="flex flex-col gap-4 max-w-full">
-            <p className="text-md font-semibold text-center mt-4">Διαθεσιμότητα</p>
+            <p className="text-md font-semibold text-start mt-4">Διαθεσιμότητα</p>
             <div className="flex gap-4">
               <label className="flex flex-col flex-1">
                 <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Έναρξης</span>

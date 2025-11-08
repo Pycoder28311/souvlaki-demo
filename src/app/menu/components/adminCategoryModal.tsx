@@ -243,7 +243,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
           
           {!availability && (
             <form onSubmit={handleFormSubmitWrapper} className="flex flex-col gap-4 max-w-full">
-              <p className="text-lg font-semibold text-center mt-4">Διαθεσιμότητα</p>
+              <p className="text-md font-semibold text-start mt-4">Διαθεσιμότητα</p>
               <div className="flex gap-4">
                 <label className="flex flex-col flex-1">
                   <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Έναρξης</span>
