@@ -58,7 +58,7 @@ const PaymentWayModal: React.FC<PaymentWayModalProps> = ({
         </div>
 
         {/* Bottom Section */}
-        <div className="border-gray-300 w-full px-4 fixed bottom-18">
+        <div className="border-gray-300 w-full px-4 fixed bottom-18 sm:bottom-4">
           {/* Total */}
           <p className="mb-4 font-bold text-gray-900 text-2xl px-1 pt-4">
             Σύνολο: {total.toFixed(2)}€

@@ -170,7 +170,6 @@ const PaymentModal: FC<PaymentModalProps> = ({
 
             {showDetails && (
               <div className="flex flex-col gap-2">
-
                 <div className="flex flex-col gap-2 mt-4">
                   <strong className="text-gray-700">Όροφος:</strong>
                   <select
@@ -217,7 +216,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="fixed bottom-18 left-0 right-0 border-gray-300">
+        <div className="fixed bottom-18 sm:bottom-4 left-0 right-0 border-gray-300">
           <div className="px-4">
             <p className="mt-4 px-1 font-bold text-gray-900 text-2xl">Σύνολο: {total.toFixed(2)}€</p>
             <button

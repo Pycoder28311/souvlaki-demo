@@ -330,9 +330,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const handleBodyOverflow = () => {
       if (window.innerWidth < 768 && isSidebarOpen) {
-        document.body.style.overflow = "hidden"; // κλείδωσε scroll
+        document.body.style.overflow = "hidden"; // lock scroll
+        window.scrollTo({
+          top: 0, // scroll to top (or set a custom value)
+          behavior: "smooth",
+        });
       } else {
-        document.body.style.overflow = "auto"; // επέστρεψε scroll
+        document.body.style.overflow = "auto"; // restore scroll
       }
     };
 
