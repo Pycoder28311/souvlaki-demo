@@ -2,7 +2,8 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Category } from "../../types"; // your Category interface
-import { X, Plus, Edit2, Trash2, Save, Pencil } from "lucide-react";
+import { X, Plus, Trash2, Save, Pencil } from "lucide-react";
+import { FormEvent } from "react";
 
 interface CategoryModalProps {
   category: Category;
@@ -10,9 +11,13 @@ interface CategoryModalProps {
   onClose: () => void;
   moveCategory: (id: number, direction: "up" | "down") => void;
   saveCategoryPositions: () => void;
-  handleCreateProduct: (categoryId: number) => void;
+  handleCreateProduct: (categoryId: number, name: string, description: string, price: number) => void;
   handleEditCategory: (categoryId: number, name: string) => void;
-  handleDeleteCategory: (categoryId: number, name: string) => void;
+  handleDeleteCategory: (categoryId: number) => void;
+  toggleCategoryAvailability: (categoryId: number) => void;
+  handleSubmit: (e: React.FormEvent, openHour: string, openMin: string, closeHour: string, closeMin: string, setIsSaving: (isSaving: boolean) => void, category: Category) => void;
+  confirmingDelete: boolean;
+  setConfirmingDelete: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function two(n: number): string {
@@ -28,6 +33,10 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
   handleCreateProduct,
   handleEditCategory,
   handleDeleteCategory,
+  toggleCategoryAvailability,
+  handleSubmit,
+  confirmingDelete,
+  setConfirmingDelete,
 }) => {
 
   const minuteOptions = ['00', '15', '30', '45', '59']
@@ -47,7 +56,20 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
   const [closeHour, setCloseHour] = useState(initClose.hh)
   const [closeMin, setCloseMin] = useState(initClose.mm)
 
-  const [isSaving, setIsSaving] = useState(false)
+  const [isSaving, setIsSaving] = useState(false);
+  const handleFormSubmitWrapper = (e: FormEvent<HTMLFormElement>) => {
+    handleSubmit(
+      e,
+      openHour,
+      openMin,
+      closeHour,
+      closeMin,
+      setIsSaving,
+      category
+    );
+  };
+
+  const [availability, setAvailability] = useState(category.alwaysClosed)
 
   useEffect(() => {
     // if initialHours change, update state
@@ -59,37 +81,28 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
     setCloseMin(c.mm)
   }, [category?.openHour, category?.closeHour])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(category.name);
 
-    const open = `${openHour}:${openMin}`
-    const close = `${closeHour}:${closeMin}`
-
-    // simple validation: open < close? (optional)
-    const openT = parseInt(openHour) * 60 + parseInt(openMin)
-    const closeT = parseInt(closeHour) * 60 + parseInt(closeMin)
-    if (openT >= closeT) {
-      return
+  const handleChangeName = () => {
+    if (newName !== category.name) {
+      handleEditCategory(category.id, newName);
     }
+    setIsEditing(false);
+  };
 
-    setIsSaving(true)
-    try {
-      const res = await fetch(`/api/update-category-hours/${category.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ open, close }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Σφάλμα στο API')
-      }
-      setTimeout(() => window.location.reload(), 500)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSaving(false)
-    }
-  }
+  const [isCreating, setIsCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+
+  const handleAddProduct = (categoryId: number) => {
+    handleCreateProduct(categoryId, name, description, Number(price));
+    setIsCreating(false);
+    setName("");
+    setDescription("");
+    setPrice("")
+  };
 
   // generate hour options 00-23
   const hours = Array.from({ length: 24 }).map((_, i) => two(i))
@@ -116,12 +129,42 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
           <X size={22} />
         </button>
 
-        <h3 className="text-xl font-semibold mb-4 text-center">
-          Επεξεργασία Κατηγορίας: {category.name}
-        </h3>
+        <div className="flex gap-2 flex-row items-center justify-center mb-4">
+          {isEditing ? (
+            <>
+              <input
+                type="text"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                className="border border-gray-300 rounded-lg px-2 py-1 text-center text-2xl font-semibold focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </>
+          ) : (
+            <h3 className="text-2xl font-semibold text-center">
+              {newName}
+            </h3>
+          )}
+
+          <button
+            onClick={() => {
+              if (isEditing) {
+                handleChangeName();
+              } else {
+                setIsEditing(true);
+              }
+            }}
+            className="py-1 px-2 text-black rounded-lg hover:bg-gray-200 transition-transform font-medium"
+          >
+            {isEditing ? (
+              <Save size={18} className="inline" />
+            ) : (
+              <Pencil size={18} className="inline" />
+            )}
+          </button>
+        </div>
 
         <div className="flex flex-col gap-3">
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-between w-full">
             <button
               onClick={() => moveCategory(category.id, "up")}
               className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform"
@@ -134,138 +177,192 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             >
               ▼ Κάτω
             </button>
+
+            <button
+              onClick={saveCategoryPositions}
+              className="px-4 py-2 bg-blue-500 flex items-center justify-center gap-2 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium"
+            >
+              Ενημέρωση Θέσεων
+              <Save className="w-5 h-5 text-gray-100" />
+            </button>
           </div>
 
-          <button
-            onClick={saveCategoryPositions}
-            className="w-full py-2 bg-blue-500 flex items-center justify-center gap-2 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium"
-          >
-            Ενημέρωση Θέσεων
-            <Save className="w-5 h-5 text-gray-100" />
-          </button>
+          <div className="w-full flex flex-col gap-2">
+            {isCreating && (
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={name}
+                  placeholder="Όνομα προϊόντος"
+                  onChange={(e) => setName(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <input
+                  type="text"
+                  value={description}
+                  placeholder="Περιγραφή"
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+                <input
+                  type="text"
+                  value={price}
+                  placeholder="Τιμή"
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-2 py-1 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                />
+              </div>
+            )}
 
-          <button
-            onClick={() => handleCreateProduct(category.id)}
-            className="w-full py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium"
-          >
-            Δημιουργία Προϊόντος
-            <Plus size={18} className="inline ml-2" />
-          </button>
-
-          <button
-            onClick={() => handleEditCategory(category.id, category.name)}
-            className="w-full py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium"
-          >
-            Επεξεργασία Ονόματος
-            <Pencil size={18} className="inline ml-2" />
-          </button>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-full">
-            <div className="flex gap-4">
-              <label className="flex flex-col flex-1">
-                <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Έναρξης</span>
-                <div className="flex gap-2">
-                  <select
-                    value={openHour}
-                    onChange={(e) => setOpenHour(e.target.value)}
-                    className="border rounded p-2 flex-1"
-                    aria-label="Ώρα έναρξης - ώρα"
-                  >
-                    {hours.map((h) => (
-                      <option key={h} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={openMin}
-                    onChange={(e) => setOpenMin(e.target.value)}
-                    className="border rounded p-2 w-24"
-                    aria-label="Ώρα έναρξης - λεπτά"
-                  >
-                    {minuteOptions.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </label>
-
-              <label className="flex flex-col flex-1">
-                <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Λήξης</span>
-                <div className="flex gap-2">
-                  <select
-                    value={closeHour}
-                    onChange={(e) => setCloseHour(e.target.value)}
-                    className="border rounded p-2 flex-1"
-                    aria-label="Ώρα λήξης - ώρα"
-                  >
-                    {hours.map((h) => (
-                      <option key={h} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={closeMin}
-                    onChange={(e) => setCloseMin(e.target.value)}
-                    className="border rounded p-2 w-24"
-                    aria-label="Ώρα λήξης - λεπτά"
-                  >
-                    {minuteOptions.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </label>
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={() => {
+                  if (isCreating) handleAddProduct(category.id);
+                  else setIsCreating(true);
+                }}
+                className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium flex items-center justify-center"
+              >
+                {isCreating ? "Αποθήκευση" : "Δημιουργία Προϊόντος"}
+                {isCreating ? <Save size={18} className="inline ml-2" /> : <Plus size={18} className="inline ml-2" />}
+              </button>
+              {isCreating && (
+                <button
+                  onClick={() => {
+                    setIsCreating(false);
+                    setName("");
+                    setDescription("");
+                    setPrice("");
+                  }}
+                  className="flex-1 py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
+                >
+                  Ακύρωση <X size={18} />
+                </button>
+              )}
             </div>
+          </div>
+          
+          {!availability && (
+            <form onSubmit={handleFormSubmitWrapper} className="flex flex-col gap-4 max-w-full">
+              <p className="text-lg font-semibold text-center mt-4">Διαθεσιμότητα</p>
+              <div className="flex gap-4">
+                <label className="flex flex-col flex-1">
+                  <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Έναρξης</span>
+                  <div className="flex gap-2">
+                    <select
+                      value={openHour}
+                      onChange={(e) => setOpenHour(e.target.value)}
+                      className="border rounded p-2 flex-1"
+                      aria-label="Ώρα έναρξης - ώρα"
+                    >
+                      {hours.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
 
-            {openHour === '00' && openMin === '00' && closeHour === '23' && closeMin === '59' && !category.alwaysClosed && (
+                    <select
+                      value={openMin}
+                      onChange={(e) => setOpenMin(e.target.value)}
+                      className="border rounded p-2 w-24"
+                      aria-label="Ώρα έναρξης - λεπτά"
+                    >
+                      {minuteOptions.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </label>
+
+                <label className="flex flex-col flex-1">
+                  <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Λήξης</span>
+                  <div className="flex gap-2">
+                    <select
+                      value={closeHour}
+                      onChange={(e) => setCloseHour(e.target.value)}
+                      className="border rounded p-2 flex-1"
+                      aria-label="Ώρα λήξης - ώρα"
+                    >
+                      {hours.map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={closeMin}
+                      onChange={(e) => setCloseMin(e.target.value)}
+                      className="border rounded p-2 w-24"
+                      aria-label="Ώρα λήξης - λεπτά"
+                    >
+                      {minuteOptions.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </label>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+              >
+                {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
+                <Save className="w-5 h-5 text-gray-100" />
+              </button>
+            </form>
+          )}
+          
+          <div className="flex items-center w-full justify-between">
+            {openHour === '00' && openMin === '00' && closeHour === '23' && closeMin === '59' && !availability && (
               <p className="text-green-600 text-sm font-medium">
                 Η κατηγορία είναι διαθέσιμη όλες τις ώρες
               </p>
             )}
 
             <button
-              type="submit"
-              disabled={isSaving}
-              className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            >
-              {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
-              <Save className="w-5 h-5 text-gray-100" />
-            </button>
-
-            <button
-              onClick={async () => {
-                try {
-                  await fetch(`/api/availability-categories/${category.id}`, {
-                    method: 'PUT',
-                  })
-                  setTimeout(() => window.location.reload(), 500)
-                } catch (err) {
-                  console.error(err)
-                }
-              }}
-              className={`p-2 rounded-lg transition bg-gray-200 text-black hover:bg-gray-300`}
+              onClick={() => {toggleCategoryAvailability(category.id); setAvailability(!availability)}}
+              className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600`}
               title="Toggle Availability"
-            >{category.alwaysClosed 
-              ? 'Διαθέσιμη τις ώρες που ορίζω' 
-              : 'Κάνε την κατηγορία μη διαθέσιμη'}
+            >
+              {availability
+                ? 'Διαθέσιμη τις ώρες που ορίζω' 
+                : 'Κάνε την μη διαθέσιμη'}
             </button>
-          </form>
+          </div>
 
-          <button
-            onClick={() => handleDeleteCategory(category.id, category.name)}
-            className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform font-medium"
-          >
-            Διαγραφή Κατηγορίας
-            <Trash2 size={18} className="inline ml-2" />
-          </button>
+          <div className="flex items-center gap-2 mt-4">
+            {!confirmingDelete ? (
+              <button
+                onClick={() => setConfirmingDelete(true)}
+                className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform font-medium"
+              >
+                Διαγραφή Κατηγορίας
+                <Trash2 size={18} className="inline ml-2" />
+              </button>
+            ) : (
+              <div className="flex w-full flex-row justify-center gap-2">
+                <button
+                  onClick={() => handleDeleteCategory(category.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                >
+                  Είστε σίγουροι;
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  className="py-2 px-4 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
+                >
+                  Ακύρωση <X size={18} />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

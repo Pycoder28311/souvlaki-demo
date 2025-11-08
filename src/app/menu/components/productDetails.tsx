@@ -60,6 +60,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
       {/* Product Title & Price */}
       <div className="flex justify-between mb-2 items-center">
         <h2 className="text-4xl font-bold">{fullProduct.name}</h2>
+        
         <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
           {fullProduct.offer && fullProduct.offerPrice ? (
             <>
@@ -245,7 +246,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 onClick={() =>
                   setOpenOptions((prev) => ({ ...prev, [opt.id]: !prev[opt.id] }))
                 }
-                className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
+                  ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
               >
                 <div className="flex items-center gap-2">
                   {open ? (
@@ -303,7 +305,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                       </div>
                     </div> 
                   )}
-                  <label className="flex items-center gap-3">
+                  <label className="flex items-center gap-3 px-2">
                     <input
                       type="radio"
                       name={`option-${opt.id}`}
@@ -312,7 +314,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                     />
                     Ναι
                   </label>
-                  <label className="flex items-center gap-3">
+                  <label className="flex items-center gap-3 px-2">
                     <input
                       type="radio"
                       name={`option-${opt.id}`}

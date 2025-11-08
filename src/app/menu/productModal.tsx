@@ -461,7 +461,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                       <span className="text-lg ml-1">
                         {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
                       </span>
-                      <Save className="w-6 h-6 text-gray-600" />
+                      <Save className="w-5 h-5 text-gray-600" />
                     </label>
                   )}
 
@@ -487,7 +487,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                       <span className="text-lg ml-1">
                         {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
                       </span>
-                      <Save className="w-6 h-6 text-gray-600" />
+                      <Save className="w-5 h-5 text-gray-600" />
                     </label>
                   )}
                 </>
@@ -575,13 +575,13 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                 disabled={loadingSave}
               >
               {loadingSave ? 
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-2 items-center">
                   <p className="text-lg">Αποθήκευση</p>
-                  <AiOutlineLoading3Quarters className="text-gray-100 w-5 h-5 animate-spin" />
+                  <AiOutlineLoading3Quarters className="text-gray-100 w-4 h-4 animate-spin" />
                 </div> : 
                 <div className="flex justify-center items-center gap-2">
                   <p className="text-lg">Αποθήκευση Αλλαγών</p>
-                  <Save className="w-6 h-6 text-gray-100" />
+                  <Save className="w-5 h-5 text-gray-100" />
                 </div>}
             </button>
             </div>

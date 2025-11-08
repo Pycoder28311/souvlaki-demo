@@ -48,7 +48,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   selectedAdminProduct,
   setSelectedAdminProduct,
 }) => {
-  const available = isCategoryAvailable(category.openHour, category.closeHour)
+  const available = isCategoryAvailable(category.openHour, category.closeHour);
 
   return (
     <section
@@ -134,13 +134,13 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 <p className="font-bold text-yellow-600 text-lg mb-2 flex items-center gap-2">
                   {product.offer ? (
                     <>
-                      <span>{product.price.toFixed(2)}€</span>
+                      <span>{Number(product.price).toFixed(2)}€</span>
                       <span className="line-through text-gray-400">
-                        {product.offerPrice?.toFixed(2)}€
+                        {Number(product.offerPrice)?.toFixed(2)}€
                       </span>
                     </>
                   ) : (
-                    <span>{product.price.toFixed(2)}€</span>
+                    <span>{Number(product.price).toFixed(2)}€</span>
                   )}
                 </p>
               </div>

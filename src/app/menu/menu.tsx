@@ -4,11 +4,12 @@ import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import ProductModal from "./productModal";
 import { useCart } from "../wrappers/cartContext";
-import { Plus, Search, X} from "lucide-react";
+import { Plus, Search, X, Save} from "lucide-react";
 import { Product, Category } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
 import CategorySection from "./components/categorySection";
+import { FormEvent } from "react";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(false);
@@ -58,6 +59,12 @@ export default function Menu({ categories: initialCategories, business }: { cate
   // Δημιουργία εύρους 5 λεπτών
   const lower = roundTo5(travelTime);
   const upper = lower + 5;
+
+  const [isCreating, setIsCreating] = useState(false);
+  const [name, setName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingDeleteProduct, setConfirmingDeleteProduct] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
@@ -197,17 +204,12 @@ export default function Menu({ categories: initialCategories, business }: { cate
     }
   };
 
-  const handleCreateProduct = async (categoryId: number) => {
-    const name = prompt("Εισάγετε το όνομα του προϊόντος");
-    if (!name) return;
+  const handleCreateProduct = async (categoryId: number, name: string, description: string, price: number) => {
+    if (!name || !description || !price) {
+      alert("Συμπληρώστε όλα τα πεδία!");
+      return;
+    }
 
-    const description = prompt("Εισάγετε την περιγραφή του προϊόντος");
-    if (!description) return;
-
-    const priceStr = prompt("Εισάγετε την τιμή του προϊόντος");
-    if (!priceStr) return;
-
-    const price = parseFloat(priceStr);
     if (isNaN(price)) {
       alert("Η τιμή πρέπει να είναι αριθμός");
       return;
@@ -221,9 +223,19 @@ export default function Menu({ categories: initialCategories, business }: { cate
       });
 
       if (!res.ok) throw new Error("Απέτυχε η δημιουργία του προϊόντος");
+      const newProduct = await res.json();
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) => {
+          if (cat.id === categoryId) {
+            return {
+              ...cat,
+              products: [...cat.products, newProduct],
+            };
+          }
+          return cat;
+        })
+      );
 
-      // Ανανέωση της σελίδας για να εμφανιστεί το νέο προϊόν
-      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά τη δημιουργία του προϊόντος");
@@ -231,8 +243,12 @@ export default function Menu({ categories: initialCategories, business }: { cate
   };
 
   const handleCreateCategory = async () => {
-    const name = prompt("Εισάγετε το όνομα της νέας κατηγορίας");
-    if (!name) return;
+    if (!name.trim()) {
+      alert("Συμπληρώστε το όνομα της κατηγορίας!");
+      return;
+    }
+
+    setIsSaving(true);
 
     try {
       const res = await fetch("/api/create-category", {
@@ -243,16 +259,21 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
       if (!res.ok) throw new Error("Απέτυχε η δημιουργία της κατηγορίας");
 
-      // Ανανέωση της σελίδας για να εμφανιστεί η νέα κατηγορία
-      window.location.reload(); 
+      const newCategory = await res.json(); // assuming API returns created category
+
+      // Update frontend state
+      setCategories((prev) => [...prev, newCategory]);
+
+      // Reset form
+      setName("");
+      setIsCreating(false);
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά τη δημιουργία της κατηγορίας");
     }
   };
 
-  const handleDeleteProduct = async (productId: number, productName: string) => {
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το προϊόν "${productName}"?`)) return;
+  const handleDeleteProduct = async (productId: number, categoryId: number) => {
 
     try {
       const res = await fetch(`/api/delete-product/${productId}`, {
@@ -261,16 +282,26 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
       if (!res.ok) throw new Error("Απέτυχε η διαγραφή του προϊόντος");
 
-      // Ανανέωση της σελίδας για να ενημερωθεί η λίστα προϊόντων
-      window.location.reload(); 
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                products: cat.products.filter((prod) => prod.id !== productId),
+              }
+            : cat
+        )
+      );
+
+      setSelectedAdminProduct(null)
+
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά τη διαγραφή του προϊόντος");
     }
   };
 
-  const handleDeleteCategory = async (categoryId: number, categoryName: string) => {
-    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε την κατηγορία "${categoryName}"?`)) return;
+  const handleDeleteCategory = async (categoryId: number) => {
 
     try {
       const res = await fetch(`/api/delete-category/${categoryId}`, {
@@ -279,17 +310,17 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
       if (!res.ok) throw new Error("Απέτυχε η διαγραφή της κατηγορίας");
 
-      // Ανανέωση της σελίδας για να ενημερωθεί η λίστα κατηγοριών
-      window.location.reload(); 
+      setCategories((prev) =>
+        prev.filter((cat) => cat.id !== categoryId)
+      );
+      setSelectedCategory(null)
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά τη διαγραφή της κατηγορίας");
     }
   };
 
-  const handleEditCategory = async (categoryId: number, currentName: string) => {
-    const newName = prompt("Εισάγετε το νέο όνομα της κατηγορίας", currentName);
-    if (!newName || newName === currentName) return;
+  const handleEditCategory = async (categoryId: number, newName: string) => {
 
     try {
       const res = await fetch(`/api/update-category/${categoryId}`, {
@@ -299,18 +330,19 @@ export default function Menu({ categories: initialCategories, business }: { cate
       });
 
       if (!res.ok) throw new Error("Απέτυχε η ενημέρωση της κατηγορίας");
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === categoryId ? { ...cat, name: newName } : cat
+        )
+      );
 
-      // Ανανέωση της σελίδας για να εμφανιστεί το νέο όνομα
-      window.location.reload(); 
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά την ενημέρωση της κατηγορίας");
     }
   };
 
-  const handleEditProduct = async (productId: number, currentName: string) => {
-    const newName = prompt("Εισάγετε το νέο όνομα του προϊόντος", currentName);
-    if (!newName || newName === currentName) return;
+  const handleEditProduct = async (productId: number, categoryId: number, newName: string) => {
 
     try {
       const res = await fetch(`/api/update-product/${productId}`, {
@@ -320,9 +352,21 @@ export default function Menu({ categories: initialCategories, business }: { cate
       });
 
       if (!res.ok) throw new Error("Απέτυχε η ενημέρωση του προϊόντος");
+      const updatedProduct: Product = await res.json();
 
-      // Ανανέωση της σελίδας για να εμφανιστεί το νέο όνομα
-      window.location.reload(); 
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                products: cat.products.map((prod) =>
+                  prod.id === productId ? { ...prod, ...updatedProduct } : prod
+                ),
+              }
+            : cat
+        )
+      );
+
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά την ενημέρωση του προϊόντος");
@@ -369,24 +413,20 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
       if (!res.ok) throw new Error("Απέτυχε η αποθήκευση των θέσεων");
 
-      alert("Οι θέσεις αποθηκεύτηκαν επιτυχώς!");
+      //alert("Οι θέσεις αποθηκεύτηκαν επιτυχώς!");
     } catch (err) {
       console.error(err);
       alert("Σφάλμα κατά την αποθήκευση των θέσεων");
     }
   };
 
-  const toggleProductOffer = async (productId: number, currentOffer: boolean, price: number, currentOfferPrice?: number) => {
+  const toggleProductOffer = async (productId: number, categoryId: number, currentOffer: boolean, price: number, newOfferPrice: number, currentOfferPrice?: number) => {
     try {
       let offerPrice = currentOfferPrice || 0;
 
       // Αν η προσφορά ενεργοποιείται, ρώτα τον χρήστη για την τιμή προσφοράς
       if (!currentOffer) {
-        const newPriceStr = prompt("Υποβολή νέας τιμής", offerPrice.toString());
-        if (!newPriceStr) return;
-        const newPrice = parseFloat(newPriceStr);
-        if (isNaN(newPrice)) return alert("Η τιμή προσφοράς πρέπει να είναι αριθμός");
-        offerPrice = newPrice;
+        offerPrice = newOfferPrice;
       } else {
         // Αν απενεργοποιείται, μηδενίζουμε ή αφήνουμε τιμή
         offerPrice = 0;
@@ -400,44 +440,229 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
       if (!res.ok) throw new Error("Απέτυχε η αλλαγή της προσφοράς");
 
-      alert(`Η προσφορά του προϊόντος είναι πλέον ${!currentOffer ? "ενεργή" : "ανενεργή"}!`);
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                products: cat.products.map((prod) =>
+                  prod.id === productId
+                    ? {
+                        ...prod,
+                        offer: !currentOffer,
+                        price: !currentOffer ? offerPrice : prod.price,
+                        offerPrice: prod.price,
+                      }
+                    : prod
+                ),
+              }
+            : cat
+        )
+      );
 
-      window.location.reload();
     } catch (error) {
       console.error(error);
       alert("Απέτυχε η αλλαγή της προσφοράς");
     }
   };
 
-  const setEditDescription = async (productId: number) => {
-    const newDescription = prompt("Εισάγετε τη νέα περιγραφή του προϊόντος", selectedAdminProduct?.description);
-    if (!newDescription) return;
+  const setEditDescription = async (productId: number, newDescription: string) => {
+    try {
+      const res = await fetch(`/api/products-description/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ description: newDescription }),
+      });
 
-    await fetch(`/api/products-description/${productId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: newDescription }),
-    });
+      if (!res.ok) throw new Error("Απέτυχε η ενημέρωση του προϊόντος");
 
-    alert("Η περιγραφή ενημερώθηκε!");
-    window.location.reload();
-    // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
+    } catch (err) {
+      console.error(err);
+      alert("Σφάλμα κατά την ενημέρωση του προϊόντος");
+    }
   };
 
-  const setEditPrice = async (productId: number) => {
-    const newPrice = prompt("Εισάγετε τη νέα τιμή του προϊόντος", selectedAdminProduct?.price.toString());
-    if (!newPrice) return;
+  const setEditPrice = async (productId: number,  newPrice: number) => {
+    try {
+      const res = await fetch(`/api/products-price/${productId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ price: Number(newPrice) }),
+      });
 
-    await fetch(`/api/products-price/${productId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ price: Number(newPrice) }),
-    });
+      if (!res.ok) throw new Error("Απέτυχε η ενημέρωση της τιμής");
 
-    alert("Η τιμή ενημερώθηκε!");
-    window.location.reload();
-    // Ανανεώστε τη λίστα προϊόντων ή κάντε revalidate
+      // Assume API returns the updated product
+      const updatedProduct: Product = await res.json();
+
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === updatedProduct.categoryId
+            ? {
+                ...cat,
+                products: cat.products.map((prod) =>
+                  prod.id === productId ? { ...prod, ...updatedProduct } : prod
+                ),
+              }
+            : cat
+        )
+      );
+
+    } catch (err) {
+      console.error(err);
+      alert("Σφάλμα κατά την ενημέρωση της τιμής");
+    }
   };
+
+  // Function defined outside JSX
+  const toggleCategoryAvailability = async (categoryId: number) => {
+    try {
+      // Toggle availability on backend
+      const res = await fetch(`/api/availability-categories/${categoryId}`, {
+        method: 'PUT',
+      });
+      if (!res.ok) throw new Error('Failed to toggle availability');
+
+      // Update frontend state
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === categoryId ? { ...cat, alwaysClosed: !cat.alwaysClosed } : cat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert('Σφάλμα κατά την αλλαγή της διαθεσιμότητας');
+    }
+  };
+
+  const handleSubmit = async (
+    e: FormEvent,
+    openHour: string,
+    openMin: string,
+    closeHour: string,
+    closeMin: string,
+    setIsSaving: (isSaving: boolean) => void,
+    category: Category
+  ) => {
+    e.preventDefault()
+
+    const open = `${openHour}:${openMin}`
+    const close = `${closeHour}:${closeMin}`
+
+    // simple validation: open < close? (optional)
+    const openT = parseInt(openHour) * 60 + parseInt(openMin)
+    const closeT = parseInt(closeHour) * 60 + parseInt(closeMin)
+    if (openT >= closeT) {
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/update-category-hours/${category.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ open, close }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Σφάλμα στο API')
+      }
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === category.id ? { ...cat, openHour: open, closeHour: close } : cat
+        )
+      );
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  const toggleProductAvailability = async (productId: number, categoryId: number) => {
+    try {
+      // Toggle availability on backend
+      const res = await fetch(`/api/availability-products/${productId}`, {
+        method: "PUT",
+      });
+      if (!res.ok) throw new Error("Failed to toggle availability");
+
+      // Assume API returns the updated product
+      const data = await res.json();
+
+      // Update frontend state
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                products: cat.products.map((prod) =>
+                  prod.id === productId ? { ...prod, ...data.product } : prod
+                ),
+              }
+            : cat
+        )
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Σφάλμα κατά την αλλαγή της διαθεσιμότητας");
+    }
+  };
+  
+  const handleSubmitProduct = async (
+    e: FormEvent,
+    openHour: string,
+    openMin: string,
+    closeHour: string,
+    closeMin: string,
+    setIsSaving: (isSaving: boolean) => void,
+    product: Product,
+    categoryId: number
+  ) => {
+    e.preventDefault()
+
+    const open = `${openHour}:${openMin}`
+    const close = `${closeHour}:${closeMin}`
+
+    // simple validation: open < close? (optional)
+    const openT = parseInt(openHour) * 60 + parseInt(openMin)
+    const closeT = parseInt(closeHour) * 60 + parseInt(closeMin)
+    if (openT >= closeT) {
+      return
+    }
+
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/update-product-hours/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ open, close }),
+      })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        throw new Error(err?.error || 'Σφάλμα στο API')
+      }
+      const data = await res.json();
+
+      // Update categories state
+      setCategories((prev) =>
+        prev.map((cat) =>
+          cat.id === categoryId
+            ? {
+                ...cat,
+                products: cat.products.map((p) =>
+                  p.id === product.id ? { ...p, ...data.product } : p
+                ),
+              }
+            : cat
+        )
+      );
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -552,12 +777,14 @@ export default function Menu({ categories: initialCategories, business }: { cate
                     ? "translateX(0)"
                     : "translateX(20%)",
               }}
-            >
-              <p className="text-lg font-semibold text-yellow-500 mb-4">
-                Χρόνος παράδοσης: {lower}-{upper} λεπτά
-              </p>
+            > 
+              {!user?.business && (
+                <p className="text-lg font-semibold text-yellow-500 mb-4">
+                  Χρόνος παράδοσης: {lower}-{upper} λεπτά
+                </p>
+              )}
               {categories.map((category) => {
-                const filteredProducts = category.products.filter((product) =>
+                const filteredProducts = (category.products || []).filter((product) =>
                   product.name.toLowerCase().includes(searchQuery.toLowerCase())
                 );
 
@@ -580,13 +807,41 @@ export default function Menu({ categories: initialCategories, business }: { cate
       </div>
 
       {business && (
-        <div className="w-full flex justify-center mt-4 mb-4">
-          <button
-            onClick={handleCreateCategory}
-            className="rounded-xl px-4 py-2 font-bold text-white flex items-center gap-2 text-lg bg-blue-500 hover:bg-blue-600 transition-all"
-          >
-            <Plus size={18} className="inline" /> Δημιουργία Κατηγορίας
-          </button>
+        <div className="w-full flex flex-col items-center mt-4 mb-4 gap-2">
+          {isCreating ? (
+            <div className="flex gap-2 w-full justify-center">
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Όνομα νέας κατηγορίας"
+                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"
+              />
+              <button
+                onClick={handleCreateCategory}
+                disabled={isSaving}
+                className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
+              >
+                Αποθήκευση <Save size={18} />
+              </button>
+              <button
+                onClick={() => {
+                  setIsCreating(false);
+                  setName("");
+                }}
+                className="bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
+              >
+                Ακύρωση <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setIsCreating(true)}
+              className="rounded-lg px-4 py-2 font-bold text-white flex items-center gap-2 text-lg bg-blue-500 hover:bg-blue-600 transition-all"
+            >
+              <Plus size={18} /> Δημιουργία Κατηγορίας
+            </button>
+          )}
         </div>
       )}
 
@@ -600,6 +855,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
           handleCreateProduct={handleCreateProduct}
           handleEditCategory={handleEditCategory}
           handleDeleteCategory={handleDeleteCategory}
+          toggleCategoryAvailability={toggleCategoryAvailability}
+          handleSubmit={handleSubmit}
+          confirmingDelete={confirmingDelete}
+          setConfirmingDelete={setConfirmingDelete}
         />
       )}
 
@@ -613,6 +872,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
           onToggleOffer={toggleProductOffer}
           onEditDescription={setEditDescription}
           onEditPrice={setEditPrice}
+          toggleProductAvailability={toggleProductAvailability}
+          handleSubmit={handleSubmitProduct}
+          confirmingDelete={confirmingDeleteProduct}
+          setConfirmingDelete={setConfirmingDeleteProduct}
         />
       )}
 
