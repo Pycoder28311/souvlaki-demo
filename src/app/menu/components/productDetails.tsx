@@ -1,6 +1,10 @@
+"use cleint";
+
 import React from "react";
+import { useState } from "react";
 import { ChevronDown, ChevronRight, Trash2, Plus, Pencil } from "lucide-react";
-import { Product, Ingredient, Option, IngCategory } from "../../types";
+import { Product, Ingredient, Option, IngCategory, Category } from "../../types";
+import { Save } from "lucide-react";
 
 interface ProductDetailProps {
   fullProduct: Product;
@@ -27,6 +31,7 @@ interface ProductDetailProps {
   handleDeleteOption: (optId: number) => void;
   handleAddCategory: () => void;
   handleAddOption: () => void;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
@@ -54,12 +59,115 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   handleDeleteOption,
   handleAddCategory,
   handleAddOption,
+  setCategories,
 }) => {
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [name, setName] = useState(fullProduct.name);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [description, setDescription] = useState(fullProduct.description);
+  const [loading, setLoading] = useState(false);
+
+  const apiUpdateName = async (id: number, value: string, field: string) => {
+    const res = await fetch("/api/update-fullProduct", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, field, value }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to update");
+    }
+
+    return res.json();
+  };
+
+  const handleEditClick = (e: React.MouseEvent, field: string) => {
+    e.stopPropagation();
+
+    if (field === "name") setIsEditingName(true);
+    if (field === "description") setIsEditingDescription(true);
+  };
+
+  const handleSave = async (field: string) => {
+    const currentValue = field === "name" ? name : description;
+    const originalValue = field === "name" ? fullProduct.name : fullProduct.description;
+
+    // If nothing changed, just cancel editing
+    if (currentValue === originalValue) {
+      if (field === "name") setIsEditingName(false);
+      if (field === "description") setIsEditingDescription(false);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const updated = await apiUpdateName(fullProduct.id, name, field);
+      setCategories((prevCategories) =>
+        prevCategories.map((cat) => {
+          // If the category contains the product, update it
+          if (cat.products.some((prod) => prod.id === fullProduct.id)) {
+            return {
+              ...cat,
+              products: cat.products.map((prod) =>
+                prod.id === fullProduct.id ? { ...prod, [field]: updated.data[field] } : prod
+              ),
+            };
+          }
+          return cat;
+        })
+      );
+      if (field === "name") setIsEditingName(false);
+      if (field === "description") setIsEditingDescription(false);
+    } catch (err) {
+      console.error("Failed to update name:", err);
+      // Optional: show error to user
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, field: string) => {
+    if (e.key === "Enter") handleSave(field);
+    if (e.key === "Escape") {
+      if (field === "name") {
+        setName(fullProduct.name);
+        setIsEditingName(false);
+      } else if (field === "description") {
+        setDescription(fullProduct.description);
+        setIsEditingDescription(false);
+      }
+    }
+  };
+
   return (
     <div className="p-6">
       {/* Product Title & Price */}
       <div className="flex justify-between mb-2 items-center">
-        <h2 className="text-4xl font-bold">{fullProduct.name}</h2>
+        <div className="flex justify-between gap-2">
+          {isEditingName ? (
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => handleSave("name")}
+              onKeyDown={(e) => handleKeyDown(e, "name")}
+              className="border px-2 py-1 rounded-md text-2xl font-bold"
+              autoFocus
+            />
+          ) : (
+            <h2 className="text-4xl font-bold">{name}</h2>
+          )}
+
+          <button
+            onClick={(e) => isEditingName ? handleSave("name") : handleEditClick(e, "name")}
+            className="px-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-black"
+            title={isEditingName ? "Αποθήκευση" : "Επεξεργασία"}
+            disabled={loading}
+          >
+            {isEditingName ? <Save size={20} /> : <Pencil size={20} />}
+          </button>
+        </div>
         
         <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
           {fullProduct.offer && fullProduct.offerPrice ? (
@@ -75,9 +183,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </p>
       </div>
 
-      <p className="text-gray-700 text-lg sm:text-base leading-relaxed mb-4 px-2">
-        {fullProduct.description}
-      </p>
+      <div className="flex flex-col justify-between mb-4">
+        {isEditingDescription ? (
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            onBlur={() => handleSave("description")}
+            onKeyDown={(e) => handleKeyDown(e, "description")}
+            className="text-gray-700 text-lg sm:text-base w-full leading-relaxed px-2 py-1 border rounded-md resize-none mb-2"
+            autoFocus
+            rows={4} // adjust height
+          />
+        ) : (
+          <p className="text-gray-700 text-lg sm:text-base leading-relaxed px-2 mb-4">
+            {description}
+          </p>
+        )}
+
+        <button
+          onClick={(e) => (isEditingDescription ? handleSave("description") : handleEditClick(e, "description"))}
+          className="flex items-center gap-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-black text-md gap-2 transition-shadow shadow-sm w-fit"
+          title={isEditingDescription ? "Αποθήκευση" : "Επεξεργασία"}
+          disabled={loading}
+        >
+          <span>{isEditingDescription ? "Αποθήκευση" : "Επεξεργασία Περιγραφής"}</span>
+          {isEditingDescription ? <Save size={16} /> : <Pencil size={16} />}
+        </button>
+      </div>
 
       {/* Ingredient Categories */}
       {fullProduct.ingCategories

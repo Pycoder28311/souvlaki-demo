@@ -887,6 +887,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           addToCart={addToCart}
+          setCategories={setCategories}
         />
       )}
     </div>

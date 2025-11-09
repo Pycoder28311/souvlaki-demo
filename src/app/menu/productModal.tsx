@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Minus, Plus, X, Save } from "lucide-react"
-import { Ingredient, IngCategory, Option, Product } from "../types";
+import { Ingredient, IngCategory, Option, Product, Category } from "../types";
 import ProductDetail from "./components/productDetails";
 import { useCart } from "../wrappers/cartContext";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
@@ -14,9 +14,10 @@ type ModalProps = {
   product: Product | null;
   onClose: () => void;
   addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[], selectedOptions: Option[], options: Option[]) => void;
+  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
 };
 
-export default function ProductModal({ business, product, onClose, addToCart }: ModalProps) {
+export default function ProductModal({ business, product, onClose, addToCart, setCategories }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
@@ -526,6 +527,7 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                 handleDeleteOption={handleDeleteOption}
                 handleAddCategory={handleAddCategory}
                 handleAddOption={handleAddOption}
+                setCategories={setCategories}
               />
             </>
           )}
