@@ -476,19 +476,27 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
               ) : (
                 <>
                   {business && (
-                    <label className=" cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100">
-                      <span className="sr-only">Choose file</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileChange}
-                        className="hidden"
-                      />
-                      <span className="text-lg ml-1">
-                        {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
-                      </span>
-                      <Save className="w-5 h-5 text-gray-600" />
-                    </label>
+                    <>
+                      <button
+                        className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+                        onClick={onClose}
+                      >
+                        <X className="w-7 h-7" />
+                      </button>
+                      <label className="mt-2 ml-2 cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100 w-fit">
+                        <span className="sr-only">Choose file</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileChange}
+                          className="hidden"
+                        />
+                        <span className="text-lg ml-1">
+                          {fullProduct.imageId ? "Άλλαξε εικόνα" : "Ανέβασε εικόνα"}
+                        </span>
+                        <Save className="w-5 h-5 text-gray-600" />
+                      </label>
+                    </>
                   )}
                 </>
               )}

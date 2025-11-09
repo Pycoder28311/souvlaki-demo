@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronRight, Trash2, Edit2, Plus, Pencil } from "lucide-react";
+import { ChevronDown, ChevronRight, Trash2, Plus, Pencil } from "lucide-react";
 import { Product, Ingredient, Option, IngCategory } from "../../types";
 
 interface ProductDetailProps {
@@ -75,7 +75,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         </p>
       </div>
 
-      <p className="text-gray-700 text-base leading-relaxed mb-4">
+      <p className="text-gray-700 text-lg sm:text-base leading-relaxed mb-4 px-2">
         {fullProduct.description}
       </p>
 
@@ -336,15 +336,20 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
         <div className="flex justify-between mt-4">
           <button
             onClick={handleAddCategory}
-            className="px-2 py-2 flex items-center gap-2 mr-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base"
+            className="px-4 py-2 flex items-center gap-2 mr-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base sm:text-base text-lg"
           >
-            <Plus className="w-5 h-5" /> <p>Προσθήκη Κατηγορίας</p>
+            <Plus className="w-5 h-5" />
+            <p className="block sm:hidden text-lg">Κατηγορία</p>
+            <p className="hidden sm:block">Προσθήκη Κατηγορίας</p>
           </button>
+
           <button
             onClick={handleAddOption}
-            className="px-2 py-2 flex items-center gap-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base"
+            className="px-4 py-2 flex items-center gap-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 text-base sm:text-base text-lg"
           >
-            <Plus className="w-5 h-5" /> <p>Προσθήκη Επιλογής</p>
+            <Plus className="w-5 h-5" />
+            <p className="block sm:hidden text-lg">Επιλογή</p>
+            <p className="hidden sm:block">Προσθήκη Επιλογής</p>
           </button>
         </div>
       )}

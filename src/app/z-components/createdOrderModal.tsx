@@ -30,7 +30,7 @@ export default function CreatedOrderModal() {
       return () => {
         evtSource.close();
       };
-  }, []);
+  }, [setDefaultTime, user?.defaultTime]);
 
   const handlePrint = (order: Order): Promise<void> => {
     return new Promise((resolve, reject) => {

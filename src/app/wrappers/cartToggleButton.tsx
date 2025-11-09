@@ -32,7 +32,7 @@ export default function CartToggleButton() {
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
-  }, [isSidebarOpen, setIsSidebarOpen]);
+  }, [isSidebarOpen, setIsSidebarOpen, user?.business]);
 
   if (isSidebarOpen || cartMessage === "Φόρτωση..." || user?.business) return;
 

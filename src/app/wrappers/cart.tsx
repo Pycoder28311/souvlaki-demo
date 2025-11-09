@@ -86,6 +86,7 @@ export default function OrderSidebar({
       scrollbarColor: "#facc15 #e5e7eb", // yellow-400 thumb, gray-200 track
     }}
   >
+    <div className="hidden">{warning}</div>
       <CartBody
         setEditableOrderItem={setEditableOrderItem}
         expandedItems={expandedItems}

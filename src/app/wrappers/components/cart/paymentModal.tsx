@@ -1,6 +1,6 @@
 // PaymentModal.tsx
 import { FC } from "react";
-import { ArrowLeft, Edit2, Check, X, ChevronUp, ChevronDown, Pencil } from "lucide-react";
+import { ArrowLeft, Check, X, ChevronUp, ChevronDown, Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCart } from "../../cartContext";
 import {

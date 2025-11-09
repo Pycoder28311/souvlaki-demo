@@ -170,7 +170,7 @@ export default function CheckoutPage({
     };
 
     createPaymentIntent();
-  }, []);
+  });
 
   const options = { clientSecret, 
     appearance: {

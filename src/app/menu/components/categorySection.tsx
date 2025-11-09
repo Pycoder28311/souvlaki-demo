@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { Edit2, Pencil, Plus } from "lucide-react";
+import { Pencil, Plus } from "lucide-react";
 import { Product, Category } from "../../types"; // import your types
 
 interface CategorySectionProps {
@@ -16,25 +16,37 @@ interface CategorySectionProps {
 }
 
 function isCategoryAvailable(openHour?: string, closeHour?: string): boolean {
-  if (!openHour || !closeHour) return true // treat as always available
-  const now = new Date()
-  const [oh, om] = openHour.split(":").map(Number)
-  const [ch, cm] = closeHour.split(":").map(Number)
-  const open = oh * 60 + om
-  const close = ch * 60 + cm
-  const current = now.getHours() * 60 + now.getMinutes()
-  return current >= open && current < close
+  if (!openHour || !closeHour) return true; // treat as always available
+
+  const now = new Date();
+  const [oh, om] = openHour.split(":").map(Number);
+  const [ch, cm] = closeHour.split(":").map(Number);
+
+  const open = oh * 60 + om;
+  const close = ch * 60 + cm;
+  const current = now.getHours() * 60 + now.getMinutes();
+
+  // Treat 23:59 as "available until midnight"
+  if (ch === 23 && cm === 59) return current >= open;
+
+  return current >= open && current < close;
 }
 
 function isProductAvailable(product: Product): boolean {
-  if (!product.openHour || !product.closeHour) return true // treat as always available
-  const now = new Date()
-  const [oh, om] = product.openHour.split(":").map(Number)
-  const [ch, cm] = product.closeHour.split(":").map(Number)
-  const open = oh * 60 + om
-  const close = ch * 60 + cm
-  const current = now.getHours() * 60 + now.getMinutes()
-  return current >= open && current < close
+  if (!product.openHour || !product.closeHour) return true; // treat as always available
+
+  const now = new Date();
+  const [oh, om] = product.openHour.split(":").map(Number);
+  const [ch, cm] = product.closeHour.split(":").map(Number);
+
+  const open = oh * 60 + om;
+  const close = ch * 60 + cm;
+  const current = now.getHours() * 60 + now.getMinutes();
+
+  // Treat 23:59 as "available until midnight"
+  if (ch === 23 && cm === 59) return current >= open;
+
+  return current >= open && current < close;
 }
 
 const CategorySection: React.FC<CategorySectionProps> = ({

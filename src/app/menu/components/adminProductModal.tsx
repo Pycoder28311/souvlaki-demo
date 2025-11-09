@@ -2,8 +2,7 @@
 
 import React, { RefObject, useState, useEffect } from "react";
 import { Product } from "../../types"; // make sure you import your interface
-import { Edit2, Pencil, Save, Trash2, X } from "lucide-react";
-import { Check, Tag } from "lucide-react";
+import { Pencil, Save, Trash2, X } from "lucide-react";
 import { FormEvent } from "react";
 
 interface AdminProductModalProps {
@@ -184,7 +183,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 w-full justify-between mb-4">
-          <div className="flex items-start justify-center">
+          <div className="flex items-start justify-start md:justify-center">
             {editingPriceId === product.id ? (
               <div className="flex items-center gap-2">
                 <span className="text-gray-800 font-semibold">Τιμή:</span>
@@ -210,7 +209,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex items-center w-full gap-2 justify-center">
+              <div className="flex items-center w-full gap-2 justify-start md:justify-center">
                 <span className="text-gray-800 font-semibold">Τιμή: {Number(price).toFixed(2)} €</span>
                 <button
                   onClick={() => {
@@ -239,13 +238,13 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                       setIsEditingOffer(true);
                     }
                   }}
-                  className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600 w-full justify-center`}
+                  className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600 justify-start md:justify-center`}
                 >
                   {offer ? "Αφαίρεση Προσφοράς" : "Ορισμός ως Προσφορά"}
                 </button>
               </>
             ) : (
-              <div className="flex flex-row items-center gap-2 justify-center w-full">
+              <div className="flex flex-row items-center gap-2 justify-start md:justify-center">
                   <p>Νέα Τιμή:</p>
                   <input
                     type="number"
@@ -331,13 +330,15 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   <select
                     value={openMin}
                     onChange={(e) => setOpenMin(e.target.value)}
-                    className="border rounded p-2 w-24"
+                    className="border rounded p-2 flex-2"
                     aria-label="Ώρα έναρξης - λεπτά"
                   >
-                    {minuteOptions.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
+                    {minuteOptions
+                      .filter((m) => openHour === '23' || m !== '59')
+                      .map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
                     ))}
                   </select>
                 </div>
@@ -362,13 +363,15 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   <select
                     value={closeMin}
                     onChange={(e) => setCloseMin(e.target.value)}
-                    className="border rounded p-2 w-24"
+                    className="border rounded p-2 flex-2"
                     aria-label="Ώρα λήξης - λεπτά"
                   >
-                    {minuteOptions.map((m) => (
-                      <option key={m} value={m}>
-                        {m}
-                      </option>
+                    {minuteOptions
+                      .filter((m) => closeHour === '23' || m !== '59')
+                      .map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
                     ))}
                   </select>
                 </div>
@@ -381,7 +384,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
               className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
             >
               {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
-              <Save className="w-5 h-5 text-gray-100" />
+              <Save className="w-4 h-4 text-gray-100" />
             </button>
           </form>
         )}

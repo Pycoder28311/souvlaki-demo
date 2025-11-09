@@ -164,23 +164,25 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
         </div>
 
         <div className="flex flex-col gap-3">
-          <div className="flex justify-between w-full">
-            <button
-              onClick={() => moveCategory(category.id, "up")}
-              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform"
-            >
-              ▲ Πάνω
-            </button>
-            <button
-              onClick={() => moveCategory(category.id, "down")}
-              className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform"
-            >
-              ▼ Κάτω
-            </button>
+          <div className="flex flex-col sm:flex-row justify-between w-full gap-2 sm:gap-0">
+            <div className="flex justify-between w-full sm:w-auto gap-2">
+              <button
+                onClick={() => moveCategory(category.id, "up")}
+                className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform text-lg sm:text-base"
+              >
+                ▲ Πάνω
+              </button>
+              <button
+                onClick={() => moveCategory(category.id, "down")}
+                className="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300 transition-transform text-lg sm:text-base"
+              >
+                ▼ Κάτω
+              </button>
+            </div>
 
             <button
               onClick={saveCategoryPositions}
-              className="px-4 py-2 bg-blue-500 flex items-center justify-center gap-2 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium"
+              className="px-4 py-2 bg-blue-500 flex items-center justify-center gap-2 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium text-lg sm:text-base"
             >
               Ενημέρωση Θέσεων
               <Save className="w-5 h-5 text-gray-100" />
@@ -264,14 +266,16 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
                     <select
                       value={openMin}
                       onChange={(e) => setOpenMin(e.target.value)}
-                      className="border rounded p-2 w-24"
+                      className="border rounded p-2 flex-2"
                       aria-label="Ώρα έναρξης - λεπτά"
                     >
-                      {minuteOptions.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
-                      ))}
+                      {minuteOptions
+                        .filter((m) => openHour === '23' || m !== '59')
+                        .map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 </label>
@@ -295,13 +299,15 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
                     <select
                       value={closeMin}
                       onChange={(e) => setCloseMin(e.target.value)}
-                      className="border rounded p-2 w-24"
+                      className="border rounded p-2 flex-2"
                       aria-label="Ώρα λήξης - λεπτά"
                     >
-                      {minuteOptions.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
-                        </option>
+                      {minuteOptions
+                        .filter((m) => closeHour === '23' || m !== '59')
+                        .map((m) => (
+                          <option key={m} value={m}>
+                            {m}
+                          </option>
                       ))}
                     </select>
                   </div>

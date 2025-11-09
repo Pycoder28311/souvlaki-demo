@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, X, Edit2, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { ShoppingCart, X, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
 import {
   handleCheckHours,

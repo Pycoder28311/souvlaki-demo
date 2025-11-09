@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Head from 'next/head';
 import ProductModal from "./productModal";
 import { useCart } from "../wrappers/cartContext";
-import { Plus, Search, X, Save} from "lucide-react";
+import { Plus, Search, X } from "lucide-react";
 import { Product, Category } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
@@ -696,7 +696,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryClick(cat.id)}
-                    className={`inline-block px-4 py-2 font-bold transition-all flex-shrink-0 mx-2 rounded-lg ${
+                    className={`inline-block px-4 py-2 font-bold transition-all flex-shrink-0 mx-0 mr-2 md:mx-2 md:mr-0 rounded-lg ${
                       activeCategory === cat.id
                         ? "bg-gray-900 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -748,7 +748,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
                 {/* Search toggle */}
                 <button
                   onClick={() => setShowSearch((prev) => !prev)}
-                  className="ml-4 p-2 rounded-lg hover:bg-gray-100"
+                  className="p-2 rounded-lg hover:bg-gray-100"
                 >
                   {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
                 </button>
@@ -809,37 +809,40 @@ export default function Menu({ categories: initialCategories, business }: { cate
       {business && (
         <div className="w-full flex flex-col items-center mt-4 mb-4 gap-2">
           {isCreating ? (
-            <div className="flex gap-2 w-full justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center items-center px-6">
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Όνομα νέας κατηγορίας"
-                className="border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400 w-64"
+                className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400 w-full md:w-64 text-xl sm:text-base"
               />
-              <button
-                onClick={handleCreateCategory}
-                disabled={isSaving}
-                className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
-              >
-                Αποθήκευση <Save size={18} />
-              </button>
-              <button
-                onClick={() => {
-                  setIsCreating(false);
-                  setName("");
-                }}
-                className="bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-4 py-2 flex items-center gap-2 transition-all"
-              >
-                Ακύρωση <X size={18} />
-              </button>
+
+              <div className="flex flex-row sm:flex-row gap-2">
+                <button
+                  onClick={handleCreateCategory}
+                  disabled={isSaving}
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center gap-2 transition-all text-lg sm:text-base"
+                >
+                  Προσθήκη <Plus size={20} />
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCreating(false);
+                    setName("");
+                  }}
+                  className="bg-gray-200 hover:bg-gray-300 text-black rounded-lg px-4 py-2 flex items-center gap-2 transition-all text-lg sm:text-base"
+                >
+                  Ακύρωση <X size={20} />
+                </button>
+              </div>
             </div>
           ) : (
             <button
               onClick={() => setIsCreating(true)}
               className="rounded-lg px-4 py-2 font-bold text-white flex items-center gap-2 text-lg bg-blue-500 hover:bg-blue-600 transition-all"
             >
-              <Plus size={18} /> Δημιουργία Κατηγορίας
+              Δημιουργία Κατηγορίας <Plus size={18} />
             </button>
           )}
         </div>

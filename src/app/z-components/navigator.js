@@ -155,7 +155,7 @@ export default function Navbar({scrolled = false, isLive }) {
             <div>
               <button
                 onClick={handleClick}
-                className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 focus:outline-none"
+                className="relative w-10 h-10 rounded-full overflow-hidden border-2 border-gray-300 focus:outline-none mr-2"
                 aria-label={sidebarOpen ? "Close profile sidebar" : "Open profile sidebar"}
               >
                 <span className="w-full h-full flex items-center justify-center bg-gray-300 text-white font-bold">
@@ -290,7 +290,8 @@ export default function Navbar({scrolled = false, isLive }) {
             <li>
               <Link
                 href="/profile"
-                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
+                className={`px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base
+                  ${business ? "hidden sm:block lg:block" : "block"}`}
               >
                 Προφίλ
               </Link>
@@ -329,6 +330,14 @@ export default function Navbar({scrolled = false, isLive }) {
                     Διαχείρηση Ωραρίου
                   </Link>
                 </li>
+                <li>
+              <Link
+                href="/profile"
+                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
+              >
+                Ρυθμίσεις
+              </Link>
+            </li>
               </>
             )}
             {!business && (
