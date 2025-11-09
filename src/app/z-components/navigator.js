@@ -287,15 +287,16 @@ export default function Navbar({scrolled = false, isLive }) {
 
           {/* Links */}
           <ul className="flex-1 flex flex-col gap-3">
-            <li>
-              <Link
-                href="/profile"
-                className={`px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base
-                  ${business ? "hidden sm:block lg:block" : "block"}`}
-              >
-                Προφίλ
-              </Link>
-            </li>
+            {!business && (
+              <li>
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
+                >
+                  Προφίλ
+                </Link>
+              </li>
+            )}
             {business && (
               <>
                 <li>
@@ -331,13 +332,13 @@ export default function Navbar({scrolled = false, isLive }) {
                   </Link>
                 </li>
                 <li>
-              <Link
-                href="/profile"
-                className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
-              >
-                Ρυθμίσεις
-              </Link>
-            </li>
+                  <Link
+                    href="/profile"
+                    className="block px-4 py-2 rounded-md hover:bg-yellow-100 hover:text-yellow-600 transition text-xl lg:text-base"
+                  >
+                    Ρυθμίσεις
+                  </Link>
+                </li>
               </>
             )}
             {!business && (
