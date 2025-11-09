@@ -9,15 +9,26 @@ import { useCart } from "../wrappers/cartContext";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import isEqual from "lodash.isequal";
 
+interface ProductWithCategory extends Product {
+  category: {
+    id: number;
+    name: string;
+    openHour: string;
+    closeHour: string;
+    alwaysClosed: boolean;
+  };
+}
+
 type ModalProps = {
   business?: boolean;
   product: Product | null;
   onClose: () => void;
   addToCart: (product: Product, selectedIngredients: Ingredient[], selectedIngCategories: IngCategory[], selectedOptions: Option[], options: Option[]) => void;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories?: React.Dispatch<React.SetStateAction<Category[]>>;
+  setMenuItems?: React.Dispatch<React.SetStateAction<ProductWithCategory[]>>
 };
 
-export default function ProductModal({ business, product, onClose, addToCart, setCategories }: ModalProps) {
+export default function ProductModal({ business, product, onClose, addToCart, setCategories, setMenuItems }: ModalProps) {
   const [loading, setLoading] = useState(false);
   const [loadingSave, setLoadingSave] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
@@ -528,6 +539,7 @@ export default function ProductModal({ business, product, onClose, addToCart, se
                 handleAddCategory={handleAddCategory}
                 handleAddOption={handleAddOption}
                 setCategories={setCategories}
+                setMenuItems={setMenuItems}
               />
             </>
           )}

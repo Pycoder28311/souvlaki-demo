@@ -6,6 +6,16 @@ import { ChevronDown, ChevronRight, Trash2, Plus, Pencil } from "lucide-react";
 import { Product, Ingredient, Option, IngCategory, Category } from "../../types";
 import { Save } from "lucide-react";
 
+interface ProductWithCategory extends Product {
+  category: {
+    id: number;
+    name: string;
+    openHour: string;
+    closeHour: string;
+    alwaysClosed: boolean;
+  };
+}
+
 interface ProductDetailProps {
   fullProduct: Product;
   business?: boolean;
@@ -31,7 +41,8 @@ interface ProductDetailProps {
   handleDeleteOption: (optId: number) => void;
   handleAddCategory: () => void;
   handleAddOption: () => void;
-  setCategories: React.Dispatch<React.SetStateAction<Category[]>>;
+  setCategories?: React.Dispatch<React.SetStateAction<Category[]>>;
+  setMenuItems?: React.Dispatch<React.SetStateAction<ProductWithCategory[]>>
 }
 
 const ProductDetail: React.FC<ProductDetailProps> = ({
@@ -60,6 +71,7 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   handleAddCategory,
   handleAddOption,
   setCategories,
+  setMenuItems,
 }) => {
   const [isEditingName, setIsEditingName] = useState(false);
   const [name, setName] = useState(fullProduct.name);
@@ -103,20 +115,33 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
     setLoading(true);
     try {
       const updated = await apiUpdateName(fullProduct.id, name, field);
-      setCategories((prevCategories) =>
-        prevCategories.map((cat) => {
-          // If the category contains the product, update it
-          if (cat.products.some((prod) => prod.id === fullProduct.id)) {
-            return {
-              ...cat,
-              products: cat.products.map((prod) =>
-                prod.id === fullProduct.id ? { ...prod, [field]: updated.data[field] } : prod
-              ),
-            };
-          }
-          return cat;
-        })
-      );
+      if (typeof setCategories === "function") {
+        // Update inside categories (each has a 'products' array)
+        setCategories((prevCategories) =>
+          prevCategories.map((cat) => {
+            if (cat.products.some((prod) => prod.id === fullProduct.id)) {
+              return {
+                ...cat,
+                products: cat.products.map((prod) =>
+                  prod.id === fullProduct.id
+                    ? { ...prod, [field]: updated.data[field] }
+                    : prod
+                ),
+              };
+            }
+            return cat;
+          })
+        );
+      } else if (typeof setMenuItems === "function") {
+        // Update flat list of products
+        setMenuItems((prevItems) =>
+          prevItems.map((prod) =>
+            prod.id === fullProduct.id
+              ? { ...prod, [field]: updated.data[field] }
+              : prod
+          )
+        );
+      }
       if (field === "name") setIsEditingName(false);
       if (field === "description") setIsEditingDescription(false);
     } catch (err) {
@@ -159,16 +184,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             <h2 className="text-4xl font-bold">{name}</h2>
           )}
 
-          <button
-            onClick={(e) =>
-              isEditingName ? handleSave("name") : handleEditClick(e, "name")
-            }
-            className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-black"
-            title={isEditingName ? "Αποθήκευση" : "Επεξεργασία"}
-            disabled={loading}
-          >
-            {isEditingName ? <Save size={20} /> : <Pencil size={20} />}
-          </button>
+          {business && (
+            <button
+              onClick={(e) =>
+                isEditingName ? handleSave("name") : handleEditClick(e, "name")
+              }
+              className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-black"
+              title={isEditingName ? "Αποθήκευση" : "Επεξεργασία"}
+              disabled={loading}
+            >
+              {isEditingName ? <Save size={20} /> : <Pencil size={20} />}
+            </button>
+          )}
         </div>
 
         <p className="font-bold text-yellow-600 text-2xl mt-2 sm:mt-0 flex items-center gap-2">
@@ -201,16 +228,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
             {description}
           </p>
         )}
-
-        <button
-          onClick={(e) => (isEditingDescription ? handleSave("description") : handleEditClick(e, "description"))}
-          className="flex items-center gap-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-black text-md gap-2 transition-shadow shadow-sm w-fit"
-          title={isEditingDescription ? "Αποθήκευση" : "Επεξεργασία"}
-          disabled={loading}
-        >
-          <span>{isEditingDescription ? "Αποθήκευση" : "Επεξεργασία Περιγραφής"}</span>
-          {isEditingDescription ? <Save size={16} /> : <Pencil size={16} />}
-        </button>
+        
+        {business && (
+          <button
+            onClick={(e) => (isEditingDescription ? handleSave("description") : handleEditClick(e, "description"))}
+            className="flex items-center gap-1 px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded-lg text-black text-md gap-2 transition-shadow shadow-sm w-fit"
+            title={isEditingDescription ? "Αποθήκευση" : "Επεξεργασία"}
+            disabled={loading}
+          >
+            <span>{isEditingDescription ? "Αποθήκευση" : "Επεξεργασία Περιγραφής"}</span>
+            {isEditingDescription ? <Save size={16} /> : <Pencil size={16} />}
+          </button>
+        )}
       </div>
 
       {/* Ingredient Categories */}

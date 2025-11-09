@@ -178,16 +178,18 @@ export default function EditModal({
                       className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
                         ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
                     >
-                      <div className="flex items-center gap-2">
-                        {open ? (
-                          <ChevronDown className="w-5 h-5 text-gray-600" />
-                        ) : (
-                          <ChevronRight className="w-5 h-5 text-gray-600" />
-                        )}
-                        <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <div className="flex items-center gap-2">
+                          {open ? (
+                            <ChevronDown className="w-5 h-5 text-gray-600" />
+                          ) : (
+                            <ChevronRight className="w-5 h-5 text-gray-600" />
+                          )}
+                          <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                        </div>
                         {ingCat.isRequired && (
-                          <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
-                            Υποχρωτικό
+                          <span className="ml-6 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded sm:ml-2 sm:mt-0 w-fit">
+                            Υποχρεωτικό
                           </span>
                         )}
                       </div>

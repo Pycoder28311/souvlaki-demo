@@ -175,6 +175,7 @@ export default function MenuGrid({
           product={selectedProduct}
           onClose={() => setSelectedProduct(null)}
           addToCart={addToCart}
+          setMenuItems={setMenuItems}
         />
       )}
     </div>
