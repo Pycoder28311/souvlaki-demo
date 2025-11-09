@@ -475,14 +475,15 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                 </div>
               ) : (
                 <>
+                  <div className="h-8">
+                    <button
+                      className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+                      onClick={onClose}
+                    >
+                      <X className="w-7 h-7" />
+                    </button>
+                  </div>
                   {business && (
-                    <>
-                      <button
-                        className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
-                        onClick={onClose}
-                      >
-                        <X className="w-7 h-7" />
-                      </button>
                       <label className="mt-2 ml-2 cursor-pointer bg-white rounded-lg p-2 shadow-md flex items-center gap-2 hover:bg-gray-100 w-fit">
                         <span className="sr-only">Choose file</span>
                         <input
@@ -496,11 +497,10 @@ export default function ProductModal({ business, product, onClose, addToCart }: 
                         </span>
                         <Save className="w-5 h-5 text-gray-600" />
                       </label>
-                    </>
                   )}
                 </>
               )}
-
+              
               <ProductDetail
                 fullProduct={fullProduct}
                 business={business}

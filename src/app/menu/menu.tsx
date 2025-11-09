@@ -63,8 +63,8 @@ export default function Menu({ categories: initialCategories, business }: { cate
   const [isCreating, setIsCreating] = useState(false);
   const [name, setName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const [confirmingDeleteProduct, setConfirmingDeleteProduct] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState<number | null>(null);
+  const [confirmingDeleteProduct, setConfirmingDeleteProduct] = useState<number | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -686,9 +686,8 @@ export default function Menu({ categories: initialCategories, business }: { cate
         <div
           className={`transition-all duration-300`}
         >
-
             {/* Categories Buttons */}
-            <section className="sticky z-30 py-4 border-b bg-white top-[50px] p-6">
+            <section className="sticky z-30 py-3 border-b bg-white top-[55px] p-4">
               <div className={`flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center 
                 transition-all duration-300 ease-in-out
                 ${(categories.length <= 4 && !isMobile) ? (isSidebarOpen ? "ml-0" : "ml-40") : ""}`} ref={containerRef}>
@@ -748,7 +747,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
                 {/* Search toggle */}
                 <button
                   onClick={() => setShowSearch((prev) => !prev)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
+                  className="ml-2 md:ml-0 p-2 rounded-lg hover:bg-gray-100"
                 >
                   {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
                 </button>
@@ -756,10 +755,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
             </section>
 
             {showSearch && (
-              <div className=" w-full bg-white z-50 flex justify-start p-2 shadow-md">
+              <div className="w-full bg-white z-50 flex justify-start p-2 shadow-md">
                 <input
                   type="text"
-                  placeholder="Search products..."
+                  placeholder="Αναζήτηση..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full md:w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-gray-300"

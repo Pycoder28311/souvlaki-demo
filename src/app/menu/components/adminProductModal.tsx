@@ -15,8 +15,8 @@ interface AdminProductModalProps {
   onEditDescription: (id: number, newDescription: string) => void;
   onEditPrice: (id: number, newPrice: number) => void;
   handleSubmit: (e: React.FormEvent, openHour: string, openMin: string, closeHour: string, closeMin: string, setIsSaving: (isSaving: boolean) => void, product: Product, categoryId: number) => void;
-  confirmingDelete: boolean;
-  setConfirmingDelete: React.Dispatch<React.SetStateAction<boolean>>;
+  confirmingDelete: number | null;
+  setConfirmingDelete: React.Dispatch<React.SetStateAction<number | null>>;
   toggleProductAvailability: (productId: number, categoryId: number) => void;
 }
 
@@ -408,9 +408,9 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
         </div>
 
         <div className="flex items-center gap-2 mt-6">
-          {!confirmingDelete ? (
+          {confirmingDelete !== product.id ? (
             <button
-              onClick={() => setConfirmingDelete(true)}
+              onClick={() => setConfirmingDelete(product.id)}
               className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform font-medium"
             >
               Διαγραφή Προϊόντος
@@ -425,7 +425,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
                 Είστε σίγουροι;
               </button>
               <button
-                onClick={() => setConfirmingDelete(false)}
+                onClick={() => setConfirmingDelete(null)}
                 className="py-2 px-4 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
               >
                 Ακύρωση <X size={18} />

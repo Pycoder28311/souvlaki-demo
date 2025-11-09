@@ -71,7 +71,10 @@ export default function EditModal({
           sm:max-w-11/12 sm:h-auto sm:max-w-xl sm:rounded-lg sm:max-h-[90vh]
           relative overflow-y-auto
         "
-        onClick={handleContentClick}
+        onClick={handleContentClick} 
+        style={{
+          scrollbarWidth: 'none', // Firefox
+        }}
       >
 
         { orderItem && (
@@ -87,12 +90,14 @@ export default function EditModal({
                 />
               </div>
             )}
-            <button
-              className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
-              onClick={onClose}
-            >
-              <X className="w-7 h-7" />
-            </button>
+            <div className="h-8">
+              <button
+                className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
+                onClick={onClose}
+              >
+                <X className="w-7 h-7" />
+              </button>
+            </div>
             <div className="p-6">
               <div className="flex gap-4 mb-2">
                 <h2 className="text-2xl font-bold">{orderItem.name}</h2>
@@ -170,7 +175,8 @@ export default function EditModal({
                   >
                     <div
                       onClick={() => toggleCategory(ingCat.id)}
-                      className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                      className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
+                        ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
                     >
                       <div className="flex items-center gap-2">
                         {open ? (
@@ -227,7 +233,8 @@ export default function EditModal({
                     <div 
                       key={opt.id}
                       id={`opt-${opt.id}`} 
-                      className="flex justify-between items-center px-3 py-2 cursor-pointer bg-gray-100 rounded-t-lg hover:bg-gray-200 transition"
+                      className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
+                  ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
                       onClick={() =>
                         setOpenOptions((prev) => ({
                           ...prev,
