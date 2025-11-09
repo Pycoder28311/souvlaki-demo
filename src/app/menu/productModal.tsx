@@ -476,7 +476,7 @@ export default function ProductModal({ business, product, onClose, addToCart, se
                 </div>
               ) : (
                 <>
-                  <div className="h-8">
+                  <div className="h-0">
                     <button
                       className="absolute top-0 right-0 bg-white rounded-lg px-2 py-2 shadow-md flex items-center justify-center text-gray-700 text-4xl m-2"
                       onClick={onClose}

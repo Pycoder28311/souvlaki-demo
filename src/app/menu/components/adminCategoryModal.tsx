@@ -222,7 +222,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
                   if (isCreating) handleAddProduct(category.id);
                   else setIsCreating(true);
                 }}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-transform font-medium flex items-center justify-center"
+                className="flex-1 py-2 bg-blue-500 text-white text-lg rounded-lg hover:bg-blue-600 transition-transform font-medium flex items-center justify-center"
               >
                 {isCreating ? "Αποθήκευση" : "Δημιουργία Προϊόντος"}
                 {isCreating ? <Save size={18} className="inline ml-2" /> : <Plus size={18} className="inline ml-2" />}
@@ -235,7 +235,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
                     setDescription("");
                     setPrice("");
                   }}
-                  className="flex-1 py-2 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
+                  className="flex-1 py-2 bg-gray-200 text-black text-lg rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
                 >
                   Ακύρωση <X size={18} />
                 </button>
@@ -317,7 +317,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
               <button
                 type="submit"
                 disabled={isSaving}
-                className="bg-blue-500 flex items-center justify-center gap-2 text-white py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                className="bg-blue-500 flex items-center justify-center gap-2 text-white text-lg py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
               >
                 {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
                 <Save className="w-5 h-5 text-gray-100" />
@@ -347,7 +347,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             {confirmingDelete !== category.id ? (
               <button
                 onClick={() => setConfirmingDelete(category.id)}
-                className="w-full py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-transform font-medium"
+                className="w-full py-2 bg-red-500 text-white text-lg rounded-lg hover:bg-red-600 transition-transform font-medium"
               >
                 Διαγραφή Κατηγορίας
                 <Trash2 size={18} className="inline ml-2" />
@@ -356,13 +356,13 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
               <div className="flex w-full flex-row justify-center gap-2">
                 <button
                   onClick={() => handleDeleteCategory(category.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg"
+                  className="bg-red-500 hover:bg-red-600 text-white text-lg px-4 py-2 rounded-lg"
                 >
                   Είστε σίγουροι;
                 </button>
                 <button
                   onClick={() => setConfirmingDelete(null)}
-                  className="py-2 px-4 bg-gray-200 text-black rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
+                  className="py-2 px-4 bg-gray-200 text-black text-lg rounded-lg hover:bg-gray-300 transition-transform font-medium flex items-center gap-2 justify-center"
                 >
                   Ακύρωση <X size={18} />
                 </button>

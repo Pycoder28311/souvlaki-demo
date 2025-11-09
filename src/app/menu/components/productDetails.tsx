@@ -143,8 +143,8 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
   return (
     <div className="p-6">
       {/* Product Title & Price */}
-      <div className="flex justify-between mb-2 items-center">
-        <div className="flex justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:justify-between mb-2 sm:items-center">
+        <div className="flex justify-between gap-2 items-center">
           {isEditingName ? (
             <input
               type="text"
@@ -160,16 +160,18 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
           )}
 
           <button
-            onClick={(e) => isEditingName ? handleSave("name") : handleEditClick(e, "name")}
-            className="px-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-black"
+            onClick={(e) =>
+              isEditingName ? handleSave("name") : handleEditClick(e, "name")
+            }
+            className="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg text-black"
             title={isEditingName ? "Αποθήκευση" : "Επεξεργασία"}
             disabled={loading}
           >
             {isEditingName ? <Save size={20} /> : <Pencil size={20} />}
           </button>
         </div>
-        
-        <p className="font-bold text-yellow-600 text-2xl mt-0.5 flex items-center gap-2">
+
+        <p className="font-bold text-yellow-600 text-2xl mt-2 sm:mt-0 flex items-center gap-2">
           {fullProduct.offer && fullProduct.offerPrice ? (
             <>
               <span>{Number(fullProduct.price).toFixed(2)}€</span>
@@ -229,19 +231,23 @@ const ProductDetail: React.FC<ProductDetailProps> = ({
                 className={`flex justify-between items-center px-3 py-2 cursor-pointer transition 
                   ${open ? 'bg-gray-200 rounded-t-lg' : 'bg-gray-100 rounded-lg hover:bg-gray-200'}`}
               >
-                <div className="flex items-center gap-2">
-                  {open ? (
-                    <ChevronDown className="w-7 h-7 sm:w-5 sm:h-5 text-gray-600" />
-                  ) : (
-                    <ChevronRight className="w-7 h-7 sm:w-5 sm:h-5 text-gray-600" />
-                  )}
-                  <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <div className="flex items-center gap-2">
+                    {open ? (
+                      <ChevronDown className="w-7 h-7 sm:w-5 sm:h-5 text-gray-600" />
+                    ) : (
+                      <ChevronRight className="w-7 h-7 sm:w-5 sm:h-5 text-gray-600" />
+                    )}
+                    <h3 className="font-bold text-lg text-gray-800">{ingCat.name}</h3>
+                  </div>
+
                   {ingCat.isRequired && (
-                    <span className="ml-2 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded">
+                    <span className="ml-8 text-xs font-medium bg-orange-200 text-orange-800 px-2 py-0.5 rounded sm:ml-2 sm:mt-0 w-fit">
                       Υποχρεωτικό
                     </span>
                   )}
                 </div>
+
                 {business && (
                   <div
                     className="p-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
