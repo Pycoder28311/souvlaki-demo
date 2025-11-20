@@ -100,6 +100,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
             onClose={() => setEditableOrderItem(null)}
           />
         )}
+
       </>
       {showFooter && <Footer/>}
     </CartProvider>
