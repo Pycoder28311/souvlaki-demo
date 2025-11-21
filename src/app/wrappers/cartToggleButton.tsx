@@ -19,7 +19,7 @@ export default function CartToggleButton() {
     const sidebarState = { sidebarOpen: true };
     window.history.pushState(sidebarState, "");
 
-    const handlePopState = (event) => {
+    const handlePopState = (event: PopStateEvent) => {
       // Only close when the browser BACK button returns to this state
       if (event.state?.sidebarOpen) {
         setIsSidebarOpen(false);
