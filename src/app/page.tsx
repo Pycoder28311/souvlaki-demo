@@ -146,7 +146,7 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-bold mb-6">Αυθεντικά Ελληνικά Σουβλάκια</h1>
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">Γεύση που θυμίζει Ελλάδα. Φτιαγμένα με φρέσκα υλικά και παράδοση.</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link  href="/menu" className="bg-yellow-500 rounded-lg hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300">
+            <Link  href="/menu" className="bg-yellow-500 rounded-xl hover:bg-yellow-600 text-gray-900 px-8 py-4 font-bold text-lg transition-all duration-300">
               Δες το Μενού
             </Link>
           </div>

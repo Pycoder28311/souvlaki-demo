@@ -26,6 +26,28 @@ export default function Navbar({scrolled = false, isLive }) {
     : "text-white hover:text-yellow-300 transition-colors";
 
   useEffect(() => {
+    if (!sidebarOpen) return;
+    if (user?.business) return;
+
+    // Only on mobile
+    if (typeof window !== "undefined" && window.innerWidth > 768) return;
+
+    // Push a unique history state
+    const sidebarState = { sidebarOpen: true };
+    window.history.pushState(sidebarState, "");
+
+    const handlePopState = () => {
+      setSidebarOpen(false);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [sidebarOpen, setSidebarOpen, user?.business]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
 
     const handleScroll = () => {
@@ -269,13 +291,15 @@ export default function Navbar({scrolled = false, isLive }) {
           </div>
 
           {/* Header with Close Button */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-2 md:mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm flex items-center justify-center bg-gray-300 text-white font-bold text-lg">
+              <div className="w-12 h-12 rounded-full overflow-hidden shadow-sm 
+                flex items-center justify-center bg-gray-300 text-white font-bold text-lg
+                flex-shrink-0 hidden md:flex">
                 {user?.name?.charAt(0) || "U"}
               </div>
-              <div className="flex flex-col max-w-[200px]">
-                <h2 className="text-2xl lg:text-lg font-semibold text-gray-800 break-words">
+              <div className="flex flex-col max-w-[200px] pl-4 md:pl-0">
+                <h2 className="text-xl lg:text-lg font-semibold text-gray-800 break-words">
                   {user?.name}
                 </h2>
                 <p className=" text-lg lg:text-sm text-gray-500 break-words">
