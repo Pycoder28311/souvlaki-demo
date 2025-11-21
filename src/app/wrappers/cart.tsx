@@ -82,13 +82,12 @@ export default function OrderSidebar({
         fixed right-0 top-[55px] z-50
 
         /* MOBILE: instant show/hide */
-        ${isSidebarOpen ? "block" : "hidden"}
+        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
 
         /* DESKTOP: animate with translate */
-        md:block
-        md:transition-transform
-        md:duration-300
-        md:${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
+        md:fixed
+        md:transition-transform md:duration-300
+        ${isSidebarOpen ? "md:translate-x-0" : "md:translate-x-full"}
       `}
       style={{
         height: `calc(100vh - 55px)`,

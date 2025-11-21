@@ -80,7 +80,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
         {/* Address & Details */}
         {user?.address && (
           <div
-            className="text-gray-700 text-sm flex flex-col pt-0 px-2 overflow-x-hidden overflow-y-auto"
+            className="text-gray-700 text-sm flex flex-col pt-4 px-2 overflow-x-hidden overflow-y-auto"
             style={{
               height: "calc(100vh - 240px)", 
               scrollbarWidth: "thin",
