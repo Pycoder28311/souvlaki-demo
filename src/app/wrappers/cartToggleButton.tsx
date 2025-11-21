@@ -8,7 +8,30 @@ import { useEffect } from "react";
 export default function CartToggleButton() {
   const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user  } = useCart();
 
- 
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    if (user?.business) return;
+
+    // Only on mobile
+    if (typeof window !== "undefined" && window.innerWidth > 768) return;
+
+    // Push a unique history state
+    const sidebarState = { sidebarOpen: true };
+    window.history.pushState(sidebarState, "");
+
+    const handlePopState = (event) => {
+      // Only close when the browser BACK button returns to this state
+      if (event.state?.sidebarOpen) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isSidebarOpen, setIsSidebarOpen, user?.business]);
 
   if (isSidebarOpen || cartMessage === "Φόρτωση..." || user?.business) return;
 
