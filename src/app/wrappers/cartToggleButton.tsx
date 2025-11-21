@@ -19,7 +19,7 @@ export default function CartToggleButton() {
     const sidebarState = { sidebarOpen: true };
     window.history.pushState(sidebarState, "");
 
-    const handlePopState = (event: PopStateEvent) => {
+    const handlePopState = () => {
       setIsSidebarOpen(false);
     };
 
