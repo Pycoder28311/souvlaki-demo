@@ -48,6 +48,13 @@ export default function OrderSidebar({
   }, []);
 
   useEffect(() => {
+    if (!isSidebarOpen) {
+      setShowPaymentModal(false);
+      setPaymentWayModal(false);
+    }
+  }, [isSidebarOpen]);
+
+  useEffect(() => {
     if (!shopOpen) {
       setShowPaymentModal(false);
       setPaymentWayModal(false);
