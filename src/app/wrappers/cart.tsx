@@ -69,6 +69,17 @@ export default function OrderSidebar({
       }
     }
   }, [user, setAddress, user?.business, setSelectedFloor]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768); // Tailwind md breakpoint
+    };
+
+    handleResize(); // check on mount
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   if (!hydrated || user?.business) {
     return null;
@@ -82,7 +93,7 @@ export default function OrderSidebar({
         fixed right-0 top-[55px] z-50
 
         /* MOBILE: instant show/hide */
-        ${isSidebarOpen ? "flex" : "hidden"}
+        ${isMobile && !isSidebarOpen ? "hidden" : "flex"}
 
         /* DESKTOP: animate with translate */
         md:fixed
