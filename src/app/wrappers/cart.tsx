@@ -82,7 +82,7 @@ export default function OrderSidebar({
         fixed right-0 top-[55px] z-50
 
         /* MOBILE: instant show/hide */
-        ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
+        ${isSidebarOpen ? "flex" : "hidden"}
 
         /* DESKTOP: animate with translate */
         md:fixed
