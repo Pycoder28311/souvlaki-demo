@@ -80,9 +80,9 @@ const PaymentModal: FC<PaymentModalProps> = ({
         {/* Address & Details */}
         {user?.address && (
           <div
-            className="text-gray-700 text-sm flex flex-col pt-4 px-2 overflow-x-hidden overflow-y-auto"
+            className="text-gray-700 text-sm flex flex-col pt-0 px-2 overflow-x-hidden overflow-y-auto"
             style={{
-              height: "calc(100vh - 220px)", 
+              height: "calc(100vh - 240px)", 
               scrollbarWidth: "thin",
               scrollbarColor: "#a8a8a8ff #e5e7eb",
             }}
@@ -217,7 +217,7 @@ const PaymentModal: FC<PaymentModalProps> = ({
         )}
 
         {/* Footer */}
-        <div className="fixed bottom-18 sm:bottom-4 left-0 right-0 border-gray-300">
+        <div className="fixed bottom-4 left-0 right-0 border-gray-300">
           <div className="px-4">
             <p className="mt-4 px-1 font-bold text-gray-900 text-2xl">Σύνολο: {total.toFixed(2)}€</p>
             <button

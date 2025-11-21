@@ -77,25 +77,19 @@ export default function OrderSidebar({
   return (
     
     <div
-      className={`
-        flex flex-col h-full w-full md:w-80 bg-gray-100 border-l-2 border-yellow-400 shadow-lg 
-        fixed right-0 top-[55px] z-50
-
-        /* MOBILE: instant show/hide */
-        ${isSidebarOpen ? "block" : "hidden"}
-
-        /* DESKTOP: animate with translate */
-        md:block
-        md:transition-transform
-        md:duration-300
-        md:${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
-      `}
-      style={{
-        height: `calc(100vh - 55px)`,
-        scrollbarWidth: "thin",
-        scrollbarColor: "#facc15 #e5e7eb",
-      }}
-    >
+  className={`
+    flex flex-col h-full w-full md:w-80 bg-gray-100 border-l-2 border-yellow-400 shadow-lg
+    transition-transform duration-300
+    ${isSidebarOpen ? "translate-x-0" : "translate-x-full"}
+    fixed right-0 top-[55px] z-50
+    ${showPaymentModal ? "overflow-y-auto overflow-x-hidden" : ""}
+  `}
+  style={{
+    height: `calc(100vh - 55px)`, // αφαιρεί το header
+    scrollbarWidth: "thin",
+    scrollbarColor: "#facc15 #e5e7eb", // yellow-400 thumb, gray-200 track
+  }}
+>
     <div className="hidden">{warning}</div>
       <CartBody
         setEditableOrderItem={setEditableOrderItem}
