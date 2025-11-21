@@ -20,6 +20,16 @@ export default function CartToggleButton() {
     window.history.pushState(sidebarState, "");
 
     const handlePopState = () => {
+      const activeEl = document.activeElement;
+
+      // If an input is focused, do NOT close sidebar
+      if (
+        activeEl &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(activeEl.tagName)
+      ) {
+        return;
+      }
+
       setIsSidebarOpen(false);
     };
 
