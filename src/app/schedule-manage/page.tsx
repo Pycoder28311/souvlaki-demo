@@ -175,6 +175,15 @@ export default function ScheduleManager() {
         <h3 className="text-xl font-semibold mb-3">Εβδομαδιαίο ωράριο</h3>
         <div className="space-y-3">
           {weekly.map((day, i) => {
+            const greekDays: Record<string, string> = {
+              Monday: "Δευτέρα",
+              Tuesday: "Τρίτη",
+              Wednesday: "Τετάρτη",
+              Thursday: "Πέμπτη",
+              Friday: "Παρασκευή",
+              Saturday: "Σάββατο",
+              Sunday: "Κυριακή",
+            };
 
             const hasError =
               errors.includes(day.dayOfWeek) && !day.alwaysClosed;
@@ -186,7 +195,7 @@ export default function ScheduleManager() {
                   hasError ? "bg-red-50" : ""
                 }`}
               >
-                <div className="w-28 font-medium">{day.dayOfWeek}</div>
+                <div className="w-28 font-medium">{greekDays[day.dayOfWeek] ?? day.dayOfWeek}</div>
                 <div className="flex gap-2">
                   <input
                     type="time"
