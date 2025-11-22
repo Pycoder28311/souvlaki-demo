@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useCart } from "../wrappers/cartContext";
+import Intervals from "./intervalsEditor";
 
 type Weekday =
   | "Monday"
@@ -173,6 +174,7 @@ export default function ScheduleManager() {
       {/* Weekly schedule */}
       <div>
         <h3 className="text-xl font-semibold mb-3">Εβδομαδιαίο ωράριο</h3>
+        {/* <Intervals /> */}
         <div className="space-y-3">
           {weekly.map((day, i) => {
             const greekDays: Record<string, string> = {
