@@ -1,7 +1,10 @@
-import { useState } from "react";
+"use client";
+
+import { useState, useEffect } from "react";
 import { CustomTimePicker } from "./customTimePicker";
 
 interface TimeInterval {
+  id: number;
   open: string;
   close: string;
 }
@@ -13,42 +16,132 @@ const timeToMinutes = (time: string) => {
 };
 
 // Days of the week
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+export const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 export default function Intervals() {
   // Store intervals per day
   const [weeklyIntervals, setWeeklyIntervals] = useState<Record<string, TimeInterval[]>>(
-    () =>
-      DAYS.reduce((acc, day) => {
-        acc[day] = [{ open: "", close: "" }];
-        return acc;
-      }, {} as Record<string, TimeInterval[]>)
+    () => DAYS.reduce((acc, day) => {
+      acc[day] = [];
+      return acc;
+    }, {} as Record<string, TimeInterval[]>)
   );
 
+  useEffect(() => {
+    const fetchIntervals = async () => {
+      try {
+        const res = await fetch("/api/schedule-intervals");
+        if (!res.ok) throw new Error("Failed to fetch weekly intervals");
+
+        const data = await res.json();
+        setWeeklyIntervals(data.weeklyIntervals);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchIntervals();
+  }, []);
+
   // Update a specific interval for a day
-  const updateInterval = (day: string, index: number, field: "open" | "close", value: string) => {
-    setWeeklyIntervals((prev) => ({
-      ...prev,
-      [day]: prev[day].map((interval, i) =>
-        i === index ? { ...interval, [field]: value } : interval
-      ),
-    }));
+  const updateInterval = async (
+    day: string,
+    index: number,
+    field: "open" | "close",
+    value: string
+  ) => {
+    const intervalToUpdate = weeklyIntervals[day][index];
+
+    if (!intervalToUpdate?.id) {
+      console.error("Interval ID not found, cannot update in DB.");
+      return;
+    }
+
+    try {
+      // 1️⃣ Update interval in database
+      const res = await fetch("/api/schedule-intervals/interval", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: intervalToUpdate.id,
+          field,
+          value,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update interval");
+
+      const updatedInterval = await res.json();
+
+      // 2️⃣ Update local state
+      setWeeklyIntervals((prev) => ({
+        ...prev,
+        [day]: prev[day].map((interval, i) =>
+          i === index ? { ...interval, [field]: updatedInterval[field] } : interval
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating interval:", error);
+    }
   };
 
   // Add a new interval for a day
-  const addInterval = (day: string) => {
-    setWeeklyIntervals((prev) => ({
-      ...prev,
-      [day]: [...prev[day], { open: "", close: "" }],
-    }));
+  const addInterval = async (day: string) => {
+    try {
+      // 1️⃣ Create the interval in the database with default values
+      const res = await fetch(`/api/schedule-intervals/${day}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ open: "04:00", close: "04:00" }), // default times
+      });
+
+      if (!res.ok) throw new Error("Failed to create interval");
+
+      const data = await res.json();
+      const newInterval = {
+        id: data.interval.id,
+        open: data.interval.open,
+        close: data.interval.close,
+      };
+
+      // 2️⃣ Update local state
+      setWeeklyIntervals((prev) => ({
+        ...prev,
+        [day]: [...prev[day], newInterval],
+      }));
+    } catch (error) {
+      console.error("Error adding interval:", error);
+    }
   };
 
   // Remove an interval for a day
-  const removeInterval = (day: string, index: number) => {
-    setWeeklyIntervals((prev) => ({
-      ...prev,
-      [day]: prev[day].filter((_, i) => i !== index),
-    }));
+  const removeInterval = async (id: number, day: string) => {
+
+    try {
+      const res = await fetch("/api/schedule-intervals/interval", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      if (!res.ok) throw new Error("Failed to delete interval");
+
+      // Remove from local state
+      setWeeklyIntervals((prev) => ({
+        ...prev,
+        [day]: prev[day].filter((interval) => interval.id !== id),
+      }));
+    } catch (error) {
+      console.error("Error deleting interval:", error);
+    }
   };
 
   // Get disabled hours to prevent overlap within a day
@@ -92,7 +185,7 @@ export default function Intervals() {
         <div key={day} className="border p-4 rounded flex flex-col gap-4">
           <h2 className="font-bold text-lg">{day}</h2>
 
-          {weeklyIntervals[day].map((interval, index) => {
+          {weeklyIntervals && weeklyIntervals[day]?.length > 0 && weeklyIntervals[day].map((interval, index) => {
             const disabledOpenHours = getDisabledHours(weeklyIntervals[day], index, false);
             const disabledCloseHours = getDisabledHours(weeklyIntervals[day], index, true);
 
@@ -121,14 +214,12 @@ export default function Intervals() {
                   currentDay={day}
                 />
 
-                {weeklyIntervals[day].length > 1 && (
-                  <button
-                    className="absolute top-2 right-2 text-red-500 font-bold"
-                    onClick={() => removeInterval(day, index)}
-                  >
-                    ✕
-                  </button>
-                )}
+                <button
+                  className="px-2 py-1 bg-red-500 text-white rounded"
+                  onClick={() => removeInterval(interval.id, day)}
+                >
+                  Delete
+                </button>
               </div>
             );
           })}

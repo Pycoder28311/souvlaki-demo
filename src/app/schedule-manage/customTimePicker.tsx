@@ -128,18 +128,30 @@ export const CustomTimePicker = ({
                 onChange={(e) => setHour(e.target.value)}
               >
                 {Array.from({ length: 24 }).map((_, i) => {
-                  const shiftedHour = (i + 4) % 24; // schedule starts at 4AM
+                  const shiftedHour = (i + 4) % 24; // start at 4AM
                   const hStr = String(shiftedHour).padStart(2, "0");
 
                   let label = `${hStr}:00`;
-                  // If hour is 0–3 → show the next day
+
+                  // Show next day for 0–3
                   if (shiftedHour >= 0 && shiftedHour < 4 && currentDay) {
                     const nextDay = DAYS[(currentIndex + 1) % 7];
                     label += ` (${nextDay})`;
                   }
 
+                  // Disabled logic for open/close picker
+                  let disabled = false;
+                  if (isClosePicker && openHour) {
+                    const openH = parseInt(openHour.split(":")[0]);
+                    if (shiftedHour < openH) disabled = true;
+                  }
+                  if (!isClosePicker && closeHour) {
+                    const closeH = parseInt(closeHour.split(":")[0]);
+                    if (shiftedHour > closeH) disabled = true;
+                  }
+
                   return (
-                    <option key={i} value={hStr} disabled={isHourDisabled(shiftedHour)}>
+                    <option key={i} value={hStr} disabled={disabled}>
                       {label}
                     </option>
                   );

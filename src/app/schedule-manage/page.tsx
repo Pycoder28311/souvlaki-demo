@@ -13,7 +13,6 @@ type Weekday =
   | "Saturday"
   | "Sunday";
 
-
 interface Day {
   id: number;
   dayOfWeek: string;
@@ -174,7 +173,8 @@ export default function ScheduleManager() {
       {/* Weekly schedule */}
       <div>
         <h3 className="text-xl font-semibold mb-3">Εβδομαδιαίο ωράριο</h3>
-        {/* <Intervals /> */}
+            {/* Render the Intervals component for each day */}
+        <Intervals />
         <div className="space-y-3">
           {weekly.map((day, i) => {
             const greekDays: Record<string, string> = {
