@@ -684,7 +684,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
       <div className=" gap-4">
         {/* Main Content */}
         <div
-          className={`transition-all duration-300`}
+          className={`transition-all duration-300 ease-in-out`}
         >
             {/* Categories Buttons */}
             <section className="sticky z-30 py-3 border-b bg-white top-[55px] p-4">
@@ -773,7 +773,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
               style={{
                 transform:
                   isSidebarOpen || (isClient && screenWidth < 1024) // mobile & tablet (lg breakpoint)
-                    ? "translateX(0)"
+                    ? screenWidth > 1024 ? "translateX(12px)" : "translateX(0)"
                     : "translateX(20%)",
               }}
             > 
