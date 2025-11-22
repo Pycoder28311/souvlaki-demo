@@ -53,17 +53,12 @@ export default function Intervals() {
 
   // Update a specific interval for a day
   const updateInterval = async (
+    id: number,
     day: string,
     index: number,
     field: "open" | "close",
     value: string
   ) => {
-    const intervalToUpdate = weeklyIntervals[day][index];
-
-    if (!intervalToUpdate?.id) {
-      console.error("Interval ID not found, cannot update in DB.");
-      return;
-    }
 
     try {
       // 1️⃣ Update interval in database
@@ -71,7 +66,7 @@ export default function Intervals() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: intervalToUpdate.id,
+          id,
           field,
           value,
         }),
