@@ -300,26 +300,15 @@ model DateScheduleOverride {
 
 model Schedule {
   id        Int       @id @default(autoincrement())
-  day       DayOfWeek @unique
-  intervals Interval[]
+  day       String   @unique
+  intervals TimeInterval[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
 
-// Enum for days of the week
-enum DayOfWeek {
-  Monday
-  Tuesday
-  Wednesday
-  Thursday
-  Friday
-  Saturday
-  Sunday
-}
-
 // Each interval (open/close) for a schedule/day
-model Interval {
+model TimeInterval {
   id         Int      @id @default(autoincrement())
   schedule   Schedule @relation(fields: [scheduleId], references: [id])
   scheduleId Int

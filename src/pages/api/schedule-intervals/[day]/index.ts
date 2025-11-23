@@ -43,7 +43,7 @@ export default async function handler(
     }
 
     // Create interval
-    const interval = await prisma.interval.create({
+    const interval = await prisma.timeInterval.create({
       data: { scheduleId: schedule.id, open, close },
     });
 

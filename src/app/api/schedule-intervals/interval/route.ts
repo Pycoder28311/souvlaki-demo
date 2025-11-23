@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 export async function PUT(req: NextRequest) {
   const { id, open, close } = await req.json();
 
-  const updated = await prisma.interval.update({
+  const updated = await prisma.timeInterval.update({
     where: { id },
     data: { open, close },
   });
@@ -19,7 +19,7 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json();
   console.log(id)
 
-  await prisma.interval.delete({ where: { id } });
+  await prisma.timeInterval.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }
