@@ -189,7 +189,7 @@ export default function Intervals() {
                 <CustomTimePicker
                   label="Open Hour"
                   value={interval.open}
-                  onChange={(val) => updateInterval(day, index, "open", val)}
+                  onChange={(val) => updateInterval(interval.id, day, index, "open", val)}
                   placeholder="Select opening time"
                   hasError={!interval.open}
                   closeHour={interval.close}
@@ -200,7 +200,7 @@ export default function Intervals() {
                 <CustomTimePicker
                   label="Close Hour"
                   value={interval.close}
-                  onChange={(val) => updateInterval(day, index, "close", val)}
+                  onChange={(val) => updateInterval(interval.id, day, index, "close", val)}
                   placeholder="Select closing time"
                   hasError={!interval.close}
                   isClosePicker={true}
