@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { DayOfWeek } from "../../../../app/types";
 
 type Data =
-  | { interval: { id: number; scheduleId: number; open: string; close: string } }
+  | { interval: { id: number; scheduleId: number | null; open: string; close: string } }
   | { error: string };
 
 export default async function handler(

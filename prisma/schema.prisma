@@ -152,6 +152,7 @@ model Category {
   alwaysClosed Boolean      @default(false)
   
   products Product[]
+  intervals TimeInterval[]
 }
 
 model Product {
@@ -173,6 +174,7 @@ model Product {
   orderItems  OrderItem[]
   favorites   Favorite[]
   options     Options[]
+  intervals TimeInterval[]
 }
 
 model Options {
@@ -310,8 +312,16 @@ model Schedule {
 // Each interval (open/close) for a schedule/day
 model TimeInterval {
   id         Int      @id @default(autoincrement())
-  schedule   Schedule @relation(fields: [scheduleId], references: [id])
-  scheduleId Int
+
+  schedule   Schedule? @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  scheduleId Int?
+
+  product    Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  Int?
+
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId Int?
+
   open       String   // "HH:MM"
   close      String   // "HH:MM"
 }
