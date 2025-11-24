@@ -11,9 +11,6 @@ export default async function handler(req, res) {
             select: {
               id: true,
               name: true,
-              openHour: true,
-              closeHour: true,
-              alwaysClosed: true,
             },
           },
         },

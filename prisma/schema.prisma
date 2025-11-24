@@ -147,9 +147,6 @@ model Category {
   id       Int       @id @default(autoincrement())
   name     String
   position Int       @default(0)
-  openHour  String?  @default("00:00")
-  closeHour String?  @default("23:59")
-  alwaysClosed Boolean      @default(false)
   
   products Product[]
   intervals TimeInterval[]
@@ -165,9 +162,6 @@ model Product {
   image       Image?        @relation(fields: [imageId], references: [id], onDelete: Cascade)
   imageId     Int?          @unique
   description String?       @default("description")
-  openHour  String?  @default("00:00")
-  closeHour String?  @default("23:59")
-  alwaysClosed Boolean      @default(false)
 
   category    Category      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   ingCategories IngCategory[]

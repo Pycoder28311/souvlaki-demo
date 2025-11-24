@@ -1,9 +1,9 @@
 "use client";
 
-import React, { RefObject, useState, useEffect } from "react";
+import React, { RefObject, useState } from "react";
 import { Category } from "../../types"; // your Category interface
 import { X, Plus, Trash2, Save, Pencil } from "lucide-react";
-import { FormEvent } from "react";
+import Intervals from "@/app/schedule-manage/intervalsEditor";
 
 interface CategoryModalProps {
   category: Category;
@@ -14,14 +14,8 @@ interface CategoryModalProps {
   handleCreateProduct: (categoryId: number, name: string, description: string, price: number) => void;
   handleEditCategory: (categoryId: number, name: string) => void;
   handleDeleteCategory: (categoryId: number) => void;
-  toggleCategoryAvailability: (categoryId: number) => void;
-  handleSubmit: (e: React.FormEvent, openHour: string, openMin: string, closeHour: string, closeMin: string, setIsSaving: (isSaving: boolean) => void, category: Category) => void;
   confirmingDelete: number | null;
   setConfirmingDelete: React.Dispatch<React.SetStateAction<number | null>>;
-}
-
-function two(n: number): string {
-  return n < 10 ? '0' + n : String(n)
 }
 
 const AdminCategoryModal: React.FC<CategoryModalProps> = ({
@@ -33,53 +27,11 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
   handleCreateProduct,
   handleEditCategory,
   handleDeleteCategory,
-  toggleCategoryAvailability,
-  handleSubmit,
   confirmingDelete,
   setConfirmingDelete,
 }) => {
 
-  const minuteOptions = ['00', '15', '30', '45', '59']
-
-  // parse initial HH:MM into parts
-  const parse = (t?: string) => {
-    if (!t) return { hh: '09', mm: '00' }
-    const [hh = '09', mm = '00'] = t.split(':')
-    return { hh: two(Number(hh)), mm: mm.padStart(2, '0') }
-  }
-
-  const initOpen = parse(category?.openHour)
-  const initClose = parse(category?.closeHour)
-
-  const [openHour, setOpenHour] = useState(initOpen.hh)
-  const [openMin, setOpenMin] = useState(initOpen.mm)
-  const [closeHour, setCloseHour] = useState(initClose.hh)
-  const [closeMin, setCloseMin] = useState(initClose.mm)
-
-  const [isSaving, setIsSaving] = useState(false);
-  const handleFormSubmitWrapper = (e: FormEvent<HTMLFormElement>) => {
-    handleSubmit(
-      e,
-      openHour,
-      openMin,
-      closeHour,
-      closeMin,
-      setIsSaving,
-      category
-    );
-  };
-
-  const [availability, setAvailability] = useState(category.alwaysClosed)
-
-  useEffect(() => {
-    // if initialHours change, update state
-    const o = parse(category?.openHour)
-    const c = parse(category?.closeHour)
-    setOpenHour(o.hh); 
-    setOpenMin(o.mm)
-    setCloseHour(c.hh); 
-    setCloseMin(c.mm)
-  }, [category?.openHour, category?.closeHour])
+  const [intervals, setIntervals] = useState(category.intervals)
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(category.name);
@@ -105,7 +57,6 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
   };
 
   // generate hour options 00-23
-  const hours = Array.from({ length: 24 }).map((_, i) => two(i))
   if (!category) return null;
 
   return (
@@ -242,106 +193,8 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
               )}
             </div>
           </div>
-          
-          {!availability && (
-            <form onSubmit={handleFormSubmitWrapper} className="flex flex-col gap-4 max-w-full">
-              <p className="text-md font-semibold text-start mt-4">Διαθεσιμότητα</p>
-              <div className="flex gap-4">
-                <label className="flex flex-col flex-1">
-                  <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Έναρξης</span>
-                  <div className="flex gap-2">
-                    <select
-                      value={openHour}
-                      onChange={(e) => setOpenHour(e.target.value)}
-                      className="border rounded p-2 flex-1"
-                      aria-label="Ώρα έναρξης - ώρα"
-                    >
-                      {hours.map((h) => (
-                        <option key={h} value={h}>
-                          {h}
-                        </option>
-                      ))}
-                    </select>
 
-                    <select
-                      value={openMin}
-                      onChange={(e) => setOpenMin(e.target.value)}
-                      className="border rounded p-2 flex-2"
-                      aria-label="Ώρα έναρξης - λεπτά"
-                    >
-                      {minuteOptions
-                        .filter((m) => openHour === '23' || m !== '59')
-                        .map((m) => (
-                          <option key={m} value={m}>
-                            {m}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </label>
-
-                <label className="flex flex-col flex-1">
-                  <span className="mb-1 text-sm font-medium text-gray-700">Ώρα Λήξης</span>
-                  <div className="flex gap-2">
-                    <select
-                      value={closeHour}
-                      onChange={(e) => setCloseHour(e.target.value)}
-                      className="border rounded p-2 flex-1"
-                      aria-label="Ώρα λήξης - ώρα"
-                    >
-                      {hours.map((h) => (
-                        <option key={h} value={h}>
-                          {h}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={closeMin}
-                      onChange={(e) => setCloseMin(e.target.value)}
-                      className="border rounded p-2 flex-2"
-                      aria-label="Ώρα λήξης - λεπτά"
-                    >
-                      {minuteOptions
-                        .filter((m) => closeHour === '23' || m !== '59')
-                        .map((m) => (
-                          <option key={m} value={m}>
-                            {m}
-                          </option>
-                      ))}
-                    </select>
-                  </div>
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSaving}
-                className="bg-blue-500 flex items-center justify-center gap-2 text-white text-lg py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50"
-              >
-                {isSaving ? 'Αποθήκευση...' : 'Αποθήκευση Ωραρίου'}
-                <Save className="w-5 h-5 text-gray-100" />
-              </button>
-            </form>
-          )}
-          
-          <div className="flex items-center w-full justify-between">
-            {openHour === '00' && openMin === '00' && closeHour === '23' && closeMin === '59' && !availability && (
-              <p className="text-green-600 text-sm font-medium">
-                Η κατηγορία είναι διαθέσιμη όλες τις ώρες
-              </p>
-            )}
-
-            <button
-              onClick={() => {toggleCategoryAvailability(category.id); setAvailability(!availability)}}
-              className={`rounded-lg transition text-blue-500 hover:underline hover:text-blue-600`}
-              title="Toggle Availability"
-            >
-              {availability
-                ? 'Διαθέσιμη τις ώρες που ορίζω' 
-                : 'Κάνε την μη διαθέσιμη'}
-            </button>
-          </div>
+          <Intervals days={["default"]} object="category" id={category.id} intervals={intervals} setIntervals={setIntervals}/>
 
           <div className="flex items-center gap-2 mt-4">
             {confirmingDelete !== category.id ? (

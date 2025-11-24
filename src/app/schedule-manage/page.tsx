@@ -37,7 +37,7 @@ export default function ScheduleManager() {
   const [overrides, setOverrides] = useState<Override[]>([]);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
-  const { user } = useCart();
+  const { user, weeklyIntervals, setWeeklyIntervals } = useCart();
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -174,7 +174,12 @@ export default function ScheduleManager() {
       <div>
         <h3 className="text-xl font-semibold mb-3">Εβδομαδιαίο ωράριο</h3>
             {/* Render the Intervals component for each day */}
-        <Intervals />
+        <Intervals
+          days={["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]}
+          object="week"
+          intervals={weeklyIntervals}
+          setIntervals={setWeeklyIntervals}
+        />
         <div className="space-y-3">
           {weekly.map((day, i) => {
             const greekDays: Record<string, string> = {

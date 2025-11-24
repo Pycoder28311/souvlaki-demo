@@ -48,6 +48,15 @@ export interface ImageType {
   createdAt: Date;
 }
 
+export type WeeklyIntervals = Record<string, Interval[]>;
+
+export interface Interval { 
+  id: number; 
+  open: string; 
+  close: string, 
+  isAfterMidnight: boolean 
+};
+
 export interface Product {
   id: number;
   name: string;
@@ -56,13 +65,11 @@ export interface Product {
   offer: boolean;
   offerPrice?: number;
   description: string;
-  openHour?: string;   // e.g. "09:00"
-  closeHour?: string;
-  alwaysClosed?: boolean;
   image?: ImageType | null;
   imageId?: number | null;
   ingCategories?: IngCategory[];
   options?: Option[];
+  intervals: WeeklyIntervals;
 }
 
 export interface OrderItem {
@@ -105,10 +112,8 @@ export interface Category {
   id: number;
   name: string;
   position?: number;
-  openHour?: string;   // e.g. "09:00"
-  closeHour?: string;
-  alwaysClosed?: boolean;
   products: Product[];
+  intervals: WeeklyIntervals;
 };
 
 // Enum for days of the week

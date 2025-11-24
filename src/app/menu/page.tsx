@@ -5,6 +5,8 @@ import { authOptions } from "../api/auth/authOptions";
 
 export const revalidate = 0;
 
+const DEFAULT_DAY = "default";
+
 export default async function DataPage() {
   // Get session user
   const session = await getServerSession(authOptions);
@@ -17,9 +19,13 @@ export default async function DataPage() {
     select: {
       id: true,
       name: true,
-      openHour: true,
-      closeHour: true,
-      alwaysClosed: true,
+      intervals: {
+        select: {
+          id: true,
+          open: true,
+          close: true,
+        },
+      },
       products: {
         select: {
           id: true,
@@ -28,9 +34,13 @@ export default async function DataPage() {
           offerPrice: true,
           offer: true,
           description: true,
-          openHour: true,
-          closeHour: true,
-          alwaysClosed: true,
+          intervals: {
+            select: {
+              id: true,
+              open: true,
+              close: true,
+            },
+          },
           image: {
             select: {
               id: true, // only fetch the image ID
@@ -44,8 +54,14 @@ export default async function DataPage() {
   // Convert Decimal to number and add imageId
   const categories = categoriesFromDb.map((category) => ({
     ...category,
-    openHour: category.openHour ?? undefined,
-    closeHour: category.closeHour ?? undefined,
+    intervals: {
+      [DEFAULT_DAY]: category.intervals.map((i) => ({
+        id: i.id,
+        open: i.open,
+        close: i.close,
+        isAfterMidnight: Number(i.close.split(":")[0]) < 4,
+      })),
+    },
     products: category.products.map((p) => ({
       ...p,
       categoryId: category.id,
@@ -54,8 +70,14 @@ export default async function DataPage() {
       imageId: p.image?.id ?? null,
       image: undefined,
       description: p.description ?? "",
-      openHour: p.openHour ?? undefined,
-      closeHour: p.closeHour ?? undefined,
+      intervals: {
+        [DEFAULT_DAY]: p.intervals?.map((i) => ({
+          id: i.id,
+          open: i.open,
+          close: i.close,
+          isAfterMidnight: Number(i.close.split(":")[0]) < 4,
+        })) ?? [],
+      },
     })),
   }));
 

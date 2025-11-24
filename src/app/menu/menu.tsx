@@ -9,7 +9,6 @@ import { Product, Category } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
 import CategorySection from "./components/categorySection";
-import { FormEvent } from "react";
 
 function useIsMobile(breakpoint = 768) {
   const [isMobile, setIsMobile] = useState(false);
@@ -514,156 +513,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
     }
   };
 
-  // Function defined outside JSX
-  const toggleCategoryAvailability = async (categoryId: number) => {
-    try {
-      // Toggle availability on backend
-      const res = await fetch(`/api/availability-categories/${categoryId}`, {
-        method: 'PUT',
-      });
-      if (!res.ok) throw new Error('Failed to toggle availability');
-
-      // Update frontend state
-      setCategories((prevCategories) =>
-        prevCategories.map((cat) =>
-          cat.id === categoryId ? { ...cat, alwaysClosed: !cat.alwaysClosed } : cat
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      alert('Σφάλμα κατά την αλλαγή της διαθεσιμότητας');
-    }
-  };
-
-  const handleSubmit = async (
-    e: FormEvent,
-    openHour: string,
-    openMin: string,
-    closeHour: string,
-    closeMin: string,
-    setIsSaving: (isSaving: boolean) => void,
-    category: Category
-  ) => {
-    e.preventDefault()
-
-    const open = `${openHour}:${openMin}`
-    const close = `${closeHour}:${closeMin}`
-
-    // simple validation: open < close? (optional)
-    const openT = parseInt(openHour) * 60 + parseInt(openMin)
-    const closeT = parseInt(closeHour) * 60 + parseInt(closeMin)
-    if (openT >= closeT) {
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      const res = await fetch(`/api/update-category-hours/${category.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ open, close }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Σφάλμα στο API')
-      }
-      setCategories((prevCategories) =>
-        prevCategories.map((cat) =>
-          cat.id === category.id ? { ...cat, openHour: open, closeHour: close } : cat
-        )
-      );
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const toggleProductAvailability = async (productId: number, categoryId: number) => {
-    try {
-      // Toggle availability on backend
-      const res = await fetch(`/api/availability-products/${productId}`, {
-        method: "PUT",
-      });
-      if (!res.ok) throw new Error("Failed to toggle availability");
-
-      // Assume API returns the updated product
-      const data = await res.json();
-
-      // Update frontend state
-      setCategories((prevCategories) =>
-        prevCategories.map((cat) =>
-          cat.id === categoryId
-            ? {
-                ...cat,
-                products: cat.products.map((prod) =>
-                  prod.id === productId ? { ...prod, ...data.product } : prod
-                ),
-              }
-            : cat
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      alert("Σφάλμα κατά την αλλαγή της διαθεσιμότητας");
-    }
-  };
-  
-  const handleSubmitProduct = async (
-    e: FormEvent,
-    openHour: string,
-    openMin: string,
-    closeHour: string,
-    closeMin: string,
-    setIsSaving: (isSaving: boolean) => void,
-    product: Product,
-    categoryId: number
-  ) => {
-    e.preventDefault()
-
-    const open = `${openHour}:${openMin}`
-    const close = `${closeHour}:${closeMin}`
-
-    // simple validation: open < close? (optional)
-    const openT = parseInt(openHour) * 60 + parseInt(openMin)
-    const closeT = parseInt(closeHour) * 60 + parseInt(closeMin)
-    if (openT >= closeT) {
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      const res = await fetch(`/api/update-product-hours/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ open, close }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err?.error || 'Σφάλμα στο API')
-      }
-      const data = await res.json();
-
-      // Update categories state
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === categoryId
-            ? {
-                ...cat,
-                products: cat.products.map((p) =>
-                  p.id === product.id ? { ...p, ...data.product } : p
-                ),
-              }
-            : cat
-        )
-      );
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -857,8 +706,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
           handleCreateProduct={handleCreateProduct}
           handleEditCategory={handleEditCategory}
           handleDeleteCategory={handleDeleteCategory}
-          toggleCategoryAvailability={toggleCategoryAvailability}
-          handleSubmit={handleSubmit}
           confirmingDelete={confirmingDelete}
           setConfirmingDelete={setConfirmingDelete}
         />
@@ -874,8 +721,6 @@ export default function Menu({ categories: initialCategories, business }: { cate
           onToggleOffer={toggleProductOffer}
           onEditDescription={setEditDescription}
           onEditPrice={setEditPrice}
-          toggleProductAvailability={toggleProductAvailability}
-          handleSubmit={handleSubmitProduct}
           confirmingDelete={confirmingDeleteProduct}
           setConfirmingDelete={setConfirmingDeleteProduct}
         />

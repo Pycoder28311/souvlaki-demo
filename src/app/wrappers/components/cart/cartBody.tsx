@@ -3,9 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, X, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
-import {
-  handleCheckHours,
-} from "../../functions/cart";
 import { useCart } from "../../cartContext";
 
 type Availability = {
@@ -18,9 +15,6 @@ interface CartBodyProps {
   expandedItems: Record<number, boolean>;
   setExpandedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   availabilityMap: Record<string, Availability>;
-  setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>;
-  setShowPaymentModal: (val: boolean) => void;
-  setPaymentWayModal: (val: boolean) => void;
   total: number;
   user: User | null;
   getUnavailableMessage: (reason?: string) => string;
@@ -31,9 +25,6 @@ const CartBody: React.FC<CartBodyProps> = ({
   expandedItems,
   setExpandedItems,
   availabilityMap,
-  setAvailabilityMap,
-  setShowPaymentModal,
-  setPaymentWayModal,
   total,
   getUnavailableMessage,
 }) => {
@@ -186,9 +177,6 @@ const CartBody: React.FC<CartBodyProps> = ({
           <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <button
-                onClick={() =>
-                  handleCheckHours(orderItems, availabilityMap, setAvailabilityMap, setShowPaymentModal, setPaymentWayModal)
-                }
                 className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
               >
                 Πλήρωμή {total.toFixed(2)}€

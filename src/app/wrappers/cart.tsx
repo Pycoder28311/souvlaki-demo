@@ -119,9 +119,6 @@ export default function OrderSidebar({
         expandedItems={expandedItems}
         setExpandedItems={setExpandedItems}
         availabilityMap={availabilityMap}
-        setAvailabilityMap={setAvailabilityMap}
-        setShowPaymentModal={setShowPaymentModal}
-        setPaymentWayModal={setPaymentWayModal}
         total={total}
         user={user}
         getUnavailableMessage={getUnavailableMessage}

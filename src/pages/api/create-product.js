@@ -34,6 +34,15 @@ export default async function handler(req, res) {
         category: {
           connect: { id: categoryId },
         },
+        intervals: {
+          create: {
+            open: "04:00",
+            close: "03:59",
+          },
+        },
+      },
+      include: {
+        intervals: true,
       },
     });
 

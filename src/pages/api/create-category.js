@@ -24,6 +24,15 @@ export default async function handler(req, res) {
       data: {
         name,
         position: maxPosition + 1,
+        intervals: {
+          create: {
+            open: "04:00",
+            close: "03:59",
+          },
+        },
+      },
+      include: {
+        intervals: true,
       },
     });
 

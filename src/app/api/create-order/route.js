@@ -59,7 +59,6 @@ export async function POST(req) {
         },
       },
     });
-    console.log(newOrder)
 
     // Emit event μέσω Socket.io αν υπάρχει
     const io = globalThis.io || req?.socket?.server?.io;

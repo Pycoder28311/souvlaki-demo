@@ -15,40 +15,6 @@ interface CategorySectionProps {
   setSelectedAdminProduct: (product: Product | null) => void;
 }
 
-function isCategoryAvailable(openHour?: string, closeHour?: string): boolean {
-  if (!openHour || !closeHour) return true; // treat as always available
-
-  const now = new Date();
-  const [oh, om] = openHour.split(":").map(Number);
-  const [ch, cm] = closeHour.split(":").map(Number);
-
-  const open = oh * 60 + om;
-  const close = ch * 60 + cm;
-  const current = now.getHours() * 60 + now.getMinutes();
-
-  // Treat 23:59 as "available until midnight"
-  if (ch === 23 && cm === 59) return current >= open;
-
-  return current >= open && current < close;
-}
-
-function isProductAvailable(product: Product): boolean {
-  if (!product.openHour || !product.closeHour) return true; // treat as always available
-
-  const now = new Date();
-  const [oh, om] = product.openHour.split(":").map(Number);
-  const [ch, cm] = product.closeHour.split(":").map(Number);
-
-  const open = oh * 60 + om;
-  const close = ch * 60 + cm;
-  const current = now.getHours() * 60 + now.getMinutes();
-
-  // Treat 23:59 as "available until midnight"
-  if (ch === 23 && cm === 59) return current >= open;
-
-  return current >= open && current < close;
-}
-
 const CategorySection: React.FC<CategorySectionProps> = ({
   category,
   products,
@@ -60,7 +26,6 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   selectedAdminProduct,
   setSelectedAdminProduct,
 }) => {
-  const available = isCategoryAvailable(category.openHour, category.closeHour);
 
   return (
     <section
@@ -89,32 +54,13 @@ const CategorySection: React.FC<CategorySectionProps> = ({
             </button>
           )}
         </div>
-
-        {/* Σημείωμα διαθεσιμότητας */}
-
-        {category.alwaysClosed ? (
-          <p className="text-red-600 text-base font-medium mt-2">
-            Μη διαθέσιμη
-          </p>
-        ) : (
-          <>
-            {!available && category.openHour && category.closeHour && (
-              <p className="text-red-600 text-base font-medium mt-2">
-                Διαθέσιμο από {category.openHour} έως {category.closeHour}
-              </p>
-            )}
-          </>
-        )}
       </div>
 
       {/* Products Grid */}
       <div
-        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6 ${
-          (available && !category.alwaysClosed) ? "opacity-100" : "opacity-60"
-        }`}>
+        className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6`}>
         {products.map((product) => {
-          const productAvailable = isProductAvailable(product);
-          const isClickable = business || ((available && !category.alwaysClosed) && (productAvailable && !product.alwaysClosed));
+          const isClickable = business ;
 
           return (
             <div
@@ -135,8 +81,6 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 <p className="text-sm text-red-500 font-semibold mb-1">
                   { !isClickable ? (
                       "Μη διαθέσιμο"
-                    ) : !productAvailable ? (
-                      `Διαθέσιμο από ${product.openHour} έως ${product.closeHour}`
                     ) : product.offer ? (
                       <span className="text-green-500">Προσφορά!</span>
                     ) : null

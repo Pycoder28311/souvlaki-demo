@@ -1,8 +1,9 @@
 "use client";
 
-import React, { createContext, useState, useEffect, useContext, useCallback} from "react";
-import { OrderItem, Product, Ingredient, IngCategory, Option, User } from "../types";
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { OrderItem, Product, Ingredient, IngCategory, Option, User, Interval } from "../types";
 import { usePathname } from "next/navigation";
+import { checkIntervalsNow } from "../utils/checkIntervals";
 
 type Schedule = {
   open: string | null;
@@ -42,6 +43,8 @@ interface CartContextType {
   setValidRadius: React.Dispatch<React.SetStateAction<number | null>>;
   shopOpen: boolean;
   cartMessage: string;
+  weeklyIntervals: WeeklyIntervals;
+  setWeeklyIntervals: React.Dispatch<React.SetStateAction<WeeklyIntervals>>;
 }
 
 type Weekday =
@@ -68,7 +71,6 @@ type Override = {
   recurringYearly: boolean;
 };
 
-type Interval = { id: number; open: string; close: string, isAfterMidnight: boolean };
 type WeeklyIntervals = Record<string, Interval[]>;
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -107,19 +109,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     Sunday: { open: null, close: null },
   });
 
-  const [weeklyIntervals, setWeeklyIntervals] = useState<WeeklyIntervals>({});
-  const [isOpenNow, setIsOpenNow] = useState(false);
+  // Define the days of the week
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+  // Initialize weeklyIntervals state
+  const [weeklyIntervals, setWeeklyIntervals] = useState<WeeklyIntervals>(
+    () =>
+      days.reduce((acc, day) => {
+        acc[day] = [];
+        return acc;
+      }, {} as WeeklyIntervals)
+  );
 
   // 1️⃣ Fetch intervals from API
   useEffect(() => {
     const fetchIntervals = async () => {
       try {
-        const res = await fetch("/api/schedule-intervals");
+        const res = await fetch("/api/schedule-intervals/read");
         if (!res.ok) throw new Error("Failed to fetch intervals");
 
         const data = await res.json();
         setWeeklyIntervals(data.weeklyIntervals || {});
-        console.log(data)
       } catch (err) {
         console.error(err);
       }
@@ -129,132 +139,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   useEffect(() => {
-    const checkIntervals = () => {
-      if (!weeklyIntervals) return;
-
-      const now = new Date();
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-      const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-      const todayIndex = now.getDay();
-      const today = DAYS[todayIndex];
-      const yesterday = DAYS[(todayIndex + 6) % 7];
-
-      // Intervals of today
-      const intervalsToday = weeklyIntervals[today] || [];
-
-      // Intervals from yesterday that go past midnight (00:00–03:59)
-      const intervalsFromYesterday = (weeklyIntervals[yesterday] || [])
-        .filter(interval => {
-          const closeHour = Number(interval.close.split(":")[0]); // get HH from "HH:MM"
-          return closeHour >= 0 && closeHour <= 3; // include only 00, 01, 02, 03
-        })
-        .map(interval => ({
-          ...interval,
-          isAfterMidnight: true, // later we offset open & close by 24*60
-        }));
-
-      // Combine intervals
-      const allIntervals = [...intervalsToday, ...intervalsFromYesterday];
-
-      const isOpen = allIntervals.some(interval => {
-        const [openH, openM] = interval.open.split(":").map(Number);
-        const [closeH, closeM] = interval.close.split(":").map(Number);
-
-        let openMinutes = openH * 60 + openM;
-        let closeMinutes = closeH * 60 + closeM;
-
-        if (openH === 4 && openM === 0 && closeH === 3 && closeM === 59) {
-          return true;
-        }
-
-        // Offset yesterday intervals
-        if (interval.isAfterMidnight) {
-          if (openH < 4) {
-            openMinutes += 24 * 60; // shift only if open is before 04:00
-          }
-          closeMinutes += 24 * 60;
-        }
-
-        // Intervals that naturally cross midnight
-
-        let nowMinutes = currentMinutes;
-        if (nowMinutes < openMinutes && interval.isAfterMidnight) nowMinutes += 24 * 60;
-        console.log(openMinutes,nowMinutes,closeMinutes)
-
-        return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
-      });
-
-      setIsOpenNow(isOpen);
+    const updateOpenStatus = () => {
+      setShopOpen(checkIntervalsNow(weeklyIntervals));
     };
 
-    checkIntervals();
-    const intervalId = setInterval(checkIntervals, 60 * 1000); // update every minute
+    updateOpenStatus();
+    const intervalId = setInterval(updateOpenStatus, 60 * 1000);
+
     return () => clearInterval(intervalId);
   }, [weeklyIntervals]);
-
-  const isShopOpenNow = useCallback(
-    (
-      scheduleData: Record<Weekday, Schedule> = weeklySchedule,
-      overrideData: Override[] = overrides
-    ): boolean => {
-      const now = new Date();
-        // 1️⃣ Check overrides first
-      const overrideToday = overrideData.find((o) => {
-        const overrideDate = new Date(o.date);
-
-        // If override is rejected yearly, compare only month and day
-        if (o.recurringYearly) {
-          return (
-            overrideDate.getMonth() === now.getMonth() &&
-            overrideDate.getDate() === now.getDate()
-          );
-        }
-
-        // Otherwise compare full date (year, month, day)
-        return (
-          overrideDate.getFullYear() === now.getFullYear() &&
-          overrideDate.getMonth() === now.getMonth() &&
-          overrideDate.getDate() === now.getDate()
-        );
-      });
-      
-      if (overrideToday) {
-        if (!overrideToday.openHour || !overrideToday.closeHour) return false;
-        const [openH, openM] = overrideToday.openHour.split(":").map(Number);
-        const [closeH, closeM] = overrideToday.closeHour.split(":").map(Number);
-        const openMinutes = openH * 60 + openM;
-        const closeMinutes = closeH * 60 + closeM;
-        const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-        if (closeMinutes < openMinutes) {
-          // Overnight
-          return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-        }
-
-        return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-      }
-
-      // 2️⃣ Fallback to regular weekly schedule
-      const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-      const schedule = scheduleData[dayName];
-      if (!schedule?.open || !schedule?.close) return false;
-
-      const [openH, openM] = schedule.open.split(":").map(Number);
-      const [closeH, closeM] = schedule.close.split(":").map(Number);
-      const openMinutes = openH * 60 + openM;
-      const closeMinutes = closeH * 60 + closeM;
-      const nowMinutes = now.getHours() * 60 + now.getMinutes();
-
-      if (closeMinutes < openMinutes) {
-        // Overnight
-        return nowMinutes >= openMinutes || nowMinutes <= closeMinutes;
-      }
-
-      return nowMinutes >= openMinutes && nowMinutes <= closeMinutes;
-    },
-    [weeklySchedule, overrides]
-  );
 
   // Fetch weekly schedule from API
   useEffect(() => {
@@ -331,9 +224,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     fetchSchedule();
   }, []);
 
-  useEffect(() => {
-    setShopOpen(isShopOpenNow());
-  }, [weeklySchedule, overrides, isShopOpenNow, cartMessage]);
 
   useEffect(() => {
     try {
@@ -594,6 +484,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setValidRadius,
         shopOpen,            
         cartMessage,
+        weeklyIntervals,
+        setWeeklyIntervals,
       }}
     >
       {children}

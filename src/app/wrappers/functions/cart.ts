@@ -1,14 +1,4 @@
-import { OrderItem, Product, User } from "../../types"; 
-
-type ProductWithAvailability = Product & {
-  available: boolean;
-  unavailableReason: string;
-};
-
-type Availability = {
-  available: boolean;
-  unavailableReason?: string;
-};
+import { OrderItem, User } from "../../types"; 
 
 export const handlePayment = async (
   paidIn: string,
@@ -130,48 +120,6 @@ export const getUnavailableMessage = (reason?: string) => {
       return "Μη διαθέσιμο: δεν έχουν οριστεί ώρες";
     default:
       return "";
-  }
-};
-
-export const handleCheckHours = async (
-  orderItems: OrderItem[],
-  availabilityMap: Record<string, Availability>,
-  setAvailabilityMap: React.Dispatch<React.SetStateAction<Record<string, Availability>>>,
-  setShowPaymentModal: (val: boolean) => void,
-  setPaymentWayModal: (val: boolean) => void
-) => {
-  try {
-    setShowPaymentModal(true);
-
-    const res = await fetch("/api/get-order-hours", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ productIds: orderItems.map((i) => i.productId) }),
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      console.error(data.error);
-      return;
-    }
-
-    data.products.forEach((p: ProductWithAvailability) => {
-      availabilityMap[p.id.toString()] = {
-        available: p.available,
-        unavailableReason: !p.available ? p.unavailableReason : undefined,
-      };
-    });
-
-    setAvailabilityMap({ ...availabilityMap });
-
-    const allAvailable = data.products.every((p: ProductWithAvailability) => p.available);
-    if (!allAvailable) {
-      setShowPaymentModal(false);
-      setPaymentWayModal(false);
-    }
-  } catch (err) {
-    console.error("Error fetching order hours:", err);
   }
 };
 
