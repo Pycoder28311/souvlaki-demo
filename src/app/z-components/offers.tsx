@@ -6,13 +6,14 @@ import ProductModal from "../menu/productModal";
 import { Dispatch, SetStateAction } from "react";
 import { useCart } from "../wrappers/cartContext";
 import { Option, Product, Ingredient, IngCategory } from "../types";
+import { checkObjectIntervals } from "../utils/checkObjectIntervals";
 
 interface ProductModalProps {
   addToCart: (
     product: Product,
     selectedIngredients: Ingredient[],
-    selectedIngCategories: IngCategory[], 
-    selectedOptions: Option[], 
+    selectedIngCategories: IngCategory[],
+    selectedOptions: Option[],
     options: Option[]
   ) => void;
   selectedProduct: Product | null;
@@ -44,8 +45,16 @@ export default function MenuGrid({
       try {
         const res = await fetch("/api/offers");
         if (!res.ok) throw new Error("Failed to fetch products");
-        const data = await res.json();
-        setMenuItems(data); // πλέον κάθε item περιέχει και category info
+        const data: ProductWithCategory[] = await res.json();
+
+        // Filter out products whose category (or product) is not currently available
+        const availableProducts = data.filter(product => {
+
+          // Check availability using your function
+          return checkObjectIntervals(product.intervals);
+        });
+
+        setMenuItems(availableProducts);
       } catch (err) {
         console.error(err);
       } finally {
@@ -98,7 +107,7 @@ export default function MenuGrid({
             className={`bg-white rounded-xl border border-gray-200 shadow-md transition-all duration-300 transform flex flex-col
                         'hover:-translate-y-2 hover:shadow-lg'`}
             onClick={() => {
-              if (user?.business) setSelectedProduct(item);
+              if (shopOpen || user?.business) setSelectedProduct(item);
             }}
           >
             {/* Image */}
@@ -136,7 +145,7 @@ export default function MenuGrid({
                   if (user?.business) setSelectedProduct(item);
                 }}
                 className={`mt-auto w-full rounded-lg text-white px-4 py-2 font-semibold transition-colors
-                            'bg-green-600 hover:bg-green-700'`}
+                            bg-green-600 hover:bg-green-700`}
               >
                 {shopOpen
                   ? 'Προσθήκη στο Καλάθι'

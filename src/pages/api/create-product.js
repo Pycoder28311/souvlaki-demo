@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+const DEFAULT_DAY = "default"; // same as your frontend
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -46,7 +48,20 @@ export default async function handler(req, res) {
       },
     });
 
-    return res.status(201).json(newProduct);
+    // Format product intervals for frontend
+    const formattedProduct = {
+      ...newProduct,
+      intervals: {
+        [DEFAULT_DAY]: newProduct.intervals.map((i) => ({
+          id: i.id,
+          open: i.open,
+          close: i.close,
+          isAfterMidnight: Number(i.close.split(":")[0]) < 4,
+        })),
+      },
+    };
+
+    return res.status(201).json(formattedProduct);
   } catch (error) {
     console.error("Error creating product:", error);
     return res.status(500).json({ message: "Internal server error" });

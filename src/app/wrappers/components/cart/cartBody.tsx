@@ -5,28 +5,19 @@ import { ShoppingCart, X, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
 import { useCart } from "../../cartContext";
 
-type Availability = {
-  available: boolean;
-  unavailableReason?: string;
-};
-
 interface CartBodyProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
   expandedItems: Record<number, boolean>;
   setExpandedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
-  availabilityMap: Record<string, Availability>;
   total: number;
   user: User | null;
-  getUnavailableMessage: (reason?: string) => string;
 }
 
 const CartBody: React.FC<CartBodyProps> = ({
   setEditableOrderItem,
   expandedItems,
   setExpandedItems,
-  availabilityMap,
   total,
-  getUnavailableMessage,
 }) => {
   const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen, user } = useCart();
   if (!isSidebarOpen) return null;
@@ -61,19 +52,16 @@ const CartBody: React.FC<CartBodyProps> = ({
               .sort((a, b) => a - b)
               .join("-");
             const key = `${item.productId}-${ingredientKey || "no-ingredients"}-${index}`;
-            const isAvailable = availabilityMap[item.productId.toString()]?.available ?? true;
-            const reason = availabilityMap[item.productId.toString()]?.unavailableReason;
 
             return (
               <div
                 key={key}
                 onClick={() => {
-                  if (!isAvailable) return;
                   setEditableOrderItem(item);
                   setQuantity(item.quantity);
                 }}
                 className={`bg-white rounded-xl shadow hover:shadow-lg transition p-2 flex flex-col gap-2 border-l-4 border-yellow-400
-                  ${!isAvailable ? "opacity-50 pointer-events-none cursor-not-allowed" : "cursor-pointer hover:shadow-lg"}`}
+                  cursor-pointer hover:shadow-lg}`}
               >
                 <div className="flex justify-between items-start">
                   <div className="w-40">
@@ -101,34 +89,30 @@ const CartBody: React.FC<CartBodyProps> = ({
                       </button>
                     </div>
 
-                    {!isAvailable && (
-                      <span className="text-red-500 text-sm">{getUnavailableMessage(reason)}</span>
-                    )}
-
                     {((item.selectedIngredients && item.selectedIngredients.length > 0) ||
                       (item.selectedOptions && item.selectedOptions.length > 0)) && (
-                      <div className="mt-1">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedItems((prev) => ({
-                              ...prev,
-                              [item.productId]: !prev[item.productId],
-                            }));
-                          }}
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition"
-                        >
-                          {expandedItems[item.productId] ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          {expandedItems[item.productId]
-                            ? "Απόκρυψη Υλικών"
-                            : "Προβολή Υλικών"}
-                        </button>
-                      </div>
-                    )}
+                        <div className="mt-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedItems((prev) => ({
+                                ...prev,
+                                [item.productId]: !prev[item.productId],
+                              }));
+                            }}
+                            className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition"
+                          >
+                            {expandedItems[item.productId] ? (
+                              <ChevronUp className="w-4 h-4" />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" />
+                            )}
+                            {expandedItems[item.productId]
+                              ? "Απόκρυψη Υλικών"
+                              : "Προβολή Υλικών"}
+                          </button>
+                        </div>
+                      )}
                   </div>
 
                   {item.imageId && (

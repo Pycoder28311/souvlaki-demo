@@ -2,11 +2,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import React from "react";
-import { OrderItem } from "../types"; 
+import { OrderItem } from "../types";
 import { useCart } from "../wrappers/cartContext";
-import {
-  getUnavailableMessage,
-} from "./functions/cart";
 import CartBody from "./components/cart/cartBody";
 import PaymentWayModal from "./components/cart/paymentWayModal";
 import PaymentModal from "./components/cart/paymentModal";
@@ -14,11 +11,6 @@ import PaymentModal from "./components/cart/paymentModal";
 interface OrderSidebarProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
 }
-
-type Availability = {
-  available: boolean;
-  unavailableReason?: string;
-};
 
 export default function OrderSidebar({
   setEditableOrderItem,
@@ -41,7 +33,6 @@ export default function OrderSidebar({
   const [userComment, setUserComment] = useState<string | undefined>(user?.comment);
   const [bellName, setBellName] = useState<string | undefined>(user?.bellName);
   const [showDetails, setShowDetails] = useState(false);
-  const [availabilityMap, setAvailabilityMap] = useState<Record<string, Availability>>({});
 
   useEffect(() => {
     setHydrated(true); // ✅ mark client as ready
@@ -93,7 +84,7 @@ export default function OrderSidebar({
   }
 
   return (
-    
+
     <div
       className={`
         flex flex-col h-full w-full md:w-80 bg-gray-100 border-l-2 border-yellow-400 shadow-lg 
@@ -113,15 +104,13 @@ export default function OrderSidebar({
         scrollbarColor: "#facc15 #e5e7eb",
       }}
     >
-    <div className="hidden">{warning}</div>
+      <div className="hidden">{warning}</div>
       <CartBody
         setEditableOrderItem={setEditableOrderItem}
         expandedItems={expandedItems}
         setExpandedItems={setExpandedItems}
-        availabilityMap={availabilityMap}
         total={total}
         user={user}
-        getUnavailableMessage={getUnavailableMessage}
       />
 
       <PaymentModal

@@ -6,7 +6,7 @@ import { useCart } from "./cartContext";
 import { useEffect } from "react";
 
 export default function CartToggleButton() {
-  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user  } = useCart();
+  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user } = useCart();
 
   useEffect(() => {
     if (!isSidebarOpen) return;
@@ -44,6 +44,7 @@ export default function CartToggleButton() {
 
   return (
     <>
+
       {cartMessage !== "Φόρτωση..." && (
         <>
           {/* Header */}
@@ -81,7 +82,7 @@ export default function CartToggleButton() {
               "
               onClick={() => setIsSidebarOpen(true)}
               aria-label="Άνοιγμα καλαθιού"
-            > 
+            >
               Καλάθι
               <ShoppingCart className="w-7 h-7 ml-2" />
             </button>

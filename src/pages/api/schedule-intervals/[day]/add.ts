@@ -3,7 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { DayOfWeek } from "../../../../app/types";
 
 type Data =
-  | { interval: { id: number; scheduleId: number | null; open: string; close: string } }
+  | { interval: {
+  id: number
+  scheduleId: number | null   // can be null (override case OR future schema)
+  open: string
+  close: string
+  productId: number | null
+  categoryId: number | null
+} }
   | { error: string };
 
 export default async function handler(
@@ -16,33 +23,37 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // req.query.day can be string | string[] | undefined
+  // Validate day
   const dayParam = query.day;
   if (!dayParam || Array.isArray(dayParam)) {
     return res.status(400).json({ error: "Invalid day parameter" });
   }
-
-  // Validate that dayParam is a valid DayOfWeek
   if (!Object.values(DayOfWeek).includes(dayParam as DayOfWeek)) {
     return res.status(400).json({ error: "Invalid day parameter" });
   }
+  const day = dayParam as DayOfWeek;
 
-  const day = dayParam as DayOfWeek; // ✅ safe cast
+  const { open, close } = body;
+  if (!open || !close) {
+    return res.status(400).json({ error: "Missing open or close times" });
+  }
 
   try {
-    const { open, close } = body;
-
-    if (!open || !close) {
-      return res.status(400).json({ error: "Missing open or close times" });
-    }
-
-    // Find or create schedule
+    // Find or create schedule for this day
     let schedule = await prisma.schedule.findUnique({ where: { day } });
     if (!schedule) {
       schedule = await prisma.schedule.create({ data: { day } });
     }
 
-    // Create interval
+    // Remove existing "all-day" interval if exists
+    const allDayInterval = await prisma.timeInterval.findFirst({
+      where: { scheduleId: schedule.id, open: "04:00", close: "03:59" },
+    });
+    if (allDayInterval) {
+      await prisma.timeInterval.delete({ where: { id: allDayInterval.id } });
+    }
+
+    // Create new interval
     const interval = await prisma.timeInterval.create({
       data: { scheduleId: schedule.id, open, close },
     });

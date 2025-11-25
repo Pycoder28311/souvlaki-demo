@@ -57,6 +57,13 @@ export interface Interval {
   isAfterMidnight: boolean 
 };
 
+export interface Override {
+  id: number;
+  date: string;
+  intervals: Interval[];
+  everyYear?: boolean;
+};
+
 export interface Product {
   id: number;
   name: string;

@@ -82,9 +82,9 @@ export default function Intervals({ days, object, id, intervals, setIntervals }:
         [day]: prev[day].map((interval, i) =>
           i === index
             ? {
-                ...interval,
-                [field]: updated.interval[field], // ✅ the correct value
-              }
+              ...interval,
+              [field]: updated.interval[field], // ✅ the correct value
+            }
             : interval
         ),
       }));
@@ -231,7 +231,7 @@ export default function Intervals({ days, object, id, intervals, setIntervals }:
               <h2 className="font-bold text-lg">{DAYS_GR[day]}</h2>
             )}
 
-            {intervals && intervals[day]?.length > 0 ? (
+            {(intervals && intervals[day]?.length > 0) ? (
               intervals[day].some(interval => interval.open === "04:00" && interval.close === "03:59") ? (
                 <span className="px-2 py-1.5 bg-green-200 rounded-xl text-sm font-semibold">
                   Άνοιγμα όλη την ημέρα
@@ -300,6 +300,7 @@ export default function Intervals({ days, object, id, intervals, setIntervals }:
             <button
               className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
               onClick={async () => {
+
                 const res = await fetch(`/api/schedule-intervals/${day}/open-all-day`, { method: "POST" });
                 const data = await res.json();
 

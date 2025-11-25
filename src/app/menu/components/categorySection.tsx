@@ -2,6 +2,7 @@ import React from "react";
 import Image from "next/image";
 import { Pencil, Plus } from "lucide-react";
 import { Product, Category } from "../../types"; // import your types
+import { checkObjectIntervals } from "../../utils/checkObjectIntervals";
 
 interface CategorySectionProps {
   category: Category;
@@ -26,6 +27,9 @@ const CategorySection: React.FC<CategorySectionProps> = ({
   selectedAdminProduct,
   setSelectedAdminProduct,
 }) => {
+  const isCategoryOpen = checkObjectIntervals(category.intervals);
+
+  if (!business && !isCategoryOpen) return null;
 
   return (
     <section
@@ -38,7 +42,16 @@ const CategorySection: React.FC<CategorySectionProps> = ({
       <div className="flex flex-col mb-4">
         {/* Header: όνομα + κουμπί */}
         <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-black">{category.name}</h2>
+          <h2 className=" text-black flex items-center gap-4">
+            <span className="text-2xl font-bold">
+              {category.name}
+            </span>
+            {!isCategoryOpen && (
+              <span className="text-red-500 font-semibold text-md">
+                Μη διαθέσιμο
+              </span>
+            )}
+          </h2>
 
           {business && (
             <button
@@ -60,13 +73,15 @@ const CategorySection: React.FC<CategorySectionProps> = ({
       <div
         className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-6`}>
         {products.map((product) => {
-          const isClickable = business ;
+          const availability = checkObjectIntervals(product.intervals)
+          const isAvailable = (availability)
+          const isClickable = isAvailable || business;
 
           return (
             <div
               key={product.id}
               className={`relative flex items-start justify-between border border-gray-200 rounded-xl h-28 shadow-sm transition-all
-                          ${isClickable ? 'hover:shadow-lg cursor-pointer bg-white' : 'bg-gray-100 cursor-not-allowed'}`}
+                          ${(isClickable) ? 'hover:shadow-lg cursor-pointer bg-white' : 'bg-gray-100 cursor-not-allowed'}`}
               onClick={() => {
                 if (isClickable) setSelectedProduct(product);
               }}
@@ -79,12 +94,23 @@ const CategorySection: React.FC<CategorySectionProps> = ({
 
                 {/* Product Availability Note */}
                 <p className="text-sm text-red-500 font-semibold mb-1">
-                  { !isClickable ? (
-                      "Μη διαθέσιμο"
-                    ) : product.offer ? (
-                      <span className="text-green-500">Προσφορά!</span>
-                    ) : null
-                  }
+                  {!isAvailable ? (
+                    <>
+                      {(Object.values(product.intervals).flat().some(i => i.open === "04:00" && i.close === "03:59") || product.intervals["default"].length === 0) ? (
+                        <span className="text-red-500 font-semibold">Μη διαθέσιμο</span>
+                      ) : (
+                        <>
+                          Διαθέσιμο:<span>{" "}</span>
+                          {Object.values(product.intervals)
+                            .flat()
+                            .map(interval => `${interval.open} - ${interval.close}`)
+                            .join(", ")}
+                        </>
+                      )}
+                    </>
+                  ) : product.offer ? (
+                    <span className="text-green-500">Προσφορά!</span>
+                  ) : null}
                 </p>
 
                 <p className="font-bold text-yellow-600 text-lg mb-2 flex items-center gap-2">
@@ -104,9 +130,8 @@ const CategorySection: React.FC<CategorySectionProps> = ({
               {/* Product Image */}
               {product.imageId ? (
                 <div
-                  className={`w-28 relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0 ${
-                    business ? "h-28" : "h-full"
-                  }`}
+                  className={`w-28 relative rounded-r-xl overflow-hidden border border-yellow-400 flex-shrink-0 ${business ? "h-28" : "h-full"
+                    }`}
                 >
                   <Image
                     src={`/api/images/${product.imageId}`}
@@ -145,7 +170,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 </button>
               )}
             </div>)
-          })}
+        })}
       </div>
     </section>
   );

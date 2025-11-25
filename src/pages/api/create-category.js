@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
+const DEFAULT_DAY = "default"; // same as your frontend
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
@@ -19,7 +21,7 @@ export default async function handler(req, res) {
 
     const maxPosition = maxPositionResult._max.position ?? 0;
 
-    // Create category with position = max + 1
+    // Create category with a default interval
     const newCategory = await prisma.category.create({
       data: {
         name,
@@ -36,7 +38,20 @@ export default async function handler(req, res) {
       },
     });
 
-    return res.status(201).json(newCategory);
+    // Return the category in the frontend-friendly shape
+    const formattedCategory = {
+      ...newCategory,
+      intervals: {
+        [DEFAULT_DAY]: newCategory.intervals.map((i) => ({
+          id: i.id,
+          open: i.open,
+          close: i.close,
+          isAfterMidnight: Number(i.close.split(":")[0]) < 4,
+        })),
+      },
+    };
+
+    return res.status(201).json(formattedCategory);
   } catch (error) {
     console.error("Error creating category:", error);
     return res.status(500).json({ message: "Internal server error" });

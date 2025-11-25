@@ -30,7 +30,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
   confirmingDelete,
   setConfirmingDelete,
 }) => {
-  const [intervals, setIntervals] = useState(product.intervals)
+  const [intervals, setIntervals] = useState(product.intervals);
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(product.name);
@@ -194,28 +194,28 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
               </>
             ) : (
               <div className="flex flex-row items-center gap-2 justify-start md:justify-center">
-                  <p>Νέα Τιμή:</p>
-                  <input
-                    type="number"
-                    placeholder="Νέα τιμή"
-                    value={offerPrice}
-                    onChange={(e) => setOfferPrice(Number(e.target.value))}
-                    className="w-12 border rounded-lg px-2 py-1 text-sm"
-                  />
+                <p>Νέα Τιμή:</p>
+                <input
+                  type="number"
+                  placeholder="Νέα τιμή"
+                  value={offerPrice}
+                  onChange={(e) => setOfferPrice(Number(e.target.value))}
+                  className="w-12 border rounded-lg px-2 py-1 text-sm"
+                />
 
-                  <button
-                    onClick={() => {
-                      if (offerPrice !== product.offerPrice) {
-                        handleConfirm()
-                        setOffer(!offer)
-                      } else {
-                        handleCancel()
-                      }
-                    }}
-                    className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm flex items-center gap-1"
-                  >
-                    <Save className="w-4 h-4 text-black" />
-                  </button>
+                <button
+                  onClick={() => {
+                    if (offerPrice !== product.offerPrice) {
+                      handleConfirm()
+                      setOffer(!offer)
+                    } else {
+                      handleCancel()
+                    }
+                  }}
+                  className="px-2 py-2 bg-gray-300 hover:bg-gray-400 text-white rounded-lg text-sm flex items-center gap-1"
+                >
+                  <Save className="w-4 h-4 text-black" />
+                </button>
               </div>
             )}
           </div>
@@ -256,7 +256,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
           )}
         </div>
 
-        <Intervals days={["default"]} object="product" id={product.id} intervals={intervals} setIntervals={setIntervals}/>
+        <Intervals days={["default"]} object="product" id={product.id} intervals={intervals} setIntervals={setIntervals} />
 
         <div className="flex items-center gap-2 mt-6">
           {confirmingDelete !== product.id ? (

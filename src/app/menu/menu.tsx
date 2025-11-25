@@ -24,18 +24,21 @@ function useIsMobile(breakpoint = 768) {
 }
 
 export default function Menu({ categories: initialCategories, business }: { categories: Category[], email?: string, business?: boolean }) {
-  const [categories, setCategories] = useState<Category[]>(initialCategories); // <-- new state
+  const { addToCart, isSidebarOpen, setIsSidebarOpen, user, shopOpen } = useCart();
+  const [categories, setCategories] = useState<Category[]>(
+    initialCategories
+  );
+  // <-- new state
   const [activeCategory, setActiveCategory] = useState<number>(initialCategories[0]?.id || 0);
   const containerRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(categories.length);
 
   const [isClient, setIsClient] = useState(false);
   const [screenWidth, setScreenWidth] = useState(0);
-  const { addToCart, isSidebarOpen, setIsSidebarOpen, user } = useCart();
   const visibleCategories = categories.slice(0, visibleCount);
   const hiddenCategories = categories.slice(visibleCount);
   const isMobile = useIsMobile();
-  
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // for viewing details
   const categoryRefs = useRef<Record<number, HTMLElement | null>>({});
   const [showSearch, setShowSearch] = useState(false);
@@ -105,7 +108,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
   }, [categories, isSidebarOpen]); // add sidebarOpen to deps
 
   useEffect(() => {
-  if (user?.business) return;
+    if (user?.business) return;
     // Set initial value on client
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth >= 768);
@@ -132,10 +135,10 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
   useEffect(() => {
     // If user.business changes dynamically, close the sidebar
-    if (user?.business) {
+    if (user?.business || !shopOpen) {
       setIsSidebarOpen(false);
     }
-  }, [user?.business, setIsSidebarOpen]);
+  }, [user?.business, setIsSidebarOpen, shopOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -193,13 +196,13 @@ export default function Menu({ categories: initialCategories, business }: { cate
 
     const ref = categoryRefs.current[id];
     if (ref) {
-        const offset = 140; // adjust this to match your sticky header height
-        const top = ref.getBoundingClientRect().top + window.scrollY - offset;
+      const offset = 140; // adjust this to match your sticky header height
+      const top = ref.getBoundingClientRect().top + window.scrollY - offset;
 
-        window.scrollTo({
+      window.scrollTo({
         top,
         behavior: "smooth",
-        });
+      });
     }
   };
 
@@ -285,9 +288,9 @@ export default function Menu({ categories: initialCategories, business }: { cate
         prevCategories.map((cat) =>
           cat.id === categoryId
             ? {
-                ...cat,
-                products: cat.products.filter((prod) => prod.id !== productId),
-              }
+              ...cat,
+              products: cat.products.filter((prod) => prod.id !== productId),
+            }
             : cat
         )
       );
@@ -357,11 +360,11 @@ export default function Menu({ categories: initialCategories, business }: { cate
         prev.map((cat) =>
           cat.id === categoryId
             ? {
-                ...cat,
-                products: cat.products.map((prod) =>
-                  prod.id === productId ? { ...prod, ...updatedProduct } : prod
-                ),
-              }
+              ...cat,
+              products: cat.products.map((prod) =>
+                prod.id === productId ? { ...prod, ...updatedProduct } : prod
+              ),
+            }
             : cat
         )
       );
@@ -443,18 +446,18 @@ export default function Menu({ categories: initialCategories, business }: { cate
         prev.map((cat) =>
           cat.id === categoryId
             ? {
-                ...cat,
-                products: cat.products.map((prod) =>
-                  prod.id === productId
-                    ? {
-                        ...prod,
-                        offer: !currentOffer,
-                        price: !currentOffer ? offerPrice : prod.price,
-                        offerPrice: prod.price,
-                      }
-                    : prod
-                ),
-              }
+              ...cat,
+              products: cat.products.map((prod) =>
+                prod.id === productId
+                  ? {
+                    ...prod,
+                    offer: !currentOffer,
+                    price: !currentOffer ? offerPrice : prod.price,
+                    offerPrice: prod.price,
+                  }
+                  : prod
+              ),
+            }
             : cat
         )
       );
@@ -481,7 +484,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
     }
   };
 
-  const setEditPrice = async (productId: number,  newPrice: number) => {
+  const setEditPrice = async (productId: number, newPrice: number) => {
     try {
       const res = await fetch(`/api/products-price/${productId}`, {
         method: "PUT",
@@ -498,11 +501,11 @@ export default function Menu({ categories: initialCategories, business }: { cate
         prev.map((cat) =>
           cat.id === updatedProduct.categoryId
             ? {
-                ...cat,
-                products: cat.products.map((prod) =>
-                  prod.id === productId ? { ...prod, ...updatedProduct } : prod
-                ),
-              }
+              ...cat,
+              products: cat.products.map((prod) =>
+                prod.id === productId ? { ...prod, ...updatedProduct } : prod
+              ),
+            }
             : cat
         )
       );
@@ -535,122 +538,122 @@ export default function Menu({ categories: initialCategories, business }: { cate
         <div
           className={`transition-all duration-300 ease-in-out`}
         >
-            {/* Categories Buttons */}
-            <section className="sticky z-30 py-3 border-b bg-white top-[55px] p-4">
-              <div className={`flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center 
+          {/* Categories Buttons */}
+          <section className="sticky z-30 py-3 border-b bg-white top-[55px] p-4">
+            <div className={`flex gap-2 overflow-x-auto md:overflow-x-visible whitespace-nowrap md:justify-start items-center 
                 transition-all duration-300 ease-in-out
                 ${(categories.length <= 4 && !isMobile) ? (isSidebarOpen ? "ml-0" : "ml-40") : ""}`} ref={containerRef}>
-                {(isMobile ? categories : visibleCategories).map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className={`inline-block px-4 py-2 font-bold transition-all flex-shrink-0 mx-0 mr-2 md:mx-2 md:mr-0 rounded-lg ${
-                      activeCategory === cat.id
-                        ? "bg-gray-900 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              {(isMobile ? categories : visibleCategories).map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => handleCategoryClick(cat.id)}
+                  className={`inline-block px-4 py-2 font-bold transition-all flex-shrink-0 mx-0 mr-2 md:mx-2 md:mr-0 rounded-lg ${activeCategory === cat.id
+                    ? "bg-gray-900 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
-                  >
-                    {cat.name}
-                  </button>
-                ))}
+                >
+                  {cat.name}
+                </button>
+              ))}
 
-                {/* Περισσότερα dropdown - only on md+ */}
-                {hiddenCategories.length > 0 && !isMobile && (
-                  <div className="relative hidden md:inline-block">
-                    <button
-                      onClick={() => setDropdownOpen((prev) => !prev)}
-                      className="ml-2 px-4 py-2 font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg"
-                    >
-                      Περισσότερα ▼
-                    </button>
-                    {dropdownOpen && (
-                      <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50">
-                        {hiddenCategories.map((cat: Category) => (
-                          <button
-                            key={cat.id}
-                            onClick={() => {
-                              handleCategoryClick(cat.id)
-                              setDropdownOpen(false)
-                            }}
-                            className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                          >
-                            {cat.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50 hidden group-hover:block md:group-hover:block">
-                      {categories.slice(5).map((cat) => (
+              {/* Περισσότερα dropdown - only on md+ */}
+              {hiddenCategories.length > 0 && !isMobile && (
+                <div className="relative hidden md:inline-block">
+                  <button
+                    onClick={() => setDropdownOpen((prev) => !prev)}
+                    className="ml-2 px-4 py-2 font-bold bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg"
+                  >
+                    Περισσότερα ▼
+                  </button>
+                  {dropdownOpen && (
+                    <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50">
+                      {hiddenCategories.map((cat: Category) => (
                         <button
                           key={cat.id}
-                          onClick={() => handleCategoryClick(cat.id)}
+                          onClick={() => {
+                            handleCategoryClick(cat.id)
+                            setDropdownOpen(false)
+                          }}
                           className="block w-full text-left px-4 py-2 hover:bg-gray-100"
                         >
                           {cat.name}
                         </button>
                       ))}
                     </div>
+                  )}
+                  <div className="absolute mt-1 bg-white border rounded shadow-lg min-w-[150px] z-50 hidden group-hover:block md:group-hover:block">
+                    {categories.slice(5).map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => handleCategoryClick(cat.id)}
+                        className="block w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
                   </div>
-                )}
-
-                {/* Search toggle */}
-                <button
-                  onClick={() => setShowSearch((prev) => !prev)}
-                  className="ml-2 md:ml-0 p-2 rounded-lg hover:bg-gray-100"
-                >
-                  {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
-                </button>
-              </div>
-            </section>
-
-            {showSearch && (
-              <div className="w-full bg-white z-50 flex justify-start p-2 shadow-md">
-                <input
-                  type="text"
-                  placeholder="Αναζήτηση..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full md:w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-gray-300"
-                  autoFocus
-                />
-              </div>
-            )}
-
-            {/* Categories & Products */}
-            <div
-              className="flex flex-col space-y-12 mt-0 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
-              style={{
-                transform:
-                  isSidebarOpen || (isClient && screenWidth < 1024) // mobile & tablet (lg breakpoint)
-                    ? screenWidth > 1024 ? "translateX(12px)" : "translateX(0)"
-                    : "translateX(20%)",
-              }}
-            > 
-              {!user?.business && (
-                <p className="text-lg font-semibold text-yellow-500 mb-4">
-                  Χρόνος παράδοσης: {lower}-{upper} λεπτά
-                </p>
+                </div>
               )}
-              {categories.map((category) => {
-                const filteredProducts = (category.products || []).filter((product) =>
-                  product.name.toLowerCase().includes(searchQuery.toLowerCase())
-                );
 
-                return (
-                  <CategorySection
-                    key={category.id}
-                    category={category}
-                    products={filteredProducts.filter(p => p.categoryId === category.id)}
-                    business={business}
-                    categoryRefs={categoryRefs}
-                    selectedCategory={selectedCategory}
-                    setSelectedCategory={setSelectedCategory}
-                    setSelectedProduct={setSelectedProduct}
-                    selectedAdminProduct={selectedAdminProduct}
-                    setSelectedAdminProduct={setSelectedAdminProduct}
-                  />
-                )})}
+              {/* Search toggle */}
+              <button
+                onClick={() => setShowSearch((prev) => !prev)}
+                className="ml-2 md:ml-0 p-2 rounded-lg hover:bg-gray-100"
+              >
+                {showSearch ? <X className="w-6 h-6 text-gray-600" /> : <Search className="w-6 h-6 text-gray-600" />}
+              </button>
             </div>
+          </section>
+
+          {showSearch && (
+            <div className="w-full bg-white z-50 flex justify-start p-2 shadow-md">
+              <input
+                type="text"
+                placeholder="Αναζήτηση..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full md:w-1/2 px-4 py-2 border rounded focus:outline-none focus:ring focus:border-gray-300"
+                autoFocus
+              />
+            </div>
+          )}
+
+          {/* Categories & Products */}
+          <div
+            className="flex flex-col space-y-12 mt-0 p-6 transition-transform duration-300 ease-in-out w-full lg:w-[70%]"
+            style={{
+              transform:
+                isSidebarOpen || (isClient && screenWidth < 1024) // mobile & tablet (lg breakpoint)
+                  ? screenWidth > 1024 ? "translateX(12px)" : "translateX(0)"
+                  : "translateX(20%)",
+            }}
+          >
+            {!user?.business && (
+              <p className="text-lg font-semibold text-yellow-500 mb-4">
+                Χρόνος παράδοσης: {lower}-{upper} λεπτά
+              </p>
+            )}
+            {categories.map((category) => {
+              const filteredProducts = (category.products || []).filter((product) =>
+                product.name.toLowerCase().includes(searchQuery.toLowerCase())
+              );
+
+              return (
+                <CategorySection
+                  key={category.id}
+                  category={category}
+                  products={filteredProducts.filter(p => p.categoryId === category.id)}
+                  business={business}
+                  categoryRefs={categoryRefs}
+                  selectedCategory={selectedCategory}
+                  setSelectedCategory={setSelectedCategory}
+                  setSelectedProduct={setSelectedProduct}
+                  selectedAdminProduct={selectedAdminProduct}
+                  setSelectedAdminProduct={setSelectedAdminProduct}
+                />
+              )
+            })}
+          </div>
         </div>
       </div>
 

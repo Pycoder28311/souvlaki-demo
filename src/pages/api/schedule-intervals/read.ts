@@ -8,6 +8,13 @@ type Interval = {
   close: string;
 };
 
+type OverrideData = {
+  id: number;
+  date: string;
+  intervals: Interval[];
+  everyYear?: boolean;
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method !== "GET") {
@@ -29,7 +36,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }));
     }
 
-    return res.status(200).json({ weeklyIntervals });
+    const overrides = await prisma.override.findMany({
+      include: { intervals: true },
+    });
+
+    const overrideData: OverrideData[] = overrides.map((o: OverrideData) => ({
+      id: o.id,
+      date: o.date,
+      everyYear: o.everyYear,
+      intervals: o.intervals.map((i: Interval) => ({
+        id: i.id,
+        open: i.open,
+        close: i.close,
+      })),
+    }));
+
+    return res.status(200).json({ weeklyIntervals, overrides: overrideData });
   } catch (error) {
     console.error("Error fetching weekly intervals:", error);
     return res.status(500).json({ error: "Failed to fetch intervals" });

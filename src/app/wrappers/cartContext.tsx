@@ -1,14 +1,9 @@
 "use client";
 
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { OrderItem, Product, Ingredient, IngCategory, Option, User, Interval } from "../types";
+import { OrderItem, Product, Ingredient, IngCategory, Option, User, Interval, Override } from "../types";
 import { usePathname } from "next/navigation";
 import { checkIntervalsNow } from "../utils/checkIntervals";
-
-type Schedule = {
-  open: string | null;
-  close: string | null;
-};
 
 interface CartContextType {
   showWelcome: boolean;
@@ -45,31 +40,9 @@ interface CartContextType {
   cartMessage: string;
   weeklyIntervals: WeeklyIntervals;
   setWeeklyIntervals: React.Dispatch<React.SetStateAction<WeeklyIntervals>>;
+  overrides: Override[],
+  setOverrides: React.Dispatch<React.SetStateAction<Override[]>>;
 }
-
-type Weekday =
-  | "Monday"
-  | "Tuesday"
-  | "Wednesday"
-  | "Thursday"
-  | "Friday"
-  | "Saturday"
-  | "Sunday";
-
-type DayFromAPI = {
-  id: number;
-  dayOfWeek: Weekday;
-  openHour: string | null;
-  closeHour: string | null;
-  alwaysClosed: boolean;
-};
-
-type Override = {
-  date: string;       // ISO string "YYYY-MM-DD"
-  openHour: string | null;
-  closeHour: string | null;
-  recurringYearly: boolean;
-};
 
 type WeeklyIntervals = Record<string, Interval[]>;
 
@@ -80,9 +53,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const pathnameRaw = usePathname();
   const pathname = pathnameRaw ?? ""; // default to empty string
   const [orderItems, setOrderItems] = useState<OrderItem[]>([]);
-  const [overrides, setOverrides] = useState<Override[]>([]);
   const [cartMessage, setCartMessage] = useState("Φόρτωση...");
-  
+
   const [user, setUser] = useState<User | null>(null);
   const [selected, setSelected] = useState("");
   const [selectedFloor, setSelectedFloor] = useState("");
@@ -99,16 +71,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [shopOpen, setShopOpen] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
 
-  const [weeklySchedule, setWeeklySchedule] = useState<Record<Weekday, Schedule>>({
-    Monday: { open: null, close: null },
-    Tuesday: { open: null, close: null },
-    Wednesday: { open: null, close: null },
-    Thursday: { open: null, close: null },
-    Friday: { open: null, close: null },
-    Saturday: { open: null, close: null },
-    Sunday: { open: null, close: null },
-  });
-
   // Define the days of the week
   const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -121,6 +83,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, {} as WeeklyIntervals)
   );
 
+  const [overrides, setOverrides] = useState<Override[]>([]);
+
   // 1️⃣ Fetch intervals from API
   useEffect(() => {
     const fetchIntervals = async () => {
@@ -130,6 +94,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const data = await res.json();
         setWeeklyIntervals(data.weeklyIntervals || {});
+        setOverrides(data.overrides || []);
       } catch (err) {
         console.error(err);
       }
@@ -140,90 +105,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const updateOpenStatus = () => {
-      setShopOpen(checkIntervalsNow(weeklyIntervals));
+      setShopOpen(checkIntervalsNow(weeklyIntervals, overrides, setCartMessage));
     };
 
     updateOpenStatus();
     const intervalId = setInterval(updateOpenStatus, 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [weeklyIntervals]);
-
-  // Fetch weekly schedule from API
-  useEffect(() => {
-    const fetchSchedule = async () => {
-      try {
-        const res = await fetch("/api/schedule/get");
-        const data = await res.json();
-
-        if (data.weekly) {
-          const scheduleMap: Record<Weekday, Schedule> = {
-            Monday: { open: null, close: null },
-            Tuesday: { open: null, close: null },
-            Wednesday: { open: null, close: null },
-            Thursday: { open: null, close: null },
-            Friday: { open: null, close: null },
-            Saturday: { open: null, close: null },
-            Sunday: { open: null, close: null },
-          };
-
-          data.weekly.forEach((day: DayFromAPI) => {
-            scheduleMap[day.dayOfWeek as Weekday] = {
-              open: day.openHour || null,
-              close: day.closeHour || null,
-            };
-          });
-
-          setWeeklySchedule(scheduleMap);
-          setOverrides(data.overrides);
-    
-          const now = new Date();
-          const dayName = now.toLocaleDateString("en-US", { weekday: "long" }) as Weekday;
-          
-          const todayOverride = data.overrides?.find((o: Override) => {
-            const overrideDate = new Date(o.date);
-
-            if (o.recurringYearly) {
-              return (
-                overrideDate.getMonth() === now.getMonth() &&
-                overrideDate.getDate() === now.getDate()
-              );
-            }
-
-            return (
-              overrideDate.getFullYear() === now.getFullYear() &&
-              overrideDate.getMonth() === now.getMonth() &&
-              overrideDate.getDate() === now.getDate()
-            );
-          });
-
-          if (todayOverride) {
-            if (todayOverride.alwaysClosed) {
-              setCartMessage("Το κατάστημα είναι κλειστό σήμερα");
-            } else if (todayOverride.openHour && todayOverride.closeHour) {
-              setCartMessage(
-                `Ώρες λειτουργίας σήμερα: ${todayOverride.openHour} - ${todayOverride.closeHour}`
-              );
-            } else {
-              setCartMessage("Το κατάστημα έχει ειδικό ωράριο σήμερα");
-            }
-          } else if (scheduleMap[dayName]?.open) {
-            setCartMessage(
-              `Ώρες λειτουργίας σήμερα: ${scheduleMap[dayName].open} - ${scheduleMap[dayName].close}`
-            );
-          } else {
-            setCartMessage("Το κατάστημα είναι κλειστό σήμερα");
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch schedule:", err);
-        setShopOpen(false);
-      }
-    };
-
-    fetchSchedule();
-  }, []);
-
+  }, [weeklyIntervals, overrides]);
 
   useEffect(() => {
     try {
@@ -237,14 +126,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     localStorage.setItem("orderItems", JSON.stringify(orderItems));
   }, [orderItems]);
-  
+
   useEffect(() => {
     // If user.business changes dynamically, close the sidebar
     if (user?.business) {
       setIsSidebarOpen(false);
     }
   }, [user?.business]);
-  
+
   useEffect(() => {
     const fetchSession = async () => {
       try {
@@ -394,12 +283,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       prev.map((item) =>
         item === orderItemToEdit
           ? {
-              ...item,
-              quantity: quantity,
-              selectedIngredients: newIngredients,
-              selectedOptions: selectedOptions || [], // προσθήκη options
-              // Recalculate price: base price + sum of ingredient prices
-              price:
+            ...item,
+            quantity: quantity,
+            selectedIngredients: newIngredients,
+            selectedOptions: selectedOptions || [], // προσθήκη options
+            // Recalculate price: base price + sum of ingredient prices
+            price:
               orderItemToEdit.price
               - (item.selectedIngredients?.reduce((sum, ing) => sum + Number(ing.price), 0) || 0)
               + newIngredients.reduce((sum, ing) => sum + Number(ing.price), 0)
@@ -482,10 +371,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setShowRadiusNote,
         validRadius,
         setValidRadius,
-        shopOpen,            
+        shopOpen,
         cartMessage,
         weeklyIntervals,
         setWeeklyIntervals,
+        overrides,
+        setOverrides,
       }}
     >
       {children}

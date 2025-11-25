@@ -1,6 +1,8 @@
 // pages/api/offers.ts
 import { prisma } from "@/lib/prisma";
 
+const DEFAULT_DAY = "default";
+
 export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
@@ -13,10 +15,23 @@ export default async function handler(req, res) {
               name: true,
             },
           },
+          intervals: true
         },
       });
 
-      res.status(200).json(products);
+      const formattedProducts = products.map((p) => ({
+        ...p,
+        intervals: {
+          [DEFAULT_DAY]: p.intervals?.map((i) => ({
+            id: i.id,
+            open: i.open,
+            close: i.close,
+            isAfterMidnight: Number(i.close.split(":")[0]) < 4,
+          })) ?? [],
+        },
+      }));
+
+      res.status(200).json(formattedProducts);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

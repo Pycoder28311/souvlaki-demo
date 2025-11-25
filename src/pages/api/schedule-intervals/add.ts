@@ -44,8 +44,24 @@ export default async function handler(
       relationField = { productId: objectId };
     } else if (object === "category") {
       relationField = { categoryId: objectId };
+    } else if (object === "override") {
+      relationField = { overrideId: objectId };
     } else {
       return res.status(400).json({ error: "Invalid object type" });
+    }
+
+    const intervalToRemove = await prisma.timeInterval.findFirst({
+      where: {
+        open: "04",
+        close: "03:59",
+        ...relationField, // make sure it matches the same schedule/product/category
+      },
+    });
+
+    if (intervalToRemove) {
+      await prisma.timeInterval.delete({
+        where: { id: intervalToRemove.id },
+      });
     }
 
     // Create interval
@@ -56,6 +72,7 @@ export default async function handler(
         ...relationField, // dynamically inserts the correct FK
       },
     });
+    console.log(interval)
 
     return res.status(200).json({ interval });
 

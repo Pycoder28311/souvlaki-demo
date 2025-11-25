@@ -5,7 +5,7 @@ import Navbar from "../z-components/navigator";
 import { useState } from 'react';
 import OrderSidebar from "./cart";
 import EditModal from '../menu/editModal';
-import { OrderItem } from "../types"; 
+import { OrderItem } from "../types";
 import { CartProvider } from "./cartContext";
 import Footer from "../z-components/footer";
 import CartToggleButton from "./cartToggleButton";
@@ -25,7 +25,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/auth/email-reset-input",
     "/auth/reset-password",
   ];
-  
+
   const noNavbarPrefixPaths = [
     "/auth/error",
     "/auth/reset-password",
@@ -65,11 +65,11 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
   ];
 
   const scrolledPaths = [
-    "/all-orders", 
-    "/orders-history", 
-    "/profile", 
-    "/messages", 
-    "/live-orders", 
+    "/all-orders",
+    "/orders-history",
+    "/profile",
+    "/messages",
+    "/live-orders",
     "/schedule-manage",
   ];
 
@@ -81,15 +81,15 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
   const showNavbar = !(hideNavbarExact || hidePrefix);
   const showFooter = !(hideFooterExact || hidePrefix);
   const hideCartPaths = noCartExactPaths.includes(pathname);
-  
+
   const [editableOrderItem, setEditableOrderItem] = useState<OrderItem | null>(null);
 
   return (
     <CartProvider>
-      {showNavbar && <Navbar scrolled={scrolled} isLive={pathname === "/live-orders" || pathname === "/all-orders"}/>}
+      {showNavbar && <Navbar scrolled={scrolled} isLive={pathname === "/live-orders" || pathname === "/all-orders"} />}
       <main>{children}</main>
       <>
-        <OrderSidebar setEditableOrderItem={setEditableOrderItem}/>
+        <OrderSidebar setEditableOrderItem={setEditableOrderItem} />
 
         {!hideCartPaths && <CartToggleButton />}
 
@@ -102,7 +102,7 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
         )}
 
       </>
-      {showFooter && <Footer/>}
+      {showFooter && <Footer />}
     </CartProvider>
   );
 }
