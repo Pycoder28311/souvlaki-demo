@@ -1,4 +1,10 @@
 import { WeeklyIntervals, Override } from "../types"; // adjust path
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "../utils/hours";
+
+const [openHours, openMinutes] = ALL_DAY_OPEN.split(":").map(Number);
+const opening = openHours * 60 + openMinutes;
+const [allDayOpenH, allDayOpenM] = ALL_DAY_OPEN.split(":").map(Number);
+const [allDayCloseH, allDayCloseM] = ALL_DAY_CLOSE.split(":").map(Number);
 
 export function checkIntervalsNow(
   weeklyIntervals: WeeklyIntervals,
@@ -24,11 +30,11 @@ export function checkIntervalsNow(
   // Intervals of today
   let intervalsToday = weeklyIntervals[today] || [];
 
-  // Intervals from yesterday that go past midnight (00:00–03:59)
+  // Intervals from yesterday that go past midnight 
   let intervalsFromYesterday = (weeklyIntervals[yesterday] || [])
     .filter(interval => {
       const closeHour = Number(interval.close.split(":")[0]);
-      return closeHour >= 0 && closeHour <= 3;
+      return closeHour >= 0 && closeHour <= allDayCloseH;
     })
     .map(interval => ({
       ...interval,
@@ -47,7 +53,7 @@ export function checkIntervalsNow(
   .flatMap(o => o.intervals.map(i => ({ ...i })));
 
   let yesterdayOverrides: typeof todayOverrides = [];
-  if (currentMinutes < 4 * 60) { // before 04:00
+  if (currentMinutes < opening) { // before 
     yesterdayOverrides = overrides
       .filter(o => {
         if (o.everyYear) {
@@ -63,7 +69,7 @@ export function checkIntervalsNow(
         o.intervals
           .filter(i => {
             const closeH = Number(i.close.split(":")[0]);
-            return closeH >= 0 && closeH <= 3; // after-midnight
+            return closeH >= 0 && closeH <= allDayCloseH; // after-midnight
           })
           .map(i => ({ ...i, isAfterMidnight: true }))
       );
@@ -92,20 +98,20 @@ export function checkIntervalsNow(
     let closeMinutes = closeH * 60 + closeM;
 
     if (
-      openH === 4 && openM === 0 &&
-      closeH === 3 && closeM === 59 &&
+      openH === allDayOpenH && openM === allDayOpenM &&
+      closeH === allDayCloseH && closeM === allDayCloseM &&
       intervalsToday.includes(interval)
     ) {
       return true;
     }
 
-    // Ignore yesterday intervals if current time >= 04:00
-    if (interval.isAfterMidnight && currentMinutes >= 4 * 60) {
+    // Ignore yesterday intervals if current time 
+    if (interval.isAfterMidnight && currentMinutes >= opening) {
       return false;
     }
 
     if (interval.isAfterMidnight) {
-      if (openH < 4) openMinutes += 24 * 60;
+      if (openH < allDayOpenH) openMinutes += 24 * 60;
       closeMinutes += 24 * 60;
     }
 

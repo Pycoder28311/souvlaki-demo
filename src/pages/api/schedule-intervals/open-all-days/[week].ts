@@ -1,16 +1,17 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "../../../../app/utils/hours";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { day } = req.query;
+  const { week } = req.query;
 
-  if (typeof day !== "string") {
+  if (typeof week !== "string") {
     return res.status(400).json({ error: "Invalid day" });
   }
 
   try {
     const schedule = await prisma.schedule.findUnique({
-      where: { day },
+      where: { day: week },
       include: { intervals: true },
     });
 
@@ -32,8 +33,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const newInterval = await prisma.timeInterval.create({
         data: {
           scheduleId: schedule.id,
-          open: "04:00",
-          close: "03:59",
+          open: ALL_DAY_OPEN,
+          close: ALL_DAY_CLOSE,
         },
       });
 

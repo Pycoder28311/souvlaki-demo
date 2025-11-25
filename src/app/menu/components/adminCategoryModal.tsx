@@ -1,7 +1,7 @@
 "use client";
 
-import React, { RefObject, useState } from "react";
-import { Category } from "../../types"; // your Category interface
+import React, { RefObject, useState, useEffect, useRef } from "react";
+import { Category, Interval } from "../../types"; // your Category interface
 import { X, Plus, Trash2, Save, Pencil } from "lucide-react";
 import Intervals from "@/app/schedule-manage/intervalsEditor";
 
@@ -16,6 +16,11 @@ interface CategoryModalProps {
   handleDeleteCategory: (categoryId: number) => void;
   confirmingDelete: number | null;
   setConfirmingDelete: React.Dispatch<React.SetStateAction<number | null>>;
+  updateIntervals: (
+    categoryId: number,
+    newIntervals: Interval[],
+    productId?: number
+  ) => void;
 }
 
 const AdminCategoryModal: React.FC<CategoryModalProps> = ({
@@ -29,9 +34,33 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
   handleDeleteCategory,
   confirmingDelete,
   setConfirmingDelete,
+  updateIntervals,
 }) => {
 
   const [intervals, setIntervals] = useState(category.intervals)
+
+  const prevIntervalsRef = useRef(intervals["default"]);
+
+  useEffect(() => {
+    const current = intervals["default"] || [];
+    const prev = prevIntervalsRef.current || [];
+
+    // Simple shallow comparison
+    const isEqual =
+      prev.length === current.length &&
+      prev.every(
+        (p, i) =>
+          p.id === current[i].id &&
+          p.open === current[i].open &&
+          p.close === current[i].close &&
+          p.isAfterMidnight === current[i].isAfterMidnight
+      );
+
+    if (!isEqual) {
+      updateIntervals(category.id, current, undefined);
+      prevIntervalsRef.current = current;
+    }
+  }, [intervals, category.id, updateIntervals]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(category.name);
@@ -194,7 +223,7 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             </div>
           </div>
 
-          <Intervals days={["default"]} object="category" id={category.id} intervals={intervals} setIntervals={setIntervals}/>
+          <Intervals days={["default"]} object="category" id={category.id} intervals={intervals} setIntervals={setIntervals} categoryId={category.id} />
 
           <div className="flex items-center gap-2 mt-4">
             {confirmingDelete !== category.id ? (

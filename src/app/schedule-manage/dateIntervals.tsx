@@ -3,6 +3,7 @@
 import { Plus, X, Trash2 } from "lucide-react";
 import { CustomTimePicker } from "./customTimePicker"; // keep your component
 import { useCart } from "../wrappers/cartContext";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE, DEFAULT_OPEN, DEFAULT_CLOSE } from "../utils/hours";
 
 export default function OverrideIntervals() {
     const { overrides, setOverrides } = useCart();
@@ -53,12 +54,12 @@ export default function OverrideIntervals() {
     };
 
     const addInterval = async (overrideId: number) => {
-        const openTime = "04:00";
-        const closeTime = "10:00";
+        const openTime = DEFAULT_OPEN;
+        const closeTime = DEFAULT_CLOSE;
 
         // Check for existing "all-day" interval in local state
         // Add the new interval
-        const res = await fetch(`/api/schedule-intervals/add`, {
+        const res = await fetch(`/api/schedule-intervals/add-interval`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -86,10 +87,9 @@ export default function OverrideIntervals() {
     };
 
     const removeInterval = async (overrideId: number, intervalId: number) => {
-        console.log(overrides, intervalId)
         try {
             // Call API to delete interval from backend
-            const res = await fetch("/api/schedule-intervals/delete-put", {
+            const res = await fetch("/api/schedule-intervals/delete-put-interval", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ id: intervalId }),
@@ -124,7 +124,7 @@ export default function OverrideIntervals() {
     ) => {
         try {
             // Call backend API to update interval
-            const res = await fetch("/api/schedule-intervals/delete-put", {
+            const res = await fetch("/api/schedule-intervals/delete-put-interval", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -186,7 +186,7 @@ export default function OverrideIntervals() {
     const closeAllDay = async (overrideId: number) => {
         try {
             // Call the API to delete all intervals for this override
-            const res = await fetch("/api/schedule-intervals/close-all-day", {
+            const res = await fetch("/api/schedule-intervals/close-all-day-override", {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ overrideId }),
@@ -309,96 +309,99 @@ export default function OverrideIntervals() {
                         {/* Header */}
                         <div className="flex justify-between items-center">
                             <h2 className="text-xl font-bold">{override.date}</h2>
-                            <input
-                                type="date"
-                                value={override.date}
-                                onChange={(e) => handleDateChange(e.target.value)}
-                                className="border rounded px-2 py-1 text-sm"
-                            />
-                            <button
-                                className="px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-1"
-                                onClick={() => deleteOverride(override.id)}
-                            >
-                                Διαγραφή
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-
-                            <label className="flex items-center gap-2 text-sm font-medium">
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-start gap-2">
                                 <input
-                                    type="checkbox"
-                                    checked={override.everyYear}
-                                    onChange={async () => {
-                                        try {
-                                            // Optimistically update UI immediately
-                                            setOverrides(prev =>
-                                                prev.map(o =>
-                                                    o.id === override.id ? { ...o, everyYear: !o.everyYear } : o
-                                                )
-                                            );
-
-                                            // Call API
-                                            await toggleEveryYearAPI(override.id, !override.everyYear);
-                                        } catch (error) {
-                                            alert(error);
-                                            // Optionally, revert UI change if API fails
-                                            setOverrides(prev =>
-                                                prev.map(o =>
-                                                    o.id === override.id ? { ...o, everyYear: override.everyYear } : o
-                                                )
-                                            );
-                                        }
-                                    }}
-                                    className="w-4 h-4"
+                                    type="date"
+                                    value={override.date}
+                                    onChange={(e) => handleDateChange(e.target.value)}
+                                    className="border rounded px-2 py-1 text-sm"
                                 />
-                                Επαναλαμβάνεται κάθε χρόνο
-                            </label>
+                                <button
+                                    className="px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-1"
+                                    onClick={() => deleteOverride(override.id)}
+                                >
+                                    Διαγραφή
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
 
-                            {/* Show label: open all day */}
-                            {override.intervals?.some(i => i.open === "04:00" && i.close === "03:59") && (
-                                <span className="px-2 py-1 bg-green-200 rounded-xl text-sm font-semibold">
-                                    Άνοιγμα όλη την ημέρα
-                                </span>
-                            )}
+                                <label className="flex items-center gap-2 text-sm font-medium">
+                                    <input
+                                        type="checkbox"
+                                        checked={override.everyYear}
+                                        onChange={async () => {
+                                            try {
+                                                // Optimistically update UI immediately
+                                                setOverrides(prev =>
+                                                    prev.map(o =>
+                                                        o.id === override.id ? { ...o, everyYear: !o.everyYear } : o
+                                                    )
+                                                );
 
-                            {/* Show label: open all day */}
-                            {override.intervals?.some(
-                                i => i.open === "04:00" && i.close === "03:59"
-                            ) && (
+                                                // Call API
+                                                await toggleEveryYearAPI(override.id, !override.everyYear);
+                                            } catch (error) {
+                                                alert(error);
+                                                // Optionally, revert UI change if API fails
+                                                setOverrides(prev =>
+                                                    prev.map(o =>
+                                                        o.id === override.id ? { ...o, everyYear: override.everyYear } : o
+                                                    )
+                                                );
+                                            }
+                                        }}
+                                        className="w-4 h-4"
+                                    />
+                                    Επαναλαμβάνεται κάθε χρόνο
+                                </label>
+
+                                {/* Show label: open all day */}
+                                {override.intervals?.some(i => i.open === ALL_DAY_OPEN && i.close === ALL_DAY_CLOSE) && (
                                     <span className="px-2 py-1 bg-green-200 rounded-xl text-sm font-semibold">
                                         Άνοιγμα όλη την ημέρα
                                     </span>
                                 )}
+
+                                {/* Show label: open all day */}
+                                {override.intervals?.some(
+                                    i => i.open === ALL_DAY_OPEN && i.close === ALL_DAY_CLOSE
+                                ) && (
+                                        <span className="px-2 py-1 bg-green-200 rounded-xl text-sm font-semibold">
+                                            Άνοιγμα όλη την ημέρα
+                                        </span>
+                                    )}
+
+                            </div>
                         </div>
 
                         {/* Buttons */}
-                        <div className="flex gap-3 flex-wrap">
+                        <div className="flex gap-3 flex-wrap justify-center sm:justify-start">
                             <button
-                                className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700"
-                                onClick={() => addInterval(override.id)}
+                                className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                                onClick={() => closeAllDay(override.id)}
                             >
-                                <span>Πρόσθεσε Διάστημα</span>
-                                <Plus className="w-4 h-4" />
+                                Κλειστά όλη μέρα
+                                <X className="w-4 h-4" />
                             </button>
 
                             <button
                                 className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
                                 onClick={() => openAllDay(override.id)}
                             >
-                                Άνοιξε όλη την ημέρα
+                                Άνοιχτά όλη την ημέρα
                             </button>
 
                             <button
-                                className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-xl hover:bg-red-700"
-                                onClick={() => closeAllDay(override.id)}
+                                className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700"
+                                onClick={() => addInterval(override.id)}
                             >
-                                Κλείσιμο όλη μέρα
-                                <X className="w-4 h-4" />
+                                <span>Πρόσθήκη Διαστήματος</span>
+                                <Plus className="w-4 h-4" />
                             </button>
                         </div>
 
                         {/* Intervals */}
                         {override.intervals.map((interval) => {
-                            const isAllDay = interval.open === "04:00" && interval.close === "03:59";
+                            const isAllDay = interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE;
                             if (isAllDay) return null;
 
                             return (

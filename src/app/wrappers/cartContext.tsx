@@ -89,7 +89,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const fetchIntervals = async () => {
       try {
-        const res = await fetch("/api/schedule-intervals/read");
+        const res = await fetch("/api/schedule-intervals/read-all");
         if (!res.ok) throw new Error("Failed to fetch intervals");
 
         const data = await res.json();

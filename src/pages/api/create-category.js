@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "@/app/utils/hours";
 
 const DEFAULT_DAY = "default"; // same as your frontend
 
@@ -28,8 +29,8 @@ export default async function handler(req, res) {
         position: maxPosition + 1,
         intervals: {
           create: {
-            open: "04:00",
-            close: "03:59",
+            open: ALL_DAY_OPEN,
+            close: ALL_DAY_CLOSE,
           },
         },
       },

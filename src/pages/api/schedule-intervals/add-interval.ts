@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "../../../app/utils/hours";
 
 export interface Interval { 
   id: number; 
@@ -52,8 +53,8 @@ export default async function handler(
 
     const intervalToRemove = await prisma.timeInterval.findFirst({
       where: {
-        open: "04",
-        close: "03:59",
+        open: ALL_DAY_OPEN,
+        close: ALL_DAY_CLOSE,
         ...relationField, // make sure it matches the same schedule/product/category
       },
     });
@@ -72,7 +73,6 @@ export default async function handler(
         ...relationField, // dynamically inserts the correct FK
       },
     });
-    console.log(interval)
 
     return res.status(200).json({ interval });
 

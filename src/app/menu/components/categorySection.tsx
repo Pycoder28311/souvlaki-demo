@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Pencil, Plus } from "lucide-react";
 import { Product, Category } from "../../types"; // import your types
 import { checkObjectIntervals } from "../../utils/checkObjectIntervals";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "../../utils/hours";
 
 interface CategorySectionProps {
   category: Category;
@@ -96,7 +97,7 @@ const CategorySection: React.FC<CategorySectionProps> = ({
                 <p className="text-sm text-red-500 font-semibold mb-1">
                   {!isAvailable ? (
                     <>
-                      {(Object.values(product.intervals).flat().some(i => i.open === "04:00" && i.close === "03:59") || product.intervals["default"].length === 0) ? (
+                      {(Object.values(product.intervals).flat().some(i => i.open === ALL_DAY_OPEN && i.close === ALL_DAY_CLOSE) || product.intervals["default"].length === 0) ? (
                         <span className="text-red-500 font-semibold">Μη διαθέσιμο</span>
                       ) : (
                         <>

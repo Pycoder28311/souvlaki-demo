@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma";
-import { DayOfWeek } from "../../../../app/types";
+import { DayOfWeek } from "../../../../../app/types";
+import { ALL_DAY_OPEN, ALL_DAY_CLOSE } from "../../../../../app/utils/hours";
 
 type Data =
   | { interval: {
@@ -47,7 +48,7 @@ export default async function handler(
 
     // Remove existing "all-day" interval if exists
     const allDayInterval = await prisma.timeInterval.findFirst({
-      where: { scheduleId: schedule.id, open: "04:00", close: "03:59" },
+      where: { scheduleId: schedule.id, open: ALL_DAY_OPEN, close: ALL_DAY_CLOSE },
     });
     if (allDayInterval) {
       await prisma.timeInterval.delete({ where: { id: allDayInterval.id } });

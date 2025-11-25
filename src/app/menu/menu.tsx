@@ -5,7 +5,7 @@ import Head from 'next/head';
 import ProductModal from "./productModal";
 import { useCart } from "../wrappers/cartContext";
 import { Plus, Search, X } from "lucide-react";
-import { Product, Category } from "../types";
+import { Product, Category, Interval } from "../types";
 import AdminProductModal from "./components/adminProductModal";
 import AdminCategoryModal from "./components/adminCategoryModal";
 import CategorySection from "./components/categorySection";
@@ -516,6 +516,45 @@ export default function Menu({ categories: initialCategories, business }: { cate
     }
   };
 
+  const updateIntervals = (
+    categoryId: number,
+    newIntervals: Interval[],
+    productId?: number // optional
+  ) => {
+    setCategories(prev =>
+      prev.map(cat => {
+        if (cat.id !== categoryId) return cat;
+
+        if (productId !== undefined) {
+          // Update product intervals
+          return {
+            ...cat,
+            products: cat.products.map(prod =>
+              prod.id === productId
+                ? {
+                  ...prod,
+                  intervals: {
+                    ...prod.intervals,
+                    ["default"]: newIntervals,
+                  },
+                }
+                : prod
+            ),
+          };
+        } else {
+          // Update category intervals
+          return {
+            ...cat,
+            intervals: {
+              ...cat.intervals,
+              ["default"]: newIntervals,
+            },
+          };
+        }
+      })
+    );
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Head>
@@ -711,6 +750,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
           handleDeleteCategory={handleDeleteCategory}
           confirmingDelete={confirmingDelete}
           setConfirmingDelete={setConfirmingDelete}
+          updateIntervals={updateIntervals}
         />
       )}
 
@@ -726,6 +766,7 @@ export default function Menu({ categories: initialCategories, business }: { cate
           onEditPrice={setEditPrice}
           confirmingDelete={confirmingDeleteProduct}
           setConfirmingDelete={setConfirmingDeleteProduct}
+          updateIntervals={updateIntervals}
         />
       )}
 

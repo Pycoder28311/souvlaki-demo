@@ -1,7 +1,7 @@
 "use client";
 
-import React, { RefObject, useState } from "react";
-import { Product } from "../../types"; // make sure you import your interface
+import React, { RefObject, useState, useEffect, useRef } from "react";
+import { Product, Interval } from "../../types"; // make sure you import your interface
 import { Pencil, Save, Trash2, X } from "lucide-react";
 import Intervals from "@/app/schedule-manage/intervalsEditor";
 
@@ -16,6 +16,11 @@ interface AdminProductModalProps {
   onEditPrice: (id: number, newPrice: number) => void;
   confirmingDelete: number | null;
   setConfirmingDelete: React.Dispatch<React.SetStateAction<number | null>>;
+  updateIntervals: (
+    categoryId: number,
+    newIntervals: Interval[],
+    productId?: number
+  ) => void;
 }
 
 const AdminProductModal: React.FC<AdminProductModalProps> = ({
@@ -29,8 +34,32 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
   onEditPrice,
   confirmingDelete,
   setConfirmingDelete,
+  updateIntervals,
 }) => {
   const [intervals, setIntervals] = useState(product.intervals);
+
+  const prevIntervalsRef = useRef(intervals["default"]);
+
+  useEffect(() => {
+    const current = intervals["default"] || [];
+    const prev = prevIntervalsRef.current || [];
+
+    // Shallow comparison to prevent unnecessary updates
+    const isEqual =
+      prev.length === current.length &&
+      prev.every(
+        (p, i) =>
+          p.id === current[i].id &&
+          p.open === current[i].open &&
+          p.close === current[i].close &&
+          p.isAfterMidnight === current[i].isAfterMidnight
+      );
+
+    if (!isEqual) {
+      updateIntervals(product.categoryId || 0, current, product.id);
+      prevIntervalsRef.current = current;
+    }
+  }, [intervals, product.categoryId, product.id, updateIntervals]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(product.name);
@@ -256,7 +285,7 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
           )}
         </div>
 
-        <Intervals days={["default"]} object="product" id={product.id} intervals={intervals} setIntervals={setIntervals} />
+        <Intervals days={["default"]} object="product" id={product.id} intervals={intervals} setIntervals={setIntervals} productId={product.id} />
 
         <div className="flex items-center gap-2 mt-6">
           {confirmingDelete !== product.id ? (
