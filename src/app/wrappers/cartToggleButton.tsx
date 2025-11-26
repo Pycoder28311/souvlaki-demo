@@ -6,7 +6,7 @@ import { useCart } from "./cartContext";
 import { useEffect } from "react";
 
 export default function CartToggleButton() {
-  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user } = useCart();
+  const { isSidebarOpen, setIsSidebarOpen, shopOpen, cartMessage, user, loadingCart } = useCart();
 
   useEffect(() => {
     if (!isSidebarOpen) return;
@@ -40,11 +40,10 @@ export default function CartToggleButton() {
     };
   }, [isSidebarOpen, setIsSidebarOpen, user?.business]);
 
-  if (isSidebarOpen || cartMessage === "Φόρτωση..." || user?.business) return;
+  if (isSidebarOpen || cartMessage === "Φόρτωση..." || loadingCart || user?.business) return;
 
   return (
     <>
-
       {cartMessage !== "Φόρτωση..." && (
         <>
           {/* Header */}
@@ -54,7 +53,6 @@ export default function CartToggleButton() {
                 <h3 className="font-bold text-xl text-gray-800 flex items-center gap-2">
                   <span className="text-red-600">🚫 Το κατάστημα είναι κλειστό</span>
                 </h3>
-
                 {cartMessage}
               </div>
             )}

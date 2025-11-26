@@ -1,9 +1,13 @@
+"use client";
+
 import React from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShoppingCart, X, Trash2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { User, OrderItem, Option } from "../../../types"; // adjust imports as needed
 import { useCart } from "../../cartContext";
+import { checkObjectIntervals } from "../../../utils/checkObjectIntervals";
 
 interface CartBodyProps {
   setEditableOrderItem: (item: OrderItem | null) => void;
@@ -11,6 +15,7 @@ interface CartBodyProps {
   setExpandedItems: React.Dispatch<React.SetStateAction<Record<number, boolean>>>;
   total: number;
   user: User | null;
+  setShowPaymentModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const CartBody: React.FC<CartBodyProps> = ({
@@ -18,8 +23,10 @@ const CartBody: React.FC<CartBodyProps> = ({
   expandedItems,
   setExpandedItems,
   total,
+  setShowPaymentModal,
 }) => {
   const { orderItems, removeItem, setQuantity, isSidebarOpen, setIsSidebarOpen, user } = useCart();
+  const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
   if (!isSidebarOpen) return null;
 
   return (
@@ -158,9 +165,28 @@ const CartBody: React.FC<CartBodyProps> = ({
       {/* Total and Checkout */}
       {orderItems.length > 0 && !user?.business && (
         <div className="fixed bottom-4 left-0 right-0">
+          {availabilityMessage && (
+            <div className="my-2 text-red-600 text-start font-semibold px-6">
+              {availabilityMessage}
+            </div>
+          )}
           <div className="px-4">
             <div className="border-t border-gray-400 pt-4">
               <button
+                onClick={() => {
+
+                  const unavailableItem = orderItems.find(
+                    (item) => !checkObjectIntervals(item.intervals || {})
+                  );
+
+                  if (unavailableItem) {
+                    setAvailabilityMessage(
+                      `Το προϊόν "${unavailableItem.name}" δεν είναι διαθέσιμο αυτή τη στιγμή.`
+                    );
+                    return;
+                  }
+                  setShowPaymentModal(true);
+                }}
                 className="w-full bg-yellow-400 text-gray-800 py-3 sm:py-2 text-lg sm:text-xl rounded-xl font-semibold hover:bg-yellow-500 transition"
               >
                 Πλήρωμή {total.toFixed(2)}€

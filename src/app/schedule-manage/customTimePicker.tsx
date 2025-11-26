@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, } from "react";
+import { DEFAULT_OPEN, DEFAULT_CLOSE, ALL_DAY_OPEN } from "../utils/hours";
 
 const DAYS_GR: Record<string, string> = {
   Monday: "Δευτέρα",
@@ -22,7 +23,7 @@ interface CustomTimePickerProps {
   openHour?: string; // currently selected open hour (for close picker)
   closeHour?: string; // currently selected close hour (for open picker)
   disabledHours?: number[]; // optional array of hours to disable (e.g., overlap prevention)
-  currentDay?: string; 
+  currentDay?: string;
 }
 
 export const CustomTimePicker = ({
@@ -40,8 +41,12 @@ export const CustomTimePicker = ({
   currentDay,
 }: CustomTimePickerProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [hour, setHour] = useState(isClosePicker ? "10" : "04");
+  const [hour, setHour] = useState(isClosePicker
+    ? DEFAULT_CLOSE.split(":")[0]
+    : DEFAULT_OPEN.split(":")[0]);
   const [minute, setMinute] = useState("00");
+
+  const startHour = parseInt(ALL_DAY_OPEN.split(":")[0], 10);
 
   const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
   const currentIndex = currentDay ? DAYS.indexOf(currentDay) : 0;
@@ -127,13 +132,13 @@ export const CustomTimePicker = ({
                 onChange={(e) => setHour(e.target.value)}
               >
                 {Array.from({ length: 24 }).map((_, i) => {
-                  const shiftedHour = (i + 4) % 24; // start at 4AM
+                  const shiftedHour = (i + startHour) % 24; // start at 4AM
                   const hStr = String(shiftedHour).padStart(2, "0");
 
                   let label = `${hStr}:00`;
 
                   // Show next day for 0–3
-                  if (shiftedHour >= 0 && shiftedHour < 4 && currentDay) {
+                  if (shiftedHour >= 0 && shiftedHour < startHour && currentDay) {
                     const nextDayEn = DAYS[(currentIndex + 1) % 7]; // αγγλικά
                     const nextDayGr = DAYS_GR[nextDayEn]; // ελληνικά
                     label += ` (${nextDayGr})`;

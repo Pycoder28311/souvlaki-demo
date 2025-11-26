@@ -4,6 +4,8 @@ import { CustomTimePicker } from "./customTimePicker";
 import { Trash2, Plus, X } from "lucide-react";
 import { Interval } from "../types";
 import { ALL_DAY_OPEN, ALL_DAY_CLOSE, DEFAULT_OPEN, DEFAULT_CLOSE } from "../utils/hours";
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 // Helper: convert "HH:MM" to minutes
 const timeToMinutes = (time: string) => {
@@ -163,7 +165,9 @@ export default function Intervals({ days, object, id, intervals, setIntervals, p
     }
   };
 
-  const normalize = (h: number) => (h + 20) % 24;
+  const startHour = parseInt(ALL_DAY_OPEN.split(":")[0], 10); // e.g., 4
+  // Normalize hour relative to startHour
+  const normalize = (h: number) => (h + (24 - startHour)) % 24;
 
   const getDisabledHours = (
     intervals: Interval[],
@@ -198,8 +202,8 @@ export default function Intervals({ days, object, id, intervals, setIntervals, p
         const end = start + 59;
 
         // Shift early hours (00–03) into "next day"
-        const s = start < 240 ? start + 1440 : start;
-        const e = end < 240 ? end + 1440 : end;
+        const s = start < startHour * 60 ? start + 1440 : start;
+        const e = end < startHour * 60 ? end + 1440 : end;
 
         if (e >= otherOpen && s < otherClose) {
           disabled.add(h); // block overlapping hours
@@ -225,27 +229,41 @@ export default function Intervals({ days, object, id, intervals, setIntervals, p
     return Array.from(disabled);
   };
 
+  const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-4">
       {days.map((day) => (
-        <div key={day} className="border p-4 rounded-xl flex flex-col gap-4">
+        <div key={day} className="p-4 rounded-xl flex flex-col gap-4 bg-white shadow-lg">
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex flex-wrap items-center gap-2 w-full">
-              {object === "week" && (
-                <h2 className="font-bold text-lg">{DAYS_GR[day]}</h2>
-              )}
+              <button
+                className="flex justify-between items-center text-left gap-2"
+                onClick={() =>
+                  setIsOpen(prev => ({ ...prev, [day]: !prev[day] }))
+                }
+              >
+                {isOpen[day] ? (
+                  <ChevronUp className="w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" />
+                ) : (
+                  <ChevronDown className="w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" />
+                )}
+                {object === "week" && (
+                  <h2 className="font-bold text-lg">{DAYS_GR[day]}</h2>
+                )}
+              </button>
 
               {(intervals && intervals[day]?.length > 0) ? (
                 intervals[day].some(interval => interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE) ? (
-                  <span className="px-2 py-1.5 bg-green-200 rounded-xl text-sm font-semibold">
-                    Άνοιγμα όλη την ημέρα
+                  <span className="px-2 py-1.5 bg-green-200 rounded-lg text-sm font-semibold">
+                    Ανοιχτά όλη την ημέρα
                   </span>
                 ) : (
                   <div className="flex gap-2 flex-wrap">
                     {intervals[day].map(interval => (
                       <span
                         key={interval.id}
-                        className="px-2 py-1.5 bg-gray-200 rounded-xl text-sm"
+                        className="px-2 py-1.5 bg-gray-100 rounded-xl text-sm"
                       >
                         {interval.open} - {interval.close}
                       </span>
@@ -256,161 +274,167 @@ export default function Intervals({ days, object, id, intervals, setIntervals, p
                 <span className="text-gray-400 text-sm">Κλειστά</span>
               )}
             </div>
+            {isOpen[day] && (
+              <>
+                <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+                  <button
+                    className="flex items-center gap-2 px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+                    onClick={async () => {
+                      const url =
+                        object === "week"
+                          ? `/api/schedule-intervals/days/${day}/delete`
+                          : object === "product"
+                            ? `/api/schedule-intervals/close-all-day/product`
+                            : object === "category"
+                              ? `/api/schedule-intervals/close-all-day/category`
+                              : "";
 
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-              <button
-                className="flex items-center gap-2 px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
-                onClick={async () => {
-                  const url =
-                    object === "week"
-                      ? `/api/schedule-intervals/days/${day}/delete`
-                      : object === "product"
-                        ? `/api/schedule-intervals/close-all-day/product`
-                        : object === "category"
-                          ? `/api/schedule-intervals/close-all-day/category`
-                          : "";
+                      const body =
+                        object === "product"
+                          ? { productId }            // <-- send product ID
+                          : object === "category"
+                            ? { categoryId }         // <-- send category ID
+                            : {};
+                      try {
+                        const res = await fetch(url, {
+                          method: "DELETE",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify(body),
+                        });
+                        if (!res.ok) throw new Error("Failed to delete intervals");
+                        // Update local state after deletion
+                        setIntervals((prev) => ({ ...prev, [day]: [] }));
+                      } catch (error) {
+                        console.error(error);
+                      }
+                    }}
+                    title="Κλείστά όλη μέρα"
+                  >
+                    <span>Κλειστά όλη μέρα</span>
+                    <X className="w-4 h-4" />
+                  </button>
 
-                  const body =
-                    object === "product"
-                      ? { productId }            // <-- send product ID
-                      : object === "category"
-                        ? { categoryId }         // <-- send category ID
-                        : {};
-                  try {
-                    const res = await fetch(url, {
-                      method: "DELETE",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify(body),
-                    });
-                    if (!res.ok) throw new Error("Failed to delete intervals");
-                    // Update local state after deletion
-                    setIntervals((prev) => ({ ...prev, [day]: [] }));
-                  } catch (error) {
-                    console.error(error);
-                  }
-                }}
-                title="Κλείστά όλη μέρα"
-              >
-                <span>Κλειστά όλη μέρα</span>
-                <X className="w-4 h-4" />
-              </button>
+                  <button
+                    className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    onClick={async () => {
+                      const week = day;
+                      const base =
+                        object === "week"
+                          ? week
+                          : object === "product"
+                            ? "product"
+                            : object === "category"
+                              ? "category"
+                              : "";
 
-              <button
-                className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                onClick={async () => {
-                  const week = day;
-                  const base =
-                    object === "week"
-                      ? week
-                      : object === "product"
-                        ? "product"
-                        : object === "category"
-                          ? "category"
-                          : "";
+                      const body =
+                        object === "product"
+                          ? { productId }            // <-- send product ID
+                          : object === "category"
+                            ? { categoryId }         // <-- send category ID
+                            : {};
 
-                  const body =
-                    object === "product"
-                      ? { productId }            // <-- send product ID
-                      : object === "category"
-                        ? { categoryId }         // <-- send category ID
-                        : {};
+                      const res = await fetch(`/api/schedule-intervals/open-all-days/${base}`, {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(body),
+                      });
+                      const data = await res.json();
 
-                  const res = await fetch(`/api/schedule-intervals/open-all-days/${base}`, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(body),
-                  });
-                  const data = await res.json();
+                      if (data?.interval) {
+                        // Update weeklyIntervals state directly
+                        setIntervals((prev) => ({
+                          ...prev,
+                          [day]: [data.interval], // replace all intervals with the new all-day interval
+                        }));
+                      }
+                    }}
+                    title="Άνοιχτα όλη την ημέρα"
+                  >
+                    <span>Άνοιχτά όλη την ημέρα</span>
+                  </button>
 
-                  if (data?.interval) {
-                    // Update weeklyIntervals state directly
-                    setIntervals((prev) => ({
-                      ...prev,
-                      [day]: [data.interval], // replace all intervals with the new all-day interval
-                    }));
-                  }
-                }}
-                title="Άνοιχτα όλη την ημέρα"
-              >
-                <span>Άνοιχτά όλη την ημέρα</span>
-              </button>
+                  <button
+                    className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
+                    onClick={async () => {
+                      const allDayInterval = intervals[day]?.find(
+                        interval => interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE
+                      );
 
-              <button
-                className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors"
-                onClick={async () => {
-                  const allDayInterval = intervals[day]?.find(
-                    interval => interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE
-                  );
+                      if (allDayInterval) {
+                        // Delete the all-day interval first
+                        await fetch(`/api/schedule-intervals/days/${day}/${allDayInterval.id}`, { method: "DELETE" });
+                        setIntervals(prev => ({
+                          ...prev,
+                          [day]: prev[day].filter(interval => interval.id !== allDayInterval.id)
+                        }));
+                      }
 
-                  if (allDayInterval) {
-                    // Delete the all-day interval first
-                    await fetch(`/api/schedule-intervals/days/${day}/${allDayInterval.id}`, { method: "DELETE" });
-                    setIntervals(prev => ({
-                      ...prev,
-                      [day]: prev[day].filter(interval => interval.id !== allDayInterval.id)
-                    }));
-                  }
-
-                  // Then add the new interval
-                  addInterval(day);
-                }}
-                title="Πρόσθεσε Διάστημα"
-              >
-                <span>Πρόσθήκη Διαστήματος</span>
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+                      // Then add the new interval
+                      addInterval(day);
+                    }}
+                    title="Πρόσθεσε Διάστημα"
+                  >
+                    <span>Πρόσθήκη Διαστήματος</span>
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
+          {isOpen[day] && (
+            <>
+              {intervals && intervals[day]?.length > 0 && intervals[day].map((interval, index) => {
+                const isDefaultInterval =
+                  interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE;
 
-          {intervals && intervals[day]?.length > 0 && intervals[day].map((interval, index) => {
-            const isDefaultInterval =
-              interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE;
+                if (isDefaultInterval) return null;
 
-            if (isDefaultInterval) return null;
+                const disabledOpenHours = getDisabledHours(intervals[day], index, false);
+                const disabledCloseHours = getDisabledHours(intervals[day], index, true);
 
-            const disabledOpenHours = getDisabledHours(intervals[day], index, false);
-            const disabledCloseHours = getDisabledHours(intervals[day], index, true);
+                return (
+                  <div key={index} className="flex gap-6 border p-4 rounded-xl px-8">
+                    <CustomTimePicker
+                      label="Ώρα Ανοίγματος:"
+                      value={interval.open}
+                      onChange={(val) => updateInterval(interval.id, day, index, "open", val)}
+                      placeholder="Επιλέξτε ώρα ανοίγματος"
+                      hasError={!interval.open}
+                      closeHour={interval.close}
+                      disabledHours={disabledOpenHours}
+                      currentDay={day}
+                    />
 
-            return (
-              <div key={index} className="flex gap-2 border p-4 rounded-xl">
-                <CustomTimePicker
-                  label="Ώρα Άνοιγμα"
-                  value={interval.open}
-                  onChange={(val) => updateInterval(interval.id, day, index, "open", val)}
-                  placeholder="Επιλέξτε ώρα ανοίγματος"
-                  hasError={!interval.open}
-                  closeHour={interval.close}
-                  disabledHours={disabledOpenHours}
-                  currentDay={day}
-                />
+                    <CustomTimePicker
+                      label="Ώρα Κλεισίματος:"
+                      value={interval.close}
+                      onChange={(val) => updateInterval(interval.id, day, index, "close", val)}
+                      placeholder="Επιλέξτε ώρα κλεισίματος"
+                      hasError={!interval.close}
+                      isClosePicker={true}
+                      openHour={interval.open}
+                      disabledHours={disabledCloseHours}
+                      currentDay={day}
+                    />
 
-                <CustomTimePicker
-                  label="Ώρα Κλείσιμο"
-                  value={interval.close}
-                  onChange={(val) => updateInterval(interval.id, day, index, "close", val)}
-                  placeholder="Επιλέξτε ώρα κλεισίματος"
-                  hasError={!interval.close}
-                  isClosePicker={true}
-                  openHour={interval.open}
-                  disabledHours={disabledCloseHours}
-                  currentDay={day}
-                />
-
-                <button
-                  className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm self-end"
-                  onClick={() => removeInterval(interval.id, day)}
-                  title="Διαγραφή"
-                >
-                  <span>Διαγραφή</span>
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            );
-          })}
+                    <button
+                      className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm self-end"
+                      onClick={() => removeInterval(interval.id, day)}
+                      title="Διαγραφή"
+                    >
+                      <span>Διαγραφή</span>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+            </>
+          )}
         </div>
       ))}
     </div>

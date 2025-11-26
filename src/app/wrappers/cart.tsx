@@ -111,6 +111,7 @@ export default function OrderSidebar({
         setExpandedItems={setExpandedItems}
         total={total}
         user={user}
+        setShowPaymentModal={setShowPaymentModal}
       />
 
       <PaymentModal

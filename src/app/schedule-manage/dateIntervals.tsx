@@ -4,6 +4,8 @@ import { Plus, X, Trash2 } from "lucide-react";
 import { CustomTimePicker } from "./customTimePicker"; // keep your component
 import { useCart } from "../wrappers/cartContext";
 import { ALL_DAY_OPEN, ALL_DAY_CLOSE, DEFAULT_OPEN, DEFAULT_CLOSE } from "../utils/hours";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 export default function OverrideIntervals() {
     const { overrides, setOverrides } = useCart();
@@ -278,18 +280,10 @@ export default function OverrideIntervals() {
         }
     }
 
+    const [isOpen, setIsOpen] = useState<Record<string, boolean>>({});
+
     return (
-        <div className="flex flex-col gap-8">
-
-            {/* BUTTON: Add new override day */}
-            <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 w-fit"
-                onClick={addNewDay}
-            >
-                Πρόσθεσε Ημέρα
-            </button>
-
-            {/* RENDER ALL OVERRIDE DAYS */}
+        <div className="flex flex-col gap-4 items-center">
             {overrides?.map((override) => {
                 const takenDates = overrides
                     .filter(o => o.id !== override.id)
@@ -304,27 +298,30 @@ export default function OverrideIntervals() {
                 };
 
                 return (
-                    <div key={override.id} className="p-4 border rounded-xl flex flex-col gap-4">
-
+                    <div key={override.id} className="p-4 bg-white w-full shadow-lg rounded-xl flex flex-col gap-4">
                         {/* Header */}
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-bold">{override.date}</h2>
-                            <div className="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-start gap-2">
+                        <div className="flex justify-between items-center w-full">
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-center sm:justify-start gap-4 w-full">
+                                <button
+                                    className="flex justify-between items-center text-left"
+                                    onClick={() =>
+                                        setIsOpen(prev => ({ ...prev, [override.date]: !prev[override.date] }))
+                                    }
+                                >
+                                    {isOpen[override.date] ? (
+                                        <ChevronUp className="w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" />
+                                    ) : (
+                                        <ChevronDown className="w-8 h-8 rounded-lg hover:bg-gray-100 transition-colors" />
+                                    )}
+                                </button>
                                 <input
                                     type="date"
                                     value={override.date}
                                     onChange={(e) => handleDateChange(e.target.value)}
-                                    className="border rounded px-2 py-1 text-sm"
+                                    className="border rounded-xl px-2 py-1 text-lg"
                                 />
-                                <button
-                                    className="px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-1"
-                                    onClick={() => deleteOverride(override.id)}
-                                >
-                                    Διαγραφή
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
 
-                                <label className="flex items-center gap-2 text-sm font-medium">
+                                <label className="flex items-center gap-2 text-sm font-medium border rounded-xl px-4">
                                     <input
                                         type="checkbox"
                                         checked={override.everyYear}
@@ -354,10 +351,17 @@ export default function OverrideIntervals() {
                                     Επαναλαμβάνεται κάθε χρόνο
                                 </label>
 
+                                <button
+                                    className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm self-end"
+                                    onClick={() => deleteOverride(override.id)}
+                                >
+                                    Διαγραφή
+                                    <Trash2 className="w-4 h-4" />
+                                </button>
                                 {/* Show label: open all day */}
                                 {override.intervals?.some(i => i.open === ALL_DAY_OPEN && i.close === ALL_DAY_CLOSE) && (
                                     <span className="px-2 py-1 bg-green-200 rounded-xl text-sm font-semibold">
-                                        Άνοιγμα όλη την ημέρα
+                                        Ανοιχτά όλη την ημέρα
                                     </span>
                                 )}
 
@@ -366,72 +370,82 @@ export default function OverrideIntervals() {
                                     i => i.open === ALL_DAY_OPEN && i.close === ALL_DAY_CLOSE
                                 ) && (
                                         <span className="px-2 py-1 bg-green-200 rounded-xl text-sm font-semibold">
-                                            Άνοιγμα όλη την ημέρα
+                                            Ανοιχτά όλη την ημέρα
                                         </span>
                                     )}
 
                             </div>
                         </div>
-
-                        {/* Buttons */}
-                        <div className="flex gap-3 flex-wrap justify-center sm:justify-start">
-                            <button
-                                className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-xl hover:bg-red-700"
-                                onClick={() => closeAllDay(override.id)}
-                            >
-                                Κλειστά όλη μέρα
-                                <X className="w-4 h-4" />
-                            </button>
-
-                            <button
-                                className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
-                                onClick={() => openAllDay(override.id)}
-                            >
-                                Άνοιχτά όλη την ημέρα
-                            </button>
-
-                            <button
-                                className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700"
-                                onClick={() => addInterval(override.id)}
-                            >
-                                <span>Πρόσθήκη Διαστήματος</span>
-                                <Plus className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        {/* Intervals */}
-                        {override.intervals.map((interval) => {
-                            const isAllDay = interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE;
-                            if (isAllDay) return null;
-
-                            return (
-                                <div key={`${interval.id}`} className="flex gap-2 border p-3 rounded-xl">
-                                    <CustomTimePicker
-                                        label="Ώρα Άνοιγμα"
-                                        value={interval.open}
-                                        onChange={(v) => updateInterval(override.id, interval.id, "open", v)}
-                                    />
-
-                                    <CustomTimePicker
-                                        label="Ώρα Κλείσιμο"
-                                        value={interval.close}
-                                        onChange={(v) => updateInterval(override.id, interval.id, "close", v)}
-                                    />
+                        {isOpen[override.date] && (
+                            <>
+                                {/* Buttons */}
+                                <div className="flex gap-3 flex-wrap justify-center sm:justify-start">
+                                    <button
+                                        className="flex items-center gap-2 px-3 py-1 bg-red-600 text-white rounded-xl hover:bg-red-700"
+                                        onClick={() => closeAllDay(override.id)}
+                                    >
+                                        Κλειστά όλη μέρα
+                                        <X className="w-4 h-4" />
+                                    </button>
 
                                     <button
-                                        className="px-3 py-1 bg-red-500 text-white rounded-xl hover:bg-red-600 flex items-center gap-1"
-                                        onClick={() => removeInterval(override.id, interval.id)}
+                                        className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+                                        onClick={() => openAllDay(override.id)}
                                     >
-                                        Διαγραφή
-                                        <Trash2 className="w-4 h-4" />
+                                        Άνοιχτά όλη την ημέρα
+                                    </button>
+
+                                    <button
+                                        className="flex items-center gap-2 px-3 py-1 bg-green-600 text-white rounded-xl hover:bg-green-700"
+                                        onClick={() => addInterval(override.id)}
+                                    >
+                                        <span>Πρόσθήκη Διαστήματος</span>
+                                        <Plus className="w-4 h-4" />
                                     </button>
                                 </div>
-                            );
-                        })}
+
+                                {/* Intervals */}
+                                {override.intervals.map((interval) => {
+                                    const isAllDay = interval.open === ALL_DAY_OPEN && interval.close === ALL_DAY_CLOSE;
+                                    if (isAllDay) return null;
+
+                                    return (
+                                        <div key={`${interval.id}`} className="flex gap-6 border p-4 px-8 rounded-xl">
+                                            <CustomTimePicker
+                                                label="Ώρα Ανοίγματος:"
+                                                value={interval.open}
+                                                onChange={(v) => updateInterval(override.id, interval.id, "open", v)}
+                                            />
+
+                                            <CustomTimePicker
+                                                label="Ώρα Κλεισίματος:"
+                                                value={interval.close}
+                                                onChange={(v) => updateInterval(override.id, interval.id, "close", v)}
+                                            />
+
+                                            <button
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors shadow-sm self-end"
+                                                onClick={() => removeInterval(override.id, interval.id)}
+                                            >
+                                                Διαγραφή
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    );
+                                })}
+                            </>
+                        )}
                     </div>
                 )
             }
             )}
+            <button
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-lg rounded-xl hover:bg-blue-700 w-fit"
+                onClick={addNewDay}
+            >
+                Πρόσθεσε Ημερομηνία
+                <Plus className="w-4 h-4" />
+            </button>
         </div>
     );
 }

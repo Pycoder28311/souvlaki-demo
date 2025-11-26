@@ -44,7 +44,7 @@ export function checkIntervalsNow(
   const todayOverrides = overrides
   .filter(o => {
     if (o.everyYear) {
-      const [overrideYear, overrideMonth, overrideDay] = o.date.split("-").map(Number);
+      const [, overrideMonth, overrideDay] = o.date.split("-").map(Number);
       return overrideMonth === now.getMonth() + 1 && overrideDay === now.getDate();
     } else {
       return o.date === todayISO;
@@ -57,7 +57,7 @@ export function checkIntervalsNow(
     yesterdayOverrides = overrides
       .filter(o => {
         if (o.everyYear) {
-          const [overrideYear, overrideMonth, overrideDay] = o.date.split("-").map(Number);
+          const [, overrideMonth, overrideDay] = o.date.split("-").map(Number);
           const yesterday = new Date(now);
           yesterday.setDate(now.getDate() - 1);
           return overrideMonth === yesterday.getMonth() + 1 && overrideDay === yesterday.getDate();
@@ -87,7 +87,7 @@ export function checkIntervalsNow(
   ];
 
   if (intervalsToday.length === 0 && intervalsFromYesterday.length === 0) {
-    setCartMessage("το κατάστημα είναι κλειστό");
+    setCartMessage("Το κατάστημα είναι κλειστό");
   }
 
   const isOpenNow = allIntervals.some(interval => {
@@ -105,55 +105,57 @@ export function checkIntervalsNow(
       return true;
     }
 
+    const afterMidnight = closeH < allDayOpenH;
+
     // Ignore yesterday intervals if current time 
     if (interval.isAfterMidnight && currentMinutes >= opening) {
       return false;
     }
 
-    if (interval.isAfterMidnight) {
+    if (afterMidnight) {
       if (openH < allDayOpenH) openMinutes += 24 * 60;
       closeMinutes += 24 * 60;
     }
 
     let nowMinutes = currentMinutes;
-    if (nowMinutes < openMinutes && interval.isAfterMidnight) nowMinutes += 24 * 60;
+    if (nowMinutes < openMinutes && afterMidnight) nowMinutes += 24 * 60;
 
     return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
   });
 
   if (!isOpenNow) {
     const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const GREEK_DAYS = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
     const nowIndex = new Date().getDay();
+
     let nextInterval: { day: string, open: string, minutesFromNow: number } | null = null;
 
     for (let i = 0; i < 7; i++) {
       const dayIndex = (nowIndex + i) % 7;
       const dayName = DAYS[dayIndex];
-      const dayIntervals = weeklyIntervals[dayName] || [];
 
-      for (const interval of dayIntervals) {
+      for (const interval of allIntervals) {
         const [openH, openM] = interval.open.split(":").map(Number);
-        let openMinutes = openH * 60 + openM + i * 24 * 60; // minutes από τώρα
-
-        if (interval.isAfterMidnight && openH < 4) openMinutes += 24 * 60;
+        const openMinutes = openH * 60 + openM + i * 24 * 60; 
 
         const minutesFromNow = openMinutes - currentMinutes;
         if (minutesFromNow > 0 && (!nextInterval || minutesFromNow < nextInterval.minutesFromNow)) {
           nextInterval = { day: dayName, open: interval.open, minutesFromNow };
         }
       }
+
+      // ✅ Stop after checking today if we found an interval later today
+      if (i === 0 && nextInterval) break;
     }
 
     if (nextInterval) {
-      const GREEK_DAYS = ["Κυριακή","Δευτέρα","Τρίτη","Τετάρτη","Πέμπτη","Παρασκευή","Σάββατο"];
-
       // Όταν υπολογίζεις το nextInterval:
       const dayIndex = DAYS.indexOf(nextInterval.day); // DAYS είναι η αγγλική λίστα που ήδη χρησιμοποιείς
       const greekDay = GREEK_DAYS[dayIndex];
 
       setCartMessage(`Ανοίγει την ${greekDay} στις ${nextInterval.open}`);
     } else {
-      setCartMessage("το κατάστημα είναι κλειστό");
+      setCartMessage("Το κατάστημα είναι κλειστό");
     }
   }
 

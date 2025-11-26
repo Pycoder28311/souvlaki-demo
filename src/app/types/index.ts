@@ -92,6 +92,7 @@ export interface OrderItem {
   selectedOptions: Option[];
   options?: Option[];
   product?: Product;
+  intervals?: WeeklyIntervals;
 }
 
 export interface Order {

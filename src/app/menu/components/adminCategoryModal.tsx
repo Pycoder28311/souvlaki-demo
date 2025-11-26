@@ -223,6 +223,10 @@ const AdminCategoryModal: React.FC<CategoryModalProps> = ({
             </div>
           </div>
 
+          <div className="pt-2">
+            <strong>Διαθεσιμότητα</strong>
+          </div>
+
           <Intervals days={["default"]} object="category" id={category.id} intervals={intervals} setIntervals={setIntervals} categoryId={category.id} />
 
           <div className="flex items-center gap-2 mt-4">

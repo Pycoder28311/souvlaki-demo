@@ -42,6 +42,7 @@ interface CartContextType {
   setWeeklyIntervals: React.Dispatch<React.SetStateAction<WeeklyIntervals>>;
   overrides: Override[],
   setOverrides: React.Dispatch<React.SetStateAction<Override[]>>;
+  loadingCart: boolean;
 }
 
 type WeeklyIntervals = Record<string, Interval[]>;
@@ -84,6 +85,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const [overrides, setOverrides] = useState<Override[]>([]);
+  const [loadingCart, setLoadingCart] = useState(true);
 
   // 1️⃣ Fetch intervals from API
   useEffect(() => {
@@ -97,6 +99,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setOverrides(data.overrides || []);
       } catch (err) {
         console.error(err);
+      } finally {
+        setLoadingCart(false)
       }
     };
 
@@ -268,6 +272,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
             selectedIngCategories,
             selectedOptions,
             options,
+            intervals: product.intervals,
           },
         ];
       }
@@ -377,6 +382,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setWeeklyIntervals,
         overrides,
         setOverrides,
+        loadingCart,
       }}
     >
       {children}

@@ -61,7 +61,6 @@ export default function AppWrapper({ children }: { children: React.ReactNode }) 
     "/live-orders",
     "/all-orders",
     "/profile",
-    "/schedule-manage",
   ];
 
   const scrolledPaths = [

@@ -284,6 +284,9 @@ const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </h3>
           )}
         </div>
+        <div className="pt-2">
+          <strong>Διαθεσιμότητα</strong>
+        </div>
 
         <Intervals days={["default"]} object="product" id={product.id} intervals={intervals} setIntervals={setIntervals} productId={product.id} />
 
